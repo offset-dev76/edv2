@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Directory</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background-color: #f4f6f8;
+    }
+
+    .sidebar {
+      width: 240px;
+      background-color: #2f3542;
+      color: white;
+      padding: 20px 0;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.4rem;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      padding: 15px 20px;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #57606f;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+    }
+
+    .search-bar input {
+      padding: 8px;
+      width: 250px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+      background-color: #f1f1f1;
+    }
+
+    .actions button {
+      margin-right: 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .edit-btn {
+      background-color: #1e90ff;
+      color: white;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar">
+    <h2>School Panel</h2>
+    <a href="#">Dashboard</a>
+    <a href="#" class="active">Student Directory</a>
+    <a href="#">Marks Management</a>
+    <a href="#">Fees Management</a>
+    <a href="#">Exam & Timetable</a>
+    <a href="#">Reports & Printouts</a>
+    <a href="#">Notifications</a>
+    <a href="#">Settings</a>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h1>Student Directory</h1>
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search by name or ID...">
+      </div>
+    </div>
+
+    <table id="studentTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Class</th>
+          <th>Section</th>
+          <th>Stream</th>
+          <th>Phone</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamic Rows -->
+      </tbody>
+    </table>
+
+    <div class="no-results" id="noResults" style="display: none;">No students found.</div>
+  </div>
+
+  <script>
+    const students = [
+      { id: 'S001', name: 'Ananya Sharma', class: '10', section: 'A', stream: '-', phone: '9876543210' },
+      { id: 'S002', name: 'Rahul Verma', class: '11', section: 'B', stream: 'Science', phone: '9123456780' },
+      { id: 'S003', name: 'Kavya Menon', class: '12', section: 'C', stream: 'Commerce', phone: '9988776655' },
+      { id: 'S004', name: 'Aarav Singh', class: '9', section: 'A', stream: '-', phone: '8899776655' },
+      { id: 'S005', name: 'Zoya Khan', class: '11', section: 'B', stream: 'Arts', phone: '7766554433' }
+    ];
+
+    function renderTable(data) {
+      const tableBody = document.querySelector("#studentTable tbody");
+      const noResults = document.getElementById("noResults");
+      tableBody.innerHTML = "";
+
+      if (data.length === 0) {
+        noResults.style.display = 'block';
+        return;
+      }
+      noResults.style.display = 'none';
+
+      data.forEach(student => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${student.id}</td>
+          <td>${student.name}</td>
+          <td>${student.class}</td>
+          <td>${student.section}</td>
+          <td>${student.stream}</td>
+          <td>${student.phone}</td>
+          <td class="actions">
+            <button class="edit-btn" onclick="editStudent('${student.id}')">Edit</button>
+            <button class="delete-btn" onclick="deleteStudent('${student.id}')">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function editStudent(id) {
+      alert("Edit functionality coming soon for: " + id);
+    }
+
+    function deleteStudent(id) {
+      const index = students.findIndex(s => s.id === id);
+      if (index !== -1) {
+        if (confirm("Are you sure you want to delete this student?")) {
+          students.splice(index, 1);
+          renderTable(students);
+        }
+      }
+    }
+
+    document.getElementById("searchInput").addEventListener("input", function () {
+      const query = this.value.toLowerCase();
+      const filtered = students.filter(student =>
+        student.name.toLowerCase().includes(query) ||
+        student.id.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    });
+
+    // Initial Render
+    renderTable(students);
+  </script>
+</body>
+
+</html>
