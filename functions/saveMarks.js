@@ -8,7 +8,7 @@ const markSchema = new mongoose.Schema({
   marks: Number
 });
 
-const Mark = mongoose.models.Mark || mongoose.model('Mark', markSchema);
+const mark = mongoose.models.mark || mongoose.model('mark', markSchema);
 
 let isConnected = false;
 
@@ -31,7 +31,7 @@ exports.handler = async function(event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const newMark = new Mark(data);
+    const newMark = new mark(data);
     await newMark.save();
 
     return {
