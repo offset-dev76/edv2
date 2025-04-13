@@ -192,24 +192,29 @@
       "11A": ["Physics", "Chemistry", "Maths", "Computer"]
     };
 
-    const studentsByClass = {
-      "10A": [
-        { id: "S001", name: "Ananya Sharma" },
-        { id: "S002", name: "Rahul Verma" }
-      ],
-      "10B": [
-        { id: "S003", name: "Kavya Menon" },
-        { id: "S004", name: "Aarav Singh" }
-      ],
-      "11A": [
-        { id: "S005", name: "Zoya Khan" },
-        { id: "S006", name: "Manav Patel" }
-      ]
-    };
+    let studentsByClass = {}; // Will be populated dynamically
 
-    const marksData = {};
+    document.getElementById("classSelect").addEventListener("change", async function () {
+      const grade = this.value;
+      if (!grade) return;
 
-    document.getElementById("classSelect").addEventListener("change", renderMarksTable);
+      // Fetch students from server
+      try {
+        const res = await fetch(`/.netlify/functions/fetchMarks?grade=${grade}`);
+        const data = await res.json();
+
+        if (!data.success) {
+          alert("Failed to load student data.");
+          return;
+        }
+
+        // Update local studentsByClass
+        studentsByClass[grade] = data.students;
+        renderMarksTable();
+      } catch (err) {
+        console.error("Error fetching students:", err);
+      }
+    });
 
     function renderMarksTable() {
       const grade = document.getElementById("classSelect").value;
@@ -235,6 +240,7 @@
           const td = document.createElement("td");
           const input = document.createElement("input");
           input.setAttribute("data-id", student.id);
+          input.setAttribute("data-name", student.name);
           input.setAttribute("data-subject", subject);
           input.setAttribute("type", "text");
           input.setAttribute("maxlength", "3");
@@ -255,6 +261,7 @@
         tableBody.appendChild(row);
       });
     }
+
     async function saveMarks() {
       const grade = document.getElementById("classSelect").value;
       const examName = document.getElementById("examName").value.trim();
