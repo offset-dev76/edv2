@@ -255,7 +255,7 @@
         tableBody.appendChild(row);
       });
     }
-    async function saveMarks() {
+    function saveMarks() {
       const grade = document.getElementById("classSelect").value;
       const examName = document.getElementById("examName").value.trim();
       const status = document.getElementById("statusMsg");
@@ -265,43 +265,52 @@
         return;
       }
 
-      const inputs = document.querySelectorAll("#marksTable input");
+      const rows = document.querySelectorAll("#marksTable tbody tr");
+      const payload = [];
 
-      let successCount = 0;
-      let errorCount = 0;
+      rows.forEach(row => {
+        const studentId = row.children[0].textContent;
+        const studentName = row.children[1].textContent;
+        const inputs = row.querySelectorAll("input");
 
-      for (const input of inputs) {
-        const studentId = input.getAttribute("data-id");
-        const subject = input.getAttribute("data-subject");
-        const value = input.value.trim();
+        inputs.forEach(input => {
+          const subject = input.getAttribute("data-subject");
+          let value = input.value.trim();
 
-        if (value === "") continue;
+          if (value !== "") {
+            if (value === "AB") value = 0;
+            else value = parseInt(value);
 
-        const data = {
-          student: studentId,
-          subject: subject,
-          marks: value === "AB" ? 0 : parseInt(value)
-        };
+            payload.push({
+              student: studentName,
+              rollNumber: studentId,
+              subject: subject,
+              marks: value,
+              class: grade,
+              examName: examName
+            });
+          }
+        });
+      });
 
-        try {
-          const res = await fetch('/.netlify/functions/saveMarks', {
-            method: 'POST',
-            body: JSON.stringify(data)
-          });
-
-          const result = await res.json();
-          if (result.message?.toLowerCase().includes("success")) successCount++;
-          else errorCount++;
-        } catch (err) {
-          errorCount++;
-          console.error("Error:", err);
-        }
-      }
-
-      status.textContent = `Submitted: ${successCount} | Failed: ${errorCount}`;
-      setTimeout(() => status.textContent = "", 4000);
+      // Send to backend
+      fetch("/.netlify/functions/submit-marks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      })
+        .then(response => response.json())
+        .then(data => {
+          status.textContent = data.message || "Marks saved successfully!";
+          setTimeout(() => status.textContent = '', 3000);
+        })
+        .catch(error => {
+          console.error("Error saving marks:", error);
+          status.textContent = "Error saving marks.";
+        });
     }
-
 
     document.addEventListener("keydown", function (e) {
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
