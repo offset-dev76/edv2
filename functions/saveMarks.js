@@ -8,13 +8,17 @@ const markSchema = new mongoose.Schema({
   marks: Number
 });
 
-const mark = mongoose.models.mark || mongoose.model('mark', markSchema);
+const Mark = mongoose.models.Mark || mongoose.model('Mark', markSchema);
 
 let isConnected = false;
 
 async function connectToDB() {
   if (!isConnected) {
-    await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(uri, {
+      dbName: 'schoolDB',
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
     isConnected = true;
   }
 }
@@ -31,7 +35,7 @@ exports.handler = async function(event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const newMark = new mark(data);
+    const newMark = new Mark(data);
     await newMark.save();
 
     return {
