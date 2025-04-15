@@ -470,7 +470,6 @@
 
     async function tryFetchAndFillMarks() {
   const grade = document.getElementById("classSelect").value;
-  const stream = document.getElementById("streamSelect").value;
   const examName = document.getElementById("examName").value.trim();
 
   if (!grade || !examName) return;
@@ -479,7 +478,7 @@
     const res = await fetch("/.netlify/functions/fetchMarks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ grade, stream, exam: examName })
+      body: JSON.stringify({ grade, exam: examName })
     });
 
     const result = await res.json();
