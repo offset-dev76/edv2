@@ -2,13 +2,16 @@ const mongoose = require('mongoose');
 
 const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
-const studentSchema = new mongoose.Schema({
-  id: String,
+const markSchema = new mongoose.Schema({
+  student: String,
   name: String,
-  grade: String
+  grade: String,
+  exam: String,
+  subject: String,
+  marks: Number
 });
 
-const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
+const Mark = mongoose.models.Mark || mongoose.model('Mark', markSchema);
 
 let isConnected = false;
 
@@ -23,32 +26,33 @@ async function connectToDB() {
   }
 }
 
-exports.handler = async function (event) {
-  if (event.httpMethod !== 'GET') {
+exports.handler = async function(event) {
+  if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      body: JSON.stringify({ success: false, message: 'Only GET requests allowed' })
-    };
-  }
-
-  const grade = event.queryStringParameters?.grade;
-  if (!grade) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ success: false, message: 'Missing grade parameter' })
+      body: JSON.stringify({ message: 'Only POST requests allowed' })
     };
   }
 
   try {
     await connectToDB();
+    const { grade, exam } = JSON.parse(event.body);
 
-    const students = await Student.find({ grade }).select('id name -_id');
+    if (!grade || !exam) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Grade and exam are required' })
+      };
+    }
+
+    const marks = await Mark.find({ grade, exam }).lean();
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, students })
+      body: JSON.stringify({ success: true, data: marks })
     };
   } catch (err) {
-    console.error("Error fetching students:", err);
+    console.error('Error fetching marks:', err);
     return {
       statusCode: 500,
       body: JSON.stringify({ success: false, message: 'Server error' })
