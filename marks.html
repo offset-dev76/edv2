@@ -302,6 +302,7 @@
 
           studentsByClass[selectedClass] = filteredStudents;
           renderMarksTable();
+          tryFetchAndFillMarks();
         } else {
           alert("No students found.");
         }
@@ -368,7 +369,6 @@
 
         tableBody.appendChild(row);
       });
-      tryFetchAndFillMarks();
     }
 
 
