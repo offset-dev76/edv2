@@ -139,6 +139,38 @@
       color: green;
       font-weight: bold;
     }
+
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
@@ -202,6 +234,11 @@
     <div class="status" id="statusMsg"></div>
   </div>
 
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" style="display:none;">
+    <div class="spinner"></div>
+  </div>
+
   <script>
     const subjectsByClass = {
       "10": ["Maths", "Science", "Social", "English"],
@@ -232,7 +269,10 @@
       } else {
         streamSelect.style.display = "none";
         streamSelect.value = "";
+
+        showLoading();
         await fetchStudentsForMarks(); // fetch directly for classes 1-10
+        hideLoading();
       }
     }
 
@@ -243,6 +283,7 @@
       if (!selectedClass) return;
       if ((selectedClass === "11" || selectedClass === "12") && !selectedStream) return;
 
+      showLoading();
       try {
         const res = await fetch("/.netlify/functions/fetchStudents", {
           method: "POST",
@@ -267,6 +308,8 @@
       } catch (err) {
         console.error("Error fetching students:", err);
         alert("Error fetching student data.");
+      } finally {
+        hideLoading();
       }
     }
 
@@ -325,6 +368,7 @@
 
         tableBody.appendChild(row);
       });
+      tryFetchAndFillMarks();
     }
 
 
@@ -343,6 +387,7 @@
       let successCount = 0;
       let errorCount = 0;
 
+      showLoading();
       for (const input of inputs) {
         const studentId = input.getAttribute("data-id");
         const studentName = input.getAttribute("data-name");
@@ -374,6 +419,7 @@
           console.error("Error:", err);
         }
       }
+      hideLoading();
 
       status.textContent = `Submitted: ${successCount} | Failed: ${errorCount}`;
       setTimeout(() => status.textContent = "", 4000);
@@ -412,6 +458,58 @@
         }
       }
     });
+
+    function showLoading() {
+      document.getElementById("loadingOverlay").style.display = "flex";
+    }
+
+    function hideLoading() {
+      document.getElementById("loadingOverlay").style.display = "none";
+    }
+
+
+    async function tryFetchAndFillMarks() {
+  const grade = document.getElementById("classSelect").value;
+  const stream = document.getElementById("streamSelect").value;
+  const examName = document.getElementById("examName").value.trim();
+
+  if (!grade || !examName) return;
+
+  try {
+    const res = await fetch("/.netlify/functions/fetchMarks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ grade, stream, exam: examName })
+    });
+
+    const result = await res.json();
+
+    if (result.success && result.data?.length > 0) {
+      const marksData = result.data;
+
+      const inputs = document.querySelectorAll("#marksTable input");
+
+      inputs.forEach(input => {
+        const id = input.getAttribute("data-id");
+        const name = input.getAttribute("data-name");
+        const subject = input.getAttribute("data-subject");
+
+        const markEntry = marksData.find(m =>
+          m.student === id &&
+          m.name === name &&
+          m.subject === subject
+        );
+
+        if (markEntry) {
+          input.value = markEntry.marks === 0 ? "AB" : markEntry.marks;
+        }
+      });
+    }
+  } catch (err) {
+    console.warn("No previous marks found or error fetching them.");
+  }
+}
+
   </script>
 </body>
 
