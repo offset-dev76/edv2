@@ -161,9 +161,9 @@
       <div class="controls">
         <select id="classSelect">
           <option value="">Select Grade</option>
-          <option value="10A">10A</option>
-          <option value="10B">10B</option>
-          <option value="11A">11A</option>
+          <option value="10">10</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
         </select>
         <input type="text" id="examName" placeholder="Enter Exam Name">
         <button class="btn-save" onclick="saveMarks()">Save</button>
@@ -192,24 +192,35 @@
       "11A": ["Physics", "Chemistry", "Maths", "Computer"]
     };
 
-    const studentsByClass = {
-      "10A": [
-        { id: "S001", name: "Ananya Sharma" },
-        { id: "S002", name: "Rahul Verma" }
-      ],
-      "10B": [
-        { id: "S003", name: "Kavya Menon" },
-        { id: "S004", name: "Aarav Singh" }
-      ],
-      "11A": [
-        { id: "S005", name: "Zoya Khan" },
-        { id: "S006", name: "Manav Patel" }
-      ]
-    };
+    let studentsByClass = {}; // Will be populated dynamically
 
-    const marksData = {};
+    document.getElementById("classSelect").addEventListener("change", fetchStudentsForMarks);
 
-    document.getElementById("classSelect").addEventListener("change", renderMarksTable);
+async function fetchStudentsForMarks() {
+  const selectedClass = document.getElementById("classSelect").value;
+  if (!selectedClass) return;
+
+  try {
+    const res = await fetch("/.netlify/functions/fetchStudents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ class: selectedClass })
+    });
+
+    const result = await res.json();
+
+    if (result.success && result.data.length > 0) {
+      studentsByClass[selectedClass] = result.data;
+      renderMarksTable();
+    } else {
+      alert("No students found.");
+    }
+  } catch (err) {
+    console.error("Error fetching students:", err);
+    alert("Error fetching student data.");
+  }
+}
+
 
     function renderMarksTable() {
       const grade = document.getElementById("classSelect").value;
@@ -235,6 +246,7 @@
           const td = document.createElement("td");
           const input = document.createElement("input");
           input.setAttribute("data-id", student.id);
+          input.setAttribute("data-name", student.name);
           input.setAttribute("data-subject", subject);
           input.setAttribute("type", "text");
           input.setAttribute("maxlength", "3");
@@ -255,6 +267,7 @@
         tableBody.appendChild(row);
       });
     }
+
     async function saveMarks() {
       const grade = document.getElementById("classSelect").value;
       const examName = document.getElementById("examName").value.trim();
