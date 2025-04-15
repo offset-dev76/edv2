@@ -161,10 +161,27 @@
       <div class="controls">
         <select id="classSelect">
           <option value="">Select Grade</option>
-          <option value="10">10</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
           <option value="10">10</option>
           <option value="11">11</option>
+          <option value="12">12</option>
         </select>
+
+        <select id="streamSelect" style="display: none;">
+          <option value="">Select Stream</option>
+          <option value="Science">Science</option>
+          <option value="Commerce">Commerce</option>
+          <option value="Arts">Arts</option>
+        </select>
+
         <input type="text" id="examName" placeholder="Enter Exam Name">
         <button class="btn-save" onclick="saveMarks()">Save</button>
         <button class="btn-print" onclick="window.print()">Print</button>
@@ -187,43 +204,76 @@
 
   <script>
     const subjectsByClass = {
-      "10A": ["Maths", "Science", "Social", "English"],
-      "10B": ["Maths", "Science", "Social", "English"],
-      "11A": ["Physics", "Chemistry", "Maths", "Computer"]
+      "10": ["Maths", "Science", "Social", "English"],
+      "11": {
+        Science: ["Physics", "Chemistry", "Maths", "Computer"],
+        Commerce: ["Accountancy", "Business Studies", "Economics", "Maths"],
+        Arts: ["History", "Political Science", "Sociology", "English"]
+      },
+      "12": {
+        Science: ["Physics", "Chemistry", "Maths", "Biology"],
+        Commerce: ["Accountancy", "Business Studies", "Economics", "Informatics Practices"],
+        Arts: ["History", "Geography", "Psychology", "English"]
+      }
     };
+
 
     let studentsByClass = {}; // Will be populated dynamically
 
-    document.getElementById("classSelect").addEventListener("change", fetchStudentsForMarks);
+    document.getElementById("classSelect").addEventListener("change", handleClassChange);
+    document.getElementById("streamSelect").addEventListener("change", fetchStudentsForMarks);
 
-async function fetchStudentsForMarks() {
-  const selectedClass = document.getElementById("classSelect").value;
-  if (!selectedClass) return;
+    async function handleClassChange() {
+      const classVal = document.getElementById("classSelect").value;
+      const streamSelect = document.getElementById("streamSelect");
 
-  try {
-    const res = await fetch("/.netlify/functions/fetchStudents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ class: selectedClass })
-    });
-
-    const result = await res.json();
-
-    if (result.success && result.data.length > 0) {
-      studentsByClass[selectedClass] = result.data;
-      renderMarksTable();
-    } else {
-      alert("No students found.");
+      if (classVal === "11" || classVal === "12") {
+        streamSelect.style.display = "inline-block";
+      } else {
+        streamSelect.style.display = "none";
+        streamSelect.value = "";
+        await fetchStudentsForMarks(); // fetch directly for classes 1-10
+      }
     }
-  } catch (err) {
-    console.error("Error fetching students:", err);
-    alert("Error fetching student data.");
-  }
-}
+
+    async function fetchStudentsForMarks() {
+      const selectedClass = document.getElementById("classSelect").value;
+      const selectedStream = document.getElementById("streamSelect").value;
+
+      if (!selectedClass) return;
+      if ((selectedClass === "11" || selectedClass === "12") && !selectedStream) return;
+
+      try {
+        const res = await fetch("/.netlify/functions/fetchStudents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ class: selectedClass })
+        });
+
+        const result = await res.json();
+
+        if (result.success && result.data.length > 0) {
+          let filteredStudents = result.data;
+
+          if (selectedClass === "11" || selectedClass === "12") {
+            filteredStudents = filteredStudents.filter(s => s.stream === selectedStream);
+          }
+
+          studentsByClass[selectedClass] = filteredStudents;
+          renderMarksTable();
+        } else {
+          alert("No students found.");
+        }
+      } catch (err) {
+        console.error("Error fetching students:", err);
+        alert("Error fetching student data.");
+      }
+    }
 
 
     function renderMarksTable() {
       const grade = document.getElementById("classSelect").value;
+      const stream = document.getElementById("streamSelect").value;
       const headerRow = document.getElementById("marksHeader");
       const tableBody = document.querySelector("#marksTable tbody");
 
@@ -232,7 +282,14 @@ async function fetchStudentsForMarks() {
 
       if (!grade || !studentsByClass[grade]) return;
 
-      const subjects = subjectsByClass[grade] || [];
+      let subjects = [];
+
+      if (grade <= 10) {
+        subjects = subjectsByClass[grade] || [];
+      } else {
+        subjects = subjectsByClass[grade]?.[stream] || [];
+      }
+
       subjects.forEach(sub => {
         const th = document.createElement("th");
         th.textContent = sub;
@@ -242,6 +299,7 @@ async function fetchStudentsForMarks() {
       studentsByClass[grade].forEach(student => {
         const row = document.createElement("tr");
         row.innerHTML = `<td>${student.id}</td><td>${student.name}</td>`;
+
         subjects.forEach(subject => {
           const td = document.createElement("td");
           const input = document.createElement("input");
@@ -264,9 +322,11 @@ async function fetchStudentsForMarks() {
           td.appendChild(input);
           row.appendChild(td);
         });
+
         tableBody.appendChild(row);
       });
     }
+
 
     async function saveMarks() {
       const grade = document.getElementById("classSelect").value;
