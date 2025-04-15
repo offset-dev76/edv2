@@ -45,6 +45,7 @@ exports.handler = async function(event) {
       };
     }
 
+    // Fetch all marks for the given grade and exam
     const marks = await Mark.find({ grade, exam }).lean();
 
     return {
