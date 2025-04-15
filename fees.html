@@ -113,7 +113,7 @@
       }
 
       const body = { class: classVal };
-      const res = await fetch('/.netlify/functions/fetchstudents', {
+      const res = await fetch('/.netlify/functions/fetchStudents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -151,7 +151,7 @@
         <tbody>`;
 
       for (const student of filtered) {
-        const payments = await fetch(`//.netlify/functions/getStudentPayments?id=${student.id}`);
+        const payments = await fetch(`//.netlify/functions/getPayments?id=${student.id}`);
         const paymentData = await payments.json();
         const totalPaid = Array.isArray(paymentData)
           ? paymentData.reduce((sum, p) => sum + Number(p.amount || 0), 0)
