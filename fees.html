@@ -1,150 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fees Payment Tracker</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            max-width: 600px;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-        }
-        input, select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-        }
-        button {
-            margin-top: 15px;
-            padding: 10px;
-            width: 100%;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #message {
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        .payment-history {
-            margin-top: 30px;
-        }
-        .payment-record {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fees Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      margin: 0;
+    }
+
+    .sidebar {
+      width: 200px;
+      background: #333;
+      color: #fff;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .sidebar h2 {
+      color: #fff;
+      font-size: 1.2rem;
+    }
+
+    .sidebar ul {
+      padding: 0;
+      list-style: none;
+    }
+
+    .sidebar li {
+      margin: 10px 0;
+      cursor: pointer;
+    }
+
+    .main {
+      flex-grow: 1;
+      padding: 20px;
+    }
+
+    select {
+      padding: 8px;
+      margin-right: 10px;
+    }
+
+    table {
+      margin-top: 20px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f0f0;
+    }
+
+    .no-data {
+      margin-top: 20px;
+      color: gray;
+    }
+  </style>
 </head>
 <body>
 
-    <h2>Track Fees Payment</h2>
+  <div class="sidebar">
+    <h2>Dashboard</h2>
+    <ul>
+      <li>Home</li>
+      <li>Students</li>
+      <li>Fees</li>
+      <li>Reports</li>
+    </ul>
+  </div>
 
-    <form id="paymentForm">
-        <label for="studentId">Student ID:</label>
-        <input type="text" id="studentId" required>
+  <div class="main">
+    <h2>Fees Overview</h2>
 
-        <label for="amountPaid">Amount Paid:</label>
-        <input type="number" id="amountPaid" required>
+    <label for="classSelect">Class:</label>
+    <select id="classSelect">
+      <option value="">Select Class</option>
+      <option value="10">10</option>
+      <option value="11">11</option>
+      <option value="12">12</option>
+    </select>
 
-        <label for="paymentDate">Payment Date:</label>
-        <input type="date" id="paymentDate" required>
+    <label for="sectionSelect">Section:</label>
+    <select id="sectionSelect">
+      <option value="">Select Section</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+    </select>
 
-        <label for="paymentMode">Payment Mode:</label>
-        <select id="paymentMode">
-            <option value="Cash">Cash</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-            <option value="UPI">UPI</option>
-            <option value="Other">Other</option>
-        </select>
+    <button onclick="loadStudents()">Load Students</button>
 
-        <button type="submit">Add Payment</button>
-    </form>
+    <div id="studentsTable"></div>
+  </div>
 
-    <p id="message"></p>
+  <script>
+    async function loadStudents() {
+      const classVal = document.getElementById('classSelect').value;
+      const sectionVal = document.getElementById('sectionSelect').value;
 
-    <div class="payment-history" id="paymentHistory">
-        <h3>Payment History</h3>
-        <div id="historyContainer"></div>
-    </div>
+      if (!classVal) {
+        alert("Please select a class.");
+        return;
+      }
 
-    <script>
-        async function loadPayments(studentId) {
-            try {
-                const res = await fetch(`/.netlify/functions/getPayments?id=${studentId}`);
-                const data = await res.json();
+      const body = { class: classVal };
+      const res = await fetch('/.netlify/functions/fetchstudents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
 
-                const historyContainer = document.getElementById("historyContainer");
-                historyContainer.innerHTML = '';
+      const result = await res.json();
+      if (!result.success) {
+        document.getElementById("studentsTable").innerHTML = `<p class="no-data">Failed to load students.</p>`;
+        return;
+      }
 
-                if (data.length === 0) {
-                    historyContainer.innerHTML = '<p>No payments found.</p>';
-                    return;
-                }
+      let filtered = result.data;
+      if (sectionVal) {
+        filtered = filtered.filter(s => s.section === sectionVal);
+      }
 
-                data.forEach(payment => {
-                    const div = document.createElement("div");
-                    div.className = "payment-record";
-                    div.innerHTML = `
-                        <strong>Date:</strong> ${new Date(payment.date).toLocaleDateString()}<br>
-                        <strong>Amount:</strong> ₹${payment.amount}<br>
-                        <strong>Mode:</strong> ${payment.mode}
-                    `;
-                    historyContainer.appendChild(div);
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
+      if (filtered.length === 0) {
+        document.getElementById("studentsTable").innerHTML = `<p class="no-data">No students found.</p>`;
+        return;
+      }
 
-        document.getElementById("paymentForm").addEventListener("submit", async function(event) {
-            event.preventDefault();
+      // Build table
+      let tableHTML = `<table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Stream</th>
+            <th>Phone</th>
+            <th>Total Paid</th>
+          </tr>
+        </thead>
+        <tbody>`;
 
-            const studentId = document.getElementById("studentId").value.trim();
-            const paymentData = {
-                studentId,
-                amount: parseFloat(document.getElementById("amountPaid").value),
-                date: document.getElementById("paymentDate").value,
-                mode: document.getElementById("paymentMode").value,
-            };
+      for (const student of filtered) {
+        const payments = await fetch(`//.netlify/functions/getStudentPayments?id=${student.id}`);
+        const paymentData = await payments.json();
+        const totalPaid = Array.isArray(paymentData)
+          ? paymentData.reduce((sum, p) => sum + Number(p.amount || 0), 0)
+          : 0;
 
-            try {
-                const res = await fetch("/.netlify/functions/addPayment", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(paymentData),
-                });
+        tableHTML += `<tr>
+          <td>${student.id}</td>
+          <td>${student.name}</td>
+          <td>${student.class}</td>
+          <td>${student.section}</td>
+          <td>${student.stream || '-'}</td>
+          <td>${student.phone}</td>
+          <td>₹${totalPaid}</td>
+        </tr>`;
+      }
 
-                const result = await res.json();
-                document.getElementById("message").textContent = result.message;
-
-                if (result.success) {
-                    document.getElementById("paymentForm").reset();
-                    loadPayments(studentId);
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById("message").textContent = "Error adding payment.";
-            }
-        });
-
-        document.getElementById("studentId").addEventListener("blur", function () {
-            const studentId = this.value.trim();
-            if (studentId) {
-                loadPayments(studentId);
-            }
-        });
-    </script>
+      tableHTML += `</tbody></table>`;
+      document.getElementById("studentsTable").innerHTML = tableHTML;
+    }
+  </script>
 
 </body>
 </html>
