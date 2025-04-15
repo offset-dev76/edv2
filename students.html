@@ -2,369 +2,418 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Directory</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Directory</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-        }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+    }
 
-        .sidebar {
-            width: 240px;
-            background-color: #2f3542;
-            color: white;
-            padding: 20px 0;
-        }
+    .sidebar {
+      width: 240px;
+      background-color: #2f3542;
+      color: white;
+      padding: 20px 0;
+    }
 
-        .sidebar h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.4rem;
-        }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.4rem;
+    }
 
-        .sidebar a {
-            display: block;
-            color: white;
-            padding: 15px 20px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
+    .sidebar a {
+      display: block;
+      color: white;
+      padding: 15px 20px;
+      text-decoration: none;
+      transition: 0.3s;
+    }
 
-        .sidebar a:hover,
-        .sidebar a.active {
-            background-color: #57606f;
-        }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #57606f;
+    }
 
 
 
-        .main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: #f4f4f4;
-        }
+    .main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #f4f4f4;
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 20px;
-        }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
 
-        .header h1 {
-            font-size: 1.8rem;
-        }
+    .header h1 {
+      font-size: 1.8rem;
+    }
 
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-        .controls select,
-        .controls input,
-        .controls button {
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
+    .controls select,
+    .controls input,
+    .controls button {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
 
-        .content {
-            padding: 20px;
-            overflow: auto;
-        }
+    .content {
+      padding: 20px;
+      overflow: auto;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
 
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-            cursor: default;
-        }
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+      cursor: default;
+    }
 
-        th.sortable:hover {
-            background-color: #2980b9;
-            color: white;
-            cursor: pointer;
-        }
+    th.sortable:hover {
+      background-color: #2980b9;
+      color: white;
+      cursor: pointer;
+    }
 
-        th {
-            background-color: #3498db;
-            color: white;
-        }
+    th {
+      background-color: #3498db;
+      color: white;
+    }
 
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
 
-        .message {
-            margin: 10px 0;
-            color: red;
-        }
+    .message {
+      margin: 10px 0;
+      color: red;
+    }
 
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
 
-        .modal-content {
-            background: white;
-            padding: 20px;
-            width: 400px;
-            border-radius: 8px;
-        }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      width: 400px;
+      border-radius: 8px;
+    }
 
-        .modal-content h2 {
-            margin-top: 0;
-        }
+    .modal-content h2 {
+      margin-top: 0;
+    }
 
-        .modal-content input {
-            width: 100%;
-            padding: 8px;
-            margin: 6px 0;
-        }
+    .modal-content input {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0;
+    }
 
-        .modal-content button {
-            margin-top: 10px;
-            padding: 10px;
-        }
-    </style>
+    .modal-content button {
+      margin-top: 10px;
+      padding: 10px;
+    }
+
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="sidebar">
-        <h2>School Panel</h2>
-        <a href="#">Dashboard</a>
-        <a href="#">Student Directory</a>
-        <a href="#" class="active">Marks Management</a>
-        <a href="#">Fees Management</a>
-        <a href="#">Exam & Timetable</a>
-        <a href="#">Reports & Printouts</a>
-        <a href="#">Notifications</a>
-        <a href="#">Settings</a>
-    </div>
-    <div class="main">
+  <div class="sidebar">
+    <h2>School Panel</h2>
+    <a href="#">Dashboard</a>
+    <a href="#">Student Directory</a>
+    <a href="#" class="active">Marks Management</a>
+    <a href="#">Fees Management</a>
+    <a href="#">Exam & Timetable</a>
+    <a href="#">Reports & Printouts</a>
+    <a href="#">Notifications</a>
+    <a href="#">Settings</a>
+  </div>
+  <div class="main">
 
-        <div class="header">
-            <h1>Marks Management</h1>
-            <div class="controls">
-                <label for="classSelect">Class:</label>
-                <select id="classSelect">
-                    <option value="">All</option>
-                    <option value="10">10</option>
-                    <option value="11">11</option>
-                    <option value="12">12</option>
-                </select>
+    <div class="header">
+      <h1>Marks Management</h1>
+      <div class="controls">
+        <label for="classSelect">Class:</label>
+        <select id="classSelect">
+          <option value="">All</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
 
-                <label for="sectionSelect">Section:</label>
-                <select id="sectionSelect">
-                    <option value="">All</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                </select>
+        <label for="sectionSelect">Section:</label>
+        <select id="sectionSelect">
+          <option value="">All</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+        </select>
 
-                <label for="streamSelect">Stream:</label>
-                <select id="streamSelect">
-                    <option value="">All</option>
-                    <option value="Science">Science</option>
-                    <option value="Commerce">Commerce</option>
-                    <option value="Arts">Arts</option>
-                </select>
+        <label for="streamSelect">Stream:</label>
+        <select id="streamSelect">
+          <option value="">All</option>
+          <option value="Science">Science</option>
+          <option value="Commerce">Commerce</option>
+          <option value="Arts">Arts</option>
+        </select>
 
-                <label for="sortBy">Sort by:</label>
-                <select id="sortBy">
-                    <option value="name">Name</option>
-                    <option value="id">ID</option>
-                    <option value="class">Class</option>
-                </select>
+        <label for="sortBy">Sort by:</label>
+        <select id="sortBy">
+          <option value="name">Name</option>
+          <option value="id">ID</option>
+          <option value="class">Class</option>
+        </select>
 
-                <button onclick="fetchStudents()">Fetch</button>
-                <button onclick="openModal()">Add Student</button>
+        <button onclick="fetchStudents()">Fetch</button>
+        <button onclick="openModal()">Add Student</button>
 
-                <span id="studentCount" style="margin-left: auto;">Total: 0</span>
-            </div>
-        </div>
-
-        <div class="content">
-            <div id="message" class="message"></div>
-
-            <table id="studentsTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th class="sortable" onclick="sortTable('id')">ID</th>
-                        <th class="sortable" onclick="sortTable('name')">Name</th>
-                        <th>Class</th>
-                        <th>Section</th>
-                        <th>Stream</th>
-                        <th>Phone</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
+        <span id="studentCount" style="margin-left: auto;">Total: 0</span>
+      </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal" id="studentModal">
-        <div class="modal-content">
-            <h2>Add Student</h2>
-            <form id="studentForm">
-                <input type="text" id="studentId" placeholder="ID" required />
-                <input type="text" id="studentName" placeholder="Name" required />
-                <input type="text" id="studentClass" placeholder="Class" required />
-                <input type="text" id="studentSection" placeholder="Section" required />
-                <input type="text" id="studentStream" placeholder="Stream" required />
-                <input type="text" id="studentPhone" placeholder="Phone" required />
-                <button type="submit">Submit</button>
-                <button type="button" onclick="closeModal()">Cancel</button>
-            </form>
-        </div>
+    <div class="content">
+      <div id="message" class="message"></div>
+
+      <table id="studentsTable" style="display: none;">
+        <thead>
+          <tr>
+            <th class="sortable" onclick="sortTable('id')">ID</th>
+            <th class="sortable" onclick="sortTable('name')">Name</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Stream</th>
+            <th>Phone</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
-    <script>
-        function openModal() {
-            document.getElementById('studentModal').style.display = 'flex';
-        }
+  </div>
 
-        function closeModal() {
-            document.getElementById('studentModal').style.display = 'none';
-        }
+  <!-- Modal -->
+  <div class="modal" id="studentModal">
+    <div class="modal-content">
+      <h2>Add Student</h2>
+      <form id="studentForm">
+        <input type="text" id="studentId" placeholder="ID" required />
+        <input type="text" id="studentName" placeholder="Name" required />
+        <input type="text" id="studentClass" placeholder="Class" required />
+        <input type="text" id="studentSection" placeholder="Section" required />
+        <input type="text" id="studentStream" placeholder="Stream" required />
+        <input type="text" id="studentPhone" placeholder="Phone" required />
+        <button type="submit">Submit</button>
+        <button type="button" onclick="closeModal()">Cancel</button>
+      </form>
+    </div>
+  </div>
 
-        // Add Student JS
-        document.getElementById("studentForm").addEventListener("submit", async function (event) {
-            event.preventDefault();
 
-            const studentData = {
-                id: document.getElementById("studentId").value.trim(),
-                name: document.getElementById("studentName").value.trim(),
-                class: document.getElementById("studentClass").value.trim(),
-                section: document.getElementById("studentSection").value.trim(),
-                stream: document.getElementById("studentStream").value.trim(),
-                phone: document.getElementById("studentPhone").value.trim(),
-            };
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" style="display:none;">
+    <div class="spinner"></div>
+  </div>
 
-            if (!studentData.id || !studentData.name || !studentData.class || !studentData.section || !studentData.phone) {
-                alert("Please fill out all required fields.");
-                return;
-            }
 
-            try {
-                const res = await fetch("/.netlify/functions/addStudent", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(studentData),
-                });
+  <script>
+    function openModal() {
+      document.getElementById('studentModal').style.display = 'flex';
+    }
 
-                const result = await res.json();
-                document.getElementById("message").textContent = result.message;
+    function closeModal() {
+      document.getElementById('studentModal').style.display = 'none';
+    }
 
-                if (result.success) {
-                    document.getElementById("studentForm").reset();
-                    closeModal();
-                    fetchStudents();
-                }
-            } catch (err) {
-                console.error("Error:", err);
-                document.getElementById("message").textContent = "Error adding student.";
-            }
+    // Add Student JS
+    document.getElementById("studentForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      showLoading(); // <--- show spinner
+
+      const studentData = {
+        id: document.getElementById("studentId").value.trim(),
+        name: document.getElementById("studentName").value.trim(),
+        class: document.getElementById("studentClass").value.trim(),
+        section: document.getElementById("studentSection").value.trim(),
+        stream: document.getElementById("studentStream").value.trim(),
+        phone: document.getElementById("studentPhone").value.trim(),
+      };
+
+      if (!studentData.id || !studentData.name || !studentData.class || !studentData.section || !studentData.phone) {
+        alert("Please fill out all required fields.");
+        hideLoading(); // <--- hide spinner if form validation fails
+        return;
+      }
+
+      try {
+        const res = await fetch("/.netlify/functions/addStudent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(studentData),
         });
 
-        let studentDataGlobal = [];
+        const result = await res.json();
+        document.getElementById("message").textContent = result.message;
 
-        async function fetchStudents() {
-            const selectedClass = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
-            const stream = document.getElementById("streamSelect").value;
-            const sortBy = document.getElementById("sortBy").value;
-
-            const messageDiv = document.getElementById("message");
-            const table = document.getElementById("studentsTable");
-            const tbody = table.querySelector("tbody");
-
-            messageDiv.textContent = "";
-            tbody.innerHTML = "";
-            table.style.display = "none";
-
-            try {
-                const res = await fetch("/.netlify/functions/fetchStudents", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ class: selectedClass })
-                });
-
-                const result = await res.json();
-
-                if (result.success && result.data.length > 0) {
-                    studentDataGlobal = result.data
-                        .filter(s =>
-                            (!section || s.section === section) &&
-                            (!stream || s.stream === stream)
-                        )
-                        .sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
-
-                    studentDataGlobal.forEach(student => {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-              <td>${student.id}</td>
-              <td>${student.name}</td>
-              <td>${student.class}</td>
-              <td>${student.section}</td>
-              <td>${student.stream}</td>
-              <td>${student.phone}</td>
-            `;
-                        tbody.appendChild(row);
-                    });
-
-                    document.getElementById("studentCount").textContent = `Total: ${studentDataGlobal.length}`;
-                    table.style.display = "table";
-                } else {
-                    messageDiv.textContent = "No students found.";
-                    document.getElementById("studentCount").textContent = "Total: 0";
-                }
-            } catch (err) {
-                console.error("Error fetching students:", err);
-                messageDiv.textContent = "Error fetching students.";
-            }
+        if (result.success) {
+          document.getElementById("studentForm").reset();
+          closeModal();
+          await fetchStudents(); // already has loading inside
         }
+      } catch (err) {
+        console.error("Error:", err);
+        document.getElementById("message").textContent = "Error adding student.";
+      }
 
-        function sortTable(key) {
-            const tbody = document.getElementById("studentsTable").querySelector("tbody");
-            const sorted = studentDataGlobal.sort((a, b) => a[key].localeCompare(b[key]));
-            tbody.innerHTML = "";
+      hideLoading(); // <--- hide spinner
+    });
 
-            sorted.forEach(student => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
+
+    let studentDataGlobal = [];
+
+    async function fetchStudents() {
+      showLoading(); // <--- show spinner
+
+      const selectedClass = document.getElementById("classSelect").value;
+      const section = document.getElementById("sectionSelect").value;
+      const stream = document.getElementById("streamSelect").value;
+      const sortBy = document.getElementById("sortBy").value;
+
+      const messageDiv = document.getElementById("message");
+      const table = document.getElementById("studentsTable");
+      const tbody = table.querySelector("tbody");
+
+      messageDiv.textContent = "";
+      tbody.innerHTML = "";
+      table.style.display = "none";
+
+      try {
+        const res = await fetch("/.netlify/functions/fetchStudents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ class: selectedClass })
+        });
+
+        const result = await res.json();
+
+        if (result.success && result.data.length > 0) {
+          studentDataGlobal = result.data
+            .filter(s =>
+              (!section || s.section === section) &&
+              (!stream || s.stream === stream)
+            )
+            .sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+
+          studentDataGlobal.forEach(student => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.class}</td>
+                    <td>${student.section}</td>
+                    <td>${student.stream}</td>
+                    <td>${student.phone}</td>
+                `;
+            tbody.appendChild(row);
+          });
+
+          document.getElementById("studentCount").textContent = `Total: ${studentDataGlobal.length}`;
+          table.style.display = "table";
+        } else {
+          messageDiv.textContent = "No students found.";
+          document.getElementById("studentCount").textContent = "Total: 0";
+        }
+      } catch (err) {
+        console.error("Error fetching students:", err);
+        messageDiv.textContent = "Error fetching students.";
+      }
+
+      hideLoading(); // <--- hide spinner
+    }
+
+
+    function sortTable(key) {
+      const tbody = document.getElementById("studentsTable").querySelector("tbody");
+      const sorted = studentDataGlobal.sort((a, b) => a[key].localeCompare(b[key]));
+      tbody.innerHTML = "";
+
+      sorted.forEach(student => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
           <td>${student.id}</td>
           <td>${student.name}</td>
           <td>${student.class}</td>
@@ -372,10 +421,19 @@
           <td>${student.stream}</td>
           <td>${student.phone}</td>
         `;
-                tbody.appendChild(row);
-            });
-        }
-    </script>
+        tbody.appendChild(row);
+      });
+    }
+
+    function showLoading() {
+    document.getElementById("loadingOverlay").style.display = "flex";
+}
+
+function hideLoading() {
+    document.getElementById("loadingOverlay").style.display = "none";
+}
+
+  </script>
 </body>
 
 </html>
