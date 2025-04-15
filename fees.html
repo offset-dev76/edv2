@@ -1,224 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exam & Timetable Dashboard</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-    body {
-      background: #f5f7fa;
-      padding: 20px;
-    }
-    h2 {
-      margin-bottom: 20px;
-    }
-    .container {
-      max-width: 1200px;
-      margin: auto;
-    }
-    .card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-bottom: 30px;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-    }
-    select, input[type="text"], input[type="date"], input[type="time"] {
-      padding: 10px;
-      width: 100%;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background: #e9ecef;
-    }
-    .btn {
-      background-color: #007bff;
-      color: white;
-      padding: 10px 20px;
-      margin-top: 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background-color: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fees Payment Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 600px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px;
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .payment-history {
+            margin-top: 30px;
+        }
+        .payment-record {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <h2>📘 Exam Schedule</h2>
-      <label for="examClass">Select Class</label>
-      <select id="examClass">
-        <option value="">-- Select Class --</option>
-        <option value="10">Class 10</option>
-        <option value="11">Class 11</option>
-        <option value="12">Class 12</option>
-      </select>
 
-      <label for="stream" id="streamLabel" style="display: none;">Select Stream (11/12 only)</label>
-      <select id="stream" style="display: none;">
-        <option value="">-- Select Stream --</option>
-        <option value="science">Science</option>
-        <option value="commerce">Commerce</option>
-        <option value="arts">Arts</option>
-        <option value="computer">Computer</option>
-      </select>
+    <h2>Track Fees Payment</h2>
 
-      <label for="subject">Subject</label>
-      <input type="text" id="subject" placeholder="Enter Subject Name" />
+    <form id="paymentForm">
+        <label for="studentId">Student ID:</label>
+        <input type="text" id="studentId" required>
 
-      <label for="examDate">Date</label>
-      <input type="date" id="examDate" />
+        <label for="amountPaid">Amount Paid:</label>
+        <input type="number" id="amountPaid" required>
 
-      <label for="examTime">Time</label>
-      <input type="time" id="examTime" />
+        <label for="paymentDate">Payment Date:</label>
+        <input type="date" id="paymentDate" required>
 
-      <button class="btn" onclick="addExamRow()">Add Exam</button>
+        <label for="paymentMode">Payment Mode:</label>
+        <select id="paymentMode">
+            <option value="Cash">Cash</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="UPI">UPI</option>
+            <option value="Other">Other</option>
+        </select>
 
-      <table id="examTable">
-        <thead>
-          <tr>
-            <th>Class</th>
-            <th>Stream</th>
-            <th>Subject</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+        <button type="submit">Add Payment</button>
+    </form>
+
+    <p id="message"></p>
+
+    <div class="payment-history" id="paymentHistory">
+        <h3>Payment History</h3>
+        <div id="historyContainer"></div>
     </div>
 
-    <div class="card">
-      <h2>📅 Timetable (Weekly)</h2>
-      <label for="timetableClass">Select Class</label>
-      <select id="timetableClass">
-        <option value="">-- Select Class --</option>
-        <option value="10">Class 10</option>
-        <option value="11">Class 11</option>
-        <option value="12">Class 12</option>
-      </select>
+    <script>
+        async function loadPayments(studentId) {
+            try {
+                const res = await fetch(`/.netlify/functions/getStudentPayments?id=${studentId}`);
+                const data = await res.json();
 
-      <label for="day">Day</label>
-      <select id="day">
-        <option value="">-- Select Day --</option>
-        <option>Monday</option>
-        <option>Tuesday</option>
-        <option>Wednesday</option>
-        <option>Thursday</option>
-        <option>Friday</option>
-      </select>
+                const historyContainer = document.getElementById("historyContainer");
+                historyContainer.innerHTML = '';
 
-      <label for="period">Period</label>
-      <input type="text" id="period" placeholder="E.g., 1st Period" />
+                if (data.length === 0) {
+                    historyContainer.innerHTML = '<p>No payments found.</p>';
+                    return;
+                }
 
-      <label for="timetableSubject">Subject</label>
-      <input type="text" id="timetableSubject" placeholder="Enter Subject" />
+                data.forEach(payment => {
+                    const div = document.createElement("div");
+                    div.className = "payment-record";
+                    div.innerHTML = `
+                        <strong>Date:</strong> ${new Date(payment.date).toLocaleDateString()}<br>
+                        <strong>Amount:</strong> ₹${payment.amount}<br>
+                        <strong>Mode:</strong> ${payment.mode}
+                    `;
+                    historyContainer.appendChild(div);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
 
-      <button class="btn" onclick="addTimetableRow()">Add to Timetable</button>
+        document.getElementById("paymentForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
 
-      <table id="timetableTable">
-        <thead>
-          <tr>
-            <th>Class</th>
-            <th>Day</th>
-            <th>Period</th>
-            <th>Subject</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+            const studentId = document.getElementById("studentId").value.trim();
+            const paymentData = {
+                studentId,
+                amount: parseFloat(document.getElementById("amountPaid").value),
+                date: document.getElementById("paymentDate").value,
+                mode: document.getElementById("paymentMode").value,
+            };
 
-  <script>
-    const examClass = document.getElementById('examClass');
-    const stream = document.getElementById('stream');
-    const streamLabel = document.getElementById('streamLabel');
+            try {
+                const res = await fetch("/.netlify/functions/addPayment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(paymentData),
+                });
 
-    examClass.addEventListener('change', () => {
-      if (examClass.value === '11' || examClass.value === '12') {
-        stream.style.display = 'block';
-        streamLabel.style.display = 'block';
-      } else {
-        stream.style.display = 'none';
-        streamLabel.style.display = 'none';
-      }
-    });
+                const result = await res.json();
+                document.getElementById("message").textContent = result.message;
 
-    function addExamRow() {
-      const classVal = examClass.value;
-      const streamVal = stream.style.display === 'none' ? '-' : stream.value;
-      const subject = document.getElementById('subject').value;
-      const date = document.getElementById('examDate').value;
-      const time = document.getElementById('examTime').value;
+                if (result.success) {
+                    document.getElementById("paymentForm").reset();
+                    loadPayments(studentId);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById("message").textContent = "Error adding payment.";
+            }
+        });
 
-      if (!classVal || !subject || !date || !time) {
-        alert('Please fill all fields.');
-        return;
-      }
+        document.getElementById("studentId").addEventListener("blur", function () {
+            const studentId = this.value.trim();
+            if (studentId) {
+                loadPayments(studentId);
+            }
+        });
+    </script>
 
-      const table = document.getElementById('examTable').querySelector('tbody');
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${classVal}</td>
-        <td>${streamVal}</td>
-        <td>${subject}</td>
-        <td>${date}</td>
-        <td>${time}</td>
-        <td><button onclick="this.parentElement.parentElement.remove()">Delete</button></td>
-      `;
-      table.appendChild(row);
-    }
-
-    function addTimetableRow() {
-      const classVal = document.getElementById('timetableClass').value;
-      const day = document.getElementById('day').value;
-      const period = document.getElementById('period').value;
-      const subject = document.getElementById('timetableSubject').value;
-
-      if (!classVal || !day || !period || !subject) {
-        alert('Please fill all fields.');
-        return;
-      }
-
-      const table = document.getElementById('timetableTable').querySelector('tbody');
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${classVal}</td>
-        <td>${day}</td>
-        <td>${period}</td>
-        <td>${subject}</td>
-        <td><button onclick="this.parentElement.parentElement.remove()">Delete</button></td>
-      `;
-      table.appendChild(row);
-    }
-  </script>
 </body>
 </html>
