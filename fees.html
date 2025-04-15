@@ -81,7 +81,7 @@
     <script>
         async function loadPayments(studentId) {
             try {
-                const res = await fetch(`/.netlify/functions/getStudentPayments?id=${studentId}`);
+                const res = await fetch(`/.netlify/functions/getPayments?id=${studentId}`);
                 const data = await res.json();
 
                 const historyContainer = document.getElementById("historyContainer");
