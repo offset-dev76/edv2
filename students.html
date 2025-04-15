@@ -1,72 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Entry Form</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Directory</title>
     <style>
-        body {
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             font-family: Arial, sans-serif;
-            margin: 20px;
-            max-width: 400px;
         }
-        label {
-            display: block;
-            margin-top: 10px;
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
         }
-        input, select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-        }
-        button {
-            margin-top: 15px;
-            padding: 10px;
-            width: 100%;
-            background-color: #28a745;
+
+        .sidebar {
+            width: 240px;
+            background-color: #2f3542;
             color: white;
-            border: none;
+            padding: 20px 0;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.4rem;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 15px 20px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #57606f;
+        }
+
+
+
+        .main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #f4f4f4;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .controls select,
+        .controls input,
+        .controls button {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .content {
+            padding: 20px;
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            cursor: default;
+        }
+
+        th.sortable:hover {
+            background-color: #2980b9;
+            color: white;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #218838;
+
+        th {
+            background-color: #3498db;
+            color: white;
         }
-        #message {
-            margin-top: 15px;
-            font-weight: bold;
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .message {
+            margin: 10px 0;
+            color: red;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            width: 400px;
+            border-radius: 8px;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+        }
+
+        .modal-content button {
+            margin-top: 10px;
+            padding: 10px;
         }
     </style>
 </head>
+
 <body>
+    <div class="sidebar">
+        <h2>School Panel</h2>
+        <a href="#">Dashboard</a>
+        <a href="#">Student Directory</a>
+        <a href="#" class="active">Marks Management</a>
+        <a href="#">Fees Management</a>
+        <a href="#">Exam & Timetable</a>
+        <a href="#">Reports & Printouts</a>
+        <a href="#">Notifications</a>
+        <a href="#">Settings</a>
+    </div>
+    <div class="main">
 
-    <h2>Add Student</h2>
+        <div class="header">
+            <h1>Marks Management</h1>
+            <div class="controls">
+                <label for="classSelect">Class:</label>
+                <select id="classSelect">
+                    <option value="">All</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
 
-    <form id="studentForm">
-        <label for="studentId">ID:</label>
-        <input type="text" id="studentId" required>
+                <label for="sectionSelect">Section:</label>
+                <select id="sectionSelect">
+                    <option value="">All</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                </select>
 
-        <label for="studentName">Name:</label>
-        <input type="text" id="studentName" required>
+                <label for="streamSelect">Stream:</label>
+                <select id="streamSelect">
+                    <option value="">All</option>
+                    <option value="Science">Science</option>
+                    <option value="Commerce">Commerce</option>
+                    <option value="Arts">Arts</option>
+                </select>
 
-        <label for="studentClass">Class:</label>
-        <input type="text" id="studentClass" required>
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy">
+                    <option value="name">Name</option>
+                    <option value="id">ID</option>
+                    <option value="class">Class</option>
+                </select>
 
-        <label for="studentSection">Section:</label>
-        <input type="text" id="studentSection" required>
+                <button onclick="fetchStudents()">Fetch</button>
+                <button onclick="openModal()">Add Student</button>
 
-        <label for="studentStream">Stream:</label>
-        <input type="text" id="studentStream">
+                <span id="studentCount" style="margin-left: auto;">Total: 0</span>
+            </div>
+        </div>
 
-        <label for="studentPhone">Phone:</label>
-        <input type="text" id="studentPhone" required>
+        <div class="content">
+            <div id="message" class="message"></div>
 
-        <button type="submit">Add Student</button>
-    </form>
+            <table id="studentsTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th class="sortable" onclick="sortTable('id')">ID</th>
+                        <th class="sortable" onclick="sortTable('name')">Name</th>
+                        <th>Class</th>
+                        <th>Section</th>
+                        <th>Stream</th>
+                        <th>Phone</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-    <p id="message"></p>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="studentModal">
+        <div class="modal-content">
+            <h2>Add Student</h2>
+            <form id="studentForm">
+                <input type="text" id="studentId" placeholder="ID" required />
+                <input type="text" id="studentName" placeholder="Name" required />
+                <input type="text" id="studentClass" placeholder="Class" required />
+                <input type="text" id="studentSection" placeholder="Section" required />
+                <input type="text" id="studentStream" placeholder="Stream" required />
+                <input type="text" id="studentPhone" placeholder="Phone" required />
+                <button type="submit">Submit</button>
+                <button type="button" onclick="closeModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
 
     <script>
-        document.getElementById("studentForm").addEventListener("submit", async function(event) {
+        function openModal() {
+            document.getElementById('studentModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('studentModal').style.display = 'none';
+        }
+
+        // Add Student JS
+        document.getElementById("studentForm").addEventListener("submit", async function (event) {
             event.preventDefault();
 
             const studentData = {
@@ -95,13 +290,92 @@
 
                 if (result.success) {
                     document.getElementById("studentForm").reset();
+                    closeModal();
+                    fetchStudents();
                 }
             } catch (err) {
                 console.error("Error:", err);
                 document.getElementById("message").textContent = "Error adding student.";
             }
         });
-    </script>
 
+        let studentDataGlobal = [];
+
+        async function fetchStudents() {
+            const selectedClass = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const sortBy = document.getElementById("sortBy").value;
+
+            const messageDiv = document.getElementById("message");
+            const table = document.getElementById("studentsTable");
+            const tbody = table.querySelector("tbody");
+
+            messageDiv.textContent = "";
+            tbody.innerHTML = "";
+            table.style.display = "none";
+
+            try {
+                const res = await fetch("/.netlify/functions/fetchStudents", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ class: selectedClass })
+                });
+
+                const result = await res.json();
+
+                if (result.success && result.data.length > 0) {
+                    studentDataGlobal = result.data
+                        .filter(s =>
+                            (!section || s.section === section) &&
+                            (!stream || s.stream === stream)
+                        )
+                        .sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+
+                    studentDataGlobal.forEach(student => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+              <td>${student.id}</td>
+              <td>${student.name}</td>
+              <td>${student.class}</td>
+              <td>${student.section}</td>
+              <td>${student.stream}</td>
+              <td>${student.phone}</td>
+            `;
+                        tbody.appendChild(row);
+                    });
+
+                    document.getElementById("studentCount").textContent = `Total: ${studentDataGlobal.length}`;
+                    table.style.display = "table";
+                } else {
+                    messageDiv.textContent = "No students found.";
+                    document.getElementById("studentCount").textContent = "Total: 0";
+                }
+            } catch (err) {
+                console.error("Error fetching students:", err);
+                messageDiv.textContent = "Error fetching students.";
+            }
+        }
+
+        function sortTable(key) {
+            const tbody = document.getElementById("studentsTable").querySelector("tbody");
+            const sorted = studentDataGlobal.sort((a, b) => a[key].localeCompare(b[key]));
+            tbody.innerHTML = "";
+
+            sorted.forEach(student => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+          <td>${student.id}</td>
+          <td>${student.name}</td>
+          <td>${student.class}</td>
+          <td>${student.section}</td>
+          <td>${student.stream}</td>
+          <td>${student.phone}</td>
+        `;
+                tbody.appendChild(row);
+            });
+        }
+    </script>
 </body>
+
 </html>
