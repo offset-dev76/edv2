@@ -84,7 +84,7 @@
     .modal {
       display: none;
       position: fixed;
-      z-index: 10000;
+      z-index: 9998;
       left: 0;
       top: 0;
       width: 100%;
@@ -345,7 +345,7 @@
 
     async function viewHistory(id) {
       showLoading();
-      const res = await fetch(`/.netlify/functions/getStudentPayments?id=${id}`);
+      const res = await fetch(`/.netlify/functions/getPayments?id=${id}`);
       const data = await res.json();
       const grouped = {};
 
@@ -388,7 +388,6 @@
         mode: document.getElementById("paymentMode").value,
         reference: document.getElementById("referenceNumber").value || null
       };
-
 
       const res = await fetch("/.netlify/functions/addPayment", {
         method: "POST",
