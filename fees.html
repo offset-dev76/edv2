@@ -269,10 +269,6 @@ async function loadStudents() {
 
   studentsList = filtered;
 
-  const dropdown = document.getElementById("modalStudentId");
-  dropdown.innerHTML = '<option value="">Select Student</option>' +
-    filtered.map(s => `<option value="${s.id}">${s.id}</option>`).join('');
-
   let tableHTML = `<table><thead><tr>
     <th>ID</th><th>Name</th><th>Class</th><th>Section</th>
     <th>Stream</th><th>Phone</th><th>Total Paid</th></tr></thead><tbody>`;
