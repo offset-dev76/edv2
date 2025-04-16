@@ -183,7 +183,7 @@
   </select>
 
   <button onclick="loadStudents()">Load Students</button>
-  <button onclick="openModal()">Add Payment</button>
+  <button onclick="openAddPaymentModal()">Add Payment</button>
 
   <div id="studentsTable"></div>
 </div>
@@ -191,7 +191,7 @@
 <!-- Payment Modal -->
 <div id="paymentModal" class="modal">
   <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
+    <span class="close" onclick="closeAddPaymentModal()">&times;</span>
     <h3>Add Payment</h3>
     <form id="paymentForm">
       <label for="studentIdSelect">Student ID:</label>
