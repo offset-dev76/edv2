@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Marks Report</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .filters {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .filters select {
+      padding: 0.5rem;
+    }
+
+    #marksTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    #marksTable th, #marksTable td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    #printBtn {
+      margin: 1rem auto;
+      display: block;
+      padding: 0.6rem 1.2rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #printBtn:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Marks Report</h1>
+
+  <div class="filters">
+    <select id="classSelect">
+      <option value="">Select Class</option>
+      <option value="10">10</option>
+      <option value="11">11</option>
+      <option value="12">12</option>
+    </select>
+
+    <select id="examSelect">
+      <option value="">Select Exam</option>
+      <option value="Midterm">Midterm</option>
+      <option value="Final">Final</option>
+    </select>
+
+    <button onclick="loadMarks()">View Marks</button>
+  </div>
+
+  <div id="marksContainer">
+    <table id="marksTable">
+      <thead>
+        <tr>
+          <th>Student Name</th>
+          <th>Student ID</th>
+          <th>Subject</th>
+          <th>Marks</th>
+        </tr>
+      </thead>
+      <tbody id="marksBody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <button id="printBtn" onclick="printPDF()">Print/Save as PDF</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    async function loadMarks() {
+      const classValue = document.getElementById('classSelect').value;
+      const examValue = document.getElementById('examSelect').value;
+
+      if (!classValue || !examValue) {
+        alert("Please select both class and exam.");
+        return;
+      }
+
+      // Fetch students in class
+      const studentsRes = await fetch('/.netlify/functions/fetchStudents', {
+        method: 'POST',
+        body: JSON.stringify({ class: classValue })
+      });
+
+      const studentsData = await studentsRes.json();
+      if (!studentsData.success) {
+        alert("Failed to load students.");
+        return;
+      }
+
+      const studentMap = {};
+      studentsData.data.forEach(stu => {
+        studentMap[stu.id] = stu.name;
+      });
+
+      // Fetch marks for grade and exam
+      const marksRes = await fetch('/.netlify/functions/fetchMarks', {
+        method: 'POST',
+        body: JSON.stringify({ grade: classValue, exam: examValue })
+      });
+
+      const marksData = await marksRes.json();
+      if (!marksData.success) {
+        alert("Failed to load marks.");
+        return;
+      }
+
+      const tbody = document.getElementById('marksBody');
+      tbody.innerHTML = '';
+
+      marksData.data.forEach(entry => {
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td>${studentMap[entry.student] || entry.name}</td>
+          <td>${entry.student}</td>
+          <td>${entry.subject}</td>
+          <td>${entry.marks}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function printPDF() {
+      const element = document.getElementById('marksContainer');
+      html2pdf().from(element).save('marks-report.pdf');
+    }
+  </script>
+</body>
+</html>
