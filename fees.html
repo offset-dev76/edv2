@@ -269,11 +269,6 @@ async function loadStudents() {
 
   studentsList = filtered;
 
-  // Populate dropdown for Add Payment modal
-  const dropdown = document.getElementById("modalStudentId");
-  dropdown.innerHTML = '<option value="">Select Student</option>' +
-    filtered.map(s => `<option value="${s.id}">${s.id}</option>`).join('');
-
   // Prepare student ID array
   const studentIds = filtered.map(s => s.id);
   const paymentsRes = await fetch('/.netlify/functions/getPaymentsBatch', {
