@@ -1,37 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fees Dashboard</title>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
       display: flex;
-      margin: 0;
+      height: 100vh;
     }
 
     .sidebar {
-      width: 200px;
-      background: #333;
-      color: #fff;
-      height: 100vh;
-      padding: 20px;
+      width: 240px;
+      background-color: #2f3542;
+      color: white;
+      padding: 20px 0;
     }
 
     .sidebar h2 {
-      color: #fff;
-      font-size: 1.2rem;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.4rem;
     }
 
-    .sidebar ul {
-      padding: 0;
-      list-style: none;
+    .sidebar a {
+      display: block;
+      color: white;
+      padding: 15px 20px;
+      text-decoration: none;
+      transition: 0.3s;
     }
 
-    .sidebar li {
-      margin: 10px 0;
-      cursor: pointer;
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #57606f;
     }
 
     .main {
@@ -39,9 +50,10 @@
       padding: 20px;
     }
 
-    select, input, button {
+    select, button, input {
       padding: 8px;
-      margin: 5px 5px 10px 0;
+      margin-right: 10px;
+      margin-bottom: 10px;
     }
 
     table {
@@ -65,7 +77,34 @@
       color: gray;
     }
 
-    /* Loading spinner */
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 400px;
+      border-radius: 10px;
+    }
+
+    .close {
+      float: right;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
     #loadingOverlay {
       position: fixed;
       top: 0;
@@ -89,277 +128,225 @@
     }
 
     @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
+<div id="loadingOverlay" style="display:none;">
+  <div class="spinner"></div>
+</div>
 
-  <div class="sidebar">
-    <h2>Dashboard</h2>
-    <ul>
-      <li>Home</li>
-      <li>Students</li>
-      <li>Fees</li>
-      <li>Reports</li>
-    </ul>
-  </div>
+<div class="sidebar">
+  <h2>Studia v1</h2>
+  <a href="./index.html">Dashboard</a>
+  <a href="./students.html">Student Directory</a>
+  <a href="./marks.html">Marks Management</a>
+  <a href="./fees.html" class="active">Fees Management</a>
+  <a href="#">Exam & Timetable</a>
+  <a href="#">Reports & Printouts</a>
+  <a href="#">Notifications</a>
+  <a href="#">Settings</a>
+</div>
 
-  <div class="main">
-    <h2>Fees Overview</h2>
+<div class="main">
+  <h2>Fees Overview</h2>
+  <label for="classSelect">Class:</label>
+  <select id="classSelect">
+    <option value="">Select Grade</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <!-- Add other grades -->
+  </select>
 
-    <label for="classSelect">Class:</label>
-    <select id="classSelect">
-        <option value="">Select Grade</option>
-        <option value="1">1</option> <option value="2">2</option> <option value="3">3</option>
-        <option value="4">4</option> <option value="5">5</option> <option value="6">6</option>
-        <option value="7">7</option> <option value="8">8</option> <option value="9">9</option>
-        <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+  <label for="sectionSelect">Section:</label>
+  <select id="sectionSelect">
+    <option value="">Select Section</option>
+    <option value="A">A</option>
+    <option value="B">B</option>
+    <option value="C">C</option>
+  </select>
+
+  <button onclick="loadStudents()">Load Students</button>
+  <button onclick="openModal()">Add Payment</button>
+
+  <div id="studentsTable"></div>
+</div>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h3>Add Payment</h3>
+    <form id="paymentForm">
+      <label for="studentIdSelect">Student ID:</label>
+      <select id="studentIdSelect" required onchange="populateName()"></select>
+
+      <label for="studentName">Name:</label>
+      <input type="text" id="studentName" disabled>
+
+      <label for="amountPaid">Amount Paid:</label>
+      <input type="number" id="amountPaid" required>
+
+      <label for="paymentDate">Payment Date:</label>
+      <input type="date" id="paymentDate" required>
+
+      <label for="paymentMode">Payment Mode:</label>
+      <select id="paymentMode">
+        <option value="Cash">Cash</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+        <option value="UPI">UPI</option>
+        <option value="Other">Other</option>
       </select>
 
-    <label for="sectionSelect">Section:</label>
-    <select id="sectionSelect">
-      <option value="">Select Section</option>
-      <option value="A">A</option>
-      <option value="B">B</option>
-      <option value="C">C</option>
-    </select>
-
-    <button onclick="loadStudents()">Load Students</button>
-
-    <div id="studentsTable"></div>
+      <button type="submit">Submit</button>
+    </form>
+    <p id="message"></p>
   </div>
+</div>
 
-  <!-- Loading Spinner -->
-  <div id="loadingOverlay" style="display:none;">
-    <div class="spinner"></div>
-  </div>
+<script>
+  let students = [];
 
-  <!-- Payment Modal -->
-  <div id="paymentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
-    <div style="background:white; margin:5% auto; padding:20px; width:90%; max-width:500px; border-radius:10px; position:relative;">
-      <span onclick="closePaymentModal()" style="position:absolute; top:10px; right:15px; cursor:pointer;">&times;</span>
-      <h3 id="modalTitle">Add Payment</h3>
-      <form id="paymentForm">
-        <input type="hidden" id="studentId" />
+  function showLoading() {
+    document.getElementById("loadingOverlay").style.display = "flex";
+  }
 
-        <label>Amount Paid:</label>
-        <input type="number" id="amountPaid" required />
+  function hideLoading() {
+    document.getElementById("loadingOverlay").style.display = "none";
+  }
 
-        <label>Payment Date:</label>
-        <input type="date" id="paymentDate" required />
+  function openModal() {
+    document.getElementById("paymentModal").style.display = "block";
+    const studentDropdown = document.getElementById("studentIdSelect");
+    studentDropdown.innerHTML = '<option value="">Select Student</option>';
+    students.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.id;
+      opt.text = `${s.id} - ${s.name}`;
+      studentDropdown.appendChild(opt);
+    });
+  }
 
-        <label>Payment Mode:</label>
-        <select id="paymentMode">
-          <option value="Cash">Cash</option>
-          <option value="Bank Transfer">Bank Transfer</option>
-          <option value="UPI">UPI</option>
-          <option value="Other">Other</option>
-        </select>
+  function closeModal() {
+    document.getElementById("paymentModal").style.display = "none";
+  }
 
-        <button type="submit">Submit</button>
-      </form>
+  function populateName() {
+    const id = document.getElementById("studentIdSelect").value;
+    const student = students.find(s => s.id === id);
+    document.getElementById("studentName").value = student ? student.name : '';
+  }
 
-      <hr>
-      <h4>Payment History</h4>
-      <label>Sort by:</label>
-      <select id="sortMode" onchange="groupPayments()">
-        <option value="year">Year</option>
-        <option value="month">Month</option>
-        <option value="all">All</option>
-      </select>
-      <div id="historyContainer" style="margin-top:10px;"></div>
-      <p id="message"></p>
-    </div>
-  </div>
+  async function loadStudents() {
+    const classVal = document.getElementById('classSelect').value;
+    const sectionVal = document.getElementById('sectionSelect').value;
+    if (!classVal) return alert("Please select a class.");
+    showLoading();
 
-  <script>
-    function showLoading() {
-      document.getElementById("loadingOverlay").style.display = "flex";
-    }
-
-    function hideLoading() {
-      document.getElementById("loadingOverlay").style.display = "none";
-    }
-
-    async function loadStudents() {
-      const classVal = document.getElementById('classSelect').value;
-      const sectionVal = document.getElementById('sectionSelect').value;
-
-      if (!classVal) {
-        alert("Please select a class.");
-        return;
-      }
-
-      showLoading();
-
+    try {
       const res = await fetch('/.netlify/functions/fetchStudents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ class: classVal })
       });
-
       const result = await res.json();
-      hideLoading();
+      if (!result.success) throw new Error();
 
-      if (!result.success) {
-        document.getElementById("studentsTable").innerHTML = `<p class="no-data">Failed to load students.</p>`;
+      students = result.data.filter(s => !sectionVal || s.section === sectionVal);
+      if (students.length === 0) {
+        document.getElementById("studentsTable").innerHTML = '<p class="no-data">No students found.</p>';
         return;
       }
 
-      let filtered = result.data;
-      if (sectionVal) {
-        filtered = filtered.filter(s => s.section === sectionVal);
-      }
+      let tableHTML = `<table><thead><tr>
+        <th>ID</th><th>Name</th><th>Class</th><th>Section</th><th>Stream</th><th>Phone</th><th>Total Paid</th>
+      </tr></thead><tbody>`;
 
-      if (filtered.length === 0) {
-        document.getElementById("studentsTable").innerHTML = `<p class="no-data">No students found.</p>`;
-        return;
-      }
-
-      let tableHTML = `<table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Class</th>
-            <th>Section</th>
-            <th>Stream</th>
-            <th>Phone</th>
-            <th>Total Paid</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-      for (const student of filtered) {
-        showLoading();
-        const payments = await fetch(`/.netlify/functions/getPayments?id=${student.id}`);
-        const paymentData = await payments.json();
-        hideLoading();
-        const totalPaid = Array.isArray(paymentData)
-          ? paymentData.reduce((sum, p) => sum + Number(p.amount || 0), 0)
-          : 0;
+      for (const student of students) {
+        const payRes = await fetch(`/.netlify/functions/getPayments?id=${student.id}`);
+        const paymentData = await payRes.json();
+        const totalPaid = Array.isArray(paymentData) ? paymentData.reduce((sum, p) => sum + Number(p.amount || 0), 0) : 0;
 
         tableHTML += `<tr>
           <td>${student.id}</td>
-          <td>${student.name}</td>
+          <td style="cursor:pointer;color:blue;" onclick="showHistory('${student.id}')">${student.name}</td>
           <td>${student.class}</td>
           <td>${student.section}</td>
           <td>${student.stream || '-'}</td>
           <td>${student.phone}</td>
           <td>₹${totalPaid}</td>
-          <td><button onclick="openPaymentModal('${student.id}', '${student.name}')">Add Payment</button></td>
         </tr>`;
       }
 
       tableHTML += `</tbody></table>`;
       document.getElementById("studentsTable").innerHTML = tableHTML;
-    }
-
-    function openPaymentModal(id, name) {
-      document.getElementById('studentId').value = id;
-      document.getElementById('modalTitle').innerText = `Add Payment for ${name}`;
-      document.getElementById('paymentModal').style.display = 'block';
-      loadPayments(id);
-    }
-
-    function closePaymentModal() {
-      document.getElementById('paymentModal').style.display = 'none';
-      document.getElementById('paymentForm').reset();
-      document.getElementById('historyContainer').innerHTML = '';
-      document.getElementById('message').textContent = '';
-    }
-
-    document.getElementById("paymentForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
-      const studentId = document.getElementById("studentId").value;
-      const paymentData = {
-        studentId,
-        amount: parseFloat(document.getElementById("amountPaid").value),
-        date: document.getElementById("paymentDate").value,
-        mode: document.getElementById("paymentMode").value,
-      };
-
-      showLoading();
-      try {
-        const res = await fetch("/.netlify/functions/addPayment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(paymentData),
-        });
-
-        const result = await res.json();
-        document.getElementById("message").textContent = result.message;
-        if (result.success) {
-          loadPayments(studentId);
-          document.getElementById("paymentForm").reset();
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById("message").textContent = "Error adding payment.";
-      }
-      hideLoading();
-    });
-
-    async function loadPayments(studentId) {
-      showLoading();
-      try {
-        const res = await fetch(`/.netlify/functions/getStudentPayments?id=${studentId}`);
-        const data = await res.json();
-        window.currentPayments = data || [];
-        groupPayments();
-      } catch (err) {
-        console.error(err);
-        document.getElementById("historyContainer").innerHTML = "<p>Error loading payments.</p>";
-      }
+    } catch (err) {
+      document.getElementById("studentsTable").innerHTML = '<p class="no-data">Failed to load students.</p>';
+    } finally {
       hideLoading();
     }
+  }
 
-    function groupPayments() {
-      const sortMode = document.getElementById("sortMode").value;
+  async function showHistory(studentId) {
+    showLoading();
+    try {
+      const res = await fetch(`/.netlify/functions/getPayments?id=${studentId}`);
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) return alert("No payments found.");
+
       const grouped = {};
-
-      for (const payment of window.currentPayments) {
-        const date = new Date(payment.date);
-        let key;
-        if (sortMode === "year") {
-          key = date.getFullYear();
-        } else if (sortMode === "month") {
-          key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        } else {
-          key = "All";
-        }
-
+      data.forEach(p => {
+        const d = new Date(p.date);
+        const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
         if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(payment);
+        grouped[key].push(p);
+      });
+
+      let msg = "";
+      for (const [month, payments] of Object.entries(grouped)) {
+        msg += `\n${month}:\n`;
+        payments.forEach(p => {
+          msg += ` - ₹${p.amount} on ${new Date(p.date).toLocaleDateString()} via ${p.mode}\n`;
+        });
       }
 
-      const container = document.getElementById("historyContainer");
-      container.innerHTML = "";
-
-      Object.keys(grouped).sort((a, b) => b.localeCompare(a)).forEach(group => {
-        const groupEl = document.createElement("div");
-        groupEl.innerHTML = `<h5>${group}</h5>`;
-        grouped[group].forEach(p => {
-          groupEl.innerHTML += `
-            <div style="padding:5px 0; border-bottom:1px solid #ccc;">
-              <strong>Date:</strong> ${new Date(p.date).toLocaleDateString()}<br>
-              <strong>Amount:</strong> ₹${p.amount}<br>
-              <strong>Mode:</strong> ${p.mode}
-            </div>
-          `;
-        });
-        container.appendChild(groupEl);
-      });
+      alert(`Payment History for ${studentId}:\n` + msg);
+    } catch (err) {
+      alert("Failed to fetch payment history.");
+    } finally {
+      hideLoading();
     }
-  </script>
+  }
 
+  document.getElementById("paymentForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const studentId = document.getElementById("studentIdSelect").value;
+    const amount = document.getElementById("amountPaid").value;
+    const date = document.getElementById("paymentDate").value;
+    const mode = document.getElementById("paymentMode").value;
+
+    showLoading();
+    try {
+      const res = await fetch("/.netlify/functions/addPayment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId, amount, date, mode })
+      });
+      const result = await res.json();
+      document.getElementById("message").textContent = result.message;
+      if (result.success) {
+        document.getElementById("paymentForm").reset();
+        closeModal();
+        loadStudents();
+      }
+    } catch (err) {
+      document.getElementById("message").textContent = "Error adding payment.";
+    } finally {
+      hideLoading();
+    }
+  });
+</script>
 </body>
 </html>
