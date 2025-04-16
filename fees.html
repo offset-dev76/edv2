@@ -280,8 +280,8 @@
 
       // Populate dropdown for Add Payment modal
       const dropdown = document.getElementById("studentIdSelect");
-dropdown.innerHTML = '<option value="">Select Student</option>' +
-  filtered.map(s => `<option value="${s.id}">${s.id}</option>`).join('');
+      dropdown.innerHTML = '<option value="">Select Student</option>' +
+        filtered.map(s => `<option value="${s.id}">${s.id}</option>`).join('');
 
 
       // Prepare student ID array
@@ -331,9 +331,12 @@ dropdown.innerHTML = '<option value="">Select Student</option>' +
 
     function closeAddPaymentModal() {
       document.getElementById("paymentForm").reset();
-      document.getElementById("modalStudentName").value = '';
+      document.getElementById("studentName").value = ''; // <-- corrected this line
       document.getElementById("paymentModal").style.display = "none";
+      document.getElementById("message").textContent = '';
+
     }
+
 
     function closeHistoryModal() {
       document.getElementById("historyModal").style.display = "none";
