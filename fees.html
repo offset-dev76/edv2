@@ -39,9 +39,9 @@
       padding: 20px;
     }
 
-    select {
+    select, input, button {
       padding: 8px;
-      margin-right: 10px;
+      margin: 5px 5px 10px 0;
     }
 
     table {
@@ -64,6 +64,39 @@
       margin-top: 20px;
       color: gray;
     }
+
+    /* Loading spinner */
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 <body>
@@ -84,18 +117,10 @@
     <label for="classSelect">Class:</label>
     <select id="classSelect">
         <option value="">Select Grade</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-        <option value="11">11</option>
-        <option value="12">12</option>
+        <option value="1">1</option> <option value="2">2</option> <option value="3">3</option>
+        <option value="4">4</option> <option value="5">5</option> <option value="6">6</option>
+        <option value="7">7</option> <option value="8">8</option> <option value="9">9</option>
+        <option value="10">10</option><option value="11">11</option><option value="12">12</option>
       </select>
 
     <label for="sectionSelect">Section:</label>
@@ -111,7 +136,58 @@
     <div id="studentsTable"></div>
   </div>
 
+  <!-- Loading Spinner -->
+  <div id="loadingOverlay" style="display:none;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
+    <div style="background:white; margin:5% auto; padding:20px; width:90%; max-width:500px; border-radius:10px; position:relative;">
+      <span onclick="closePaymentModal()" style="position:absolute; top:10px; right:15px; cursor:pointer;">&times;</span>
+      <h3 id="modalTitle">Add Payment</h3>
+      <form id="paymentForm">
+        <input type="hidden" id="studentId" />
+
+        <label>Amount Paid:</label>
+        <input type="number" id="amountPaid" required />
+
+        <label>Payment Date:</label>
+        <input type="date" id="paymentDate" required />
+
+        <label>Payment Mode:</label>
+        <select id="paymentMode">
+          <option value="Cash">Cash</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="UPI">UPI</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <button type="submit">Submit</button>
+      </form>
+
+      <hr>
+      <h4>Payment History</h4>
+      <label>Sort by:</label>
+      <select id="sortMode" onchange="groupPayments()">
+        <option value="year">Year</option>
+        <option value="month">Month</option>
+        <option value="all">All</option>
+      </select>
+      <div id="historyContainer" style="margin-top:10px;"></div>
+      <p id="message"></p>
+    </div>
+  </div>
+
   <script>
+    function showLoading() {
+      document.getElementById("loadingOverlay").style.display = "flex";
+    }
+
+    function hideLoading() {
+      document.getElementById("loadingOverlay").style.display = "none";
+    }
+
     async function loadStudents() {
       const classVal = document.getElementById('classSelect').value;
       const sectionVal = document.getElementById('sectionSelect').value;
@@ -121,14 +197,17 @@
         return;
       }
 
-      const body = { class: classVal };
+      showLoading();
+
       const res = await fetch('/.netlify/functions/fetchStudents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ class: classVal })
       });
 
       const result = await res.json();
+      hideLoading();
+
       if (!result.success) {
         document.getElementById("studentsTable").innerHTML = `<p class="no-data">Failed to load students.</p>`;
         return;
@@ -144,7 +223,6 @@
         return;
       }
 
-      // Build table
       let tableHTML = `<table>
         <thead>
           <tr>
@@ -155,13 +233,16 @@
             <th>Stream</th>
             <th>Phone</th>
             <th>Total Paid</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>`;
 
       for (const student of filtered) {
+        showLoading();
         const payments = await fetch(`/.netlify/functions/getPayments?id=${student.id}`);
         const paymentData = await payments.json();
+        hideLoading();
         const totalPaid = Array.isArray(paymentData)
           ? paymentData.reduce((sum, p) => sum + Number(p.amount || 0), 0)
           : 0;
@@ -174,11 +255,109 @@
           <td>${student.stream || '-'}</td>
           <td>${student.phone}</td>
           <td>₹${totalPaid}</td>
+          <td><button onclick="openPaymentModal('${student.id}', '${student.name}')">Add Payment</button></td>
         </tr>`;
       }
 
       tableHTML += `</tbody></table>`;
       document.getElementById("studentsTable").innerHTML = tableHTML;
+    }
+
+    function openPaymentModal(id, name) {
+      document.getElementById('studentId').value = id;
+      document.getElementById('modalTitle').innerText = `Add Payment for ${name}`;
+      document.getElementById('paymentModal').style.display = 'block';
+      loadPayments(id);
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').style.display = 'none';
+      document.getElementById('paymentForm').reset();
+      document.getElementById('historyContainer').innerHTML = '';
+      document.getElementById('message').textContent = '';
+    }
+
+    document.getElementById("paymentForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const studentId = document.getElementById("studentId").value;
+      const paymentData = {
+        studentId,
+        amount: parseFloat(document.getElementById("amountPaid").value),
+        date: document.getElementById("paymentDate").value,
+        mode: document.getElementById("paymentMode").value,
+      };
+
+      showLoading();
+      try {
+        const res = await fetch("/.netlify/functions/addPayment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(paymentData),
+        });
+
+        const result = await res.json();
+        document.getElementById("message").textContent = result.message;
+        if (result.success) {
+          loadPayments(studentId);
+          document.getElementById("paymentForm").reset();
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById("message").textContent = "Error adding payment.";
+      }
+      hideLoading();
+    });
+
+    async function loadPayments(studentId) {
+      showLoading();
+      try {
+        const res = await fetch(`/.netlify/functions/getStudentPayments?id=${studentId}`);
+        const data = await res.json();
+        window.currentPayments = data || [];
+        groupPayments();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("historyContainer").innerHTML = "<p>Error loading payments.</p>";
+      }
+      hideLoading();
+    }
+
+    function groupPayments() {
+      const sortMode = document.getElementById("sortMode").value;
+      const grouped = {};
+
+      for (const payment of window.currentPayments) {
+        const date = new Date(payment.date);
+        let key;
+        if (sortMode === "year") {
+          key = date.getFullYear();
+        } else if (sortMode === "month") {
+          key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        } else {
+          key = "All";
+        }
+
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(payment);
+      }
+
+      const container = document.getElementById("historyContainer");
+      container.innerHTML = "";
+
+      Object.keys(grouped).sort((a, b) => b.localeCompare(a)).forEach(group => {
+        const groupEl = document.createElement("div");
+        groupEl.innerHTML = `<h5>${group}</h5>`;
+        grouped[group].forEach(p => {
+          groupEl.innerHTML += `
+            <div style="padding:5px 0; border-bottom:1px solid #ccc;">
+              <strong>Date:</strong> ${new Date(p.date).toLocaleDateString()}<br>
+              <strong>Amount:</strong> ₹${p.amount}<br>
+              <strong>Mode:</strong> ${p.mode}
+            </div>
+          `;
+        });
+        container.appendChild(groupEl);
+      });
     }
   </script>
 
