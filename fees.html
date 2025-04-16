@@ -278,19 +278,28 @@
 
       studentsList = filtered;
 
+      // Populate dropdown for Add Payment modal
       const dropdown = document.getElementById("modalStudentId");
       dropdown.innerHTML = '<option value="">Select Student</option>' +
         filtered.map(s => `<option value="${s.id}">${s.id}</option>`).join('');
+
+      // Prepare student ID array
+      const studentIds = filtered.map(s => s.id);
+      const paymentsRes = await fetch('/.netlify/functions/getPaymentsBatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: studentIds })
+      });
+
+      const paymentsData = await paymentsRes.json(); // { [id]: [payments] }
 
       let tableHTML = `<table><thead><tr>
     <th>ID</th><th>Name</th><th>Class</th><th>Section</th>
     <th>Stream</th><th>Phone</th><th>Total Paid</th></tr></thead><tbody>`;
 
       for (const student of filtered) {
-        const res = await fetch(`/.netlify/functions/getPayments?id=${student.id}`);
-        const payments = await res.json();
-        const totalPaid = Array.isArray(payments) ?
-          payments.reduce((sum, p) => sum + Number(p.amount || 0), 0) : 0;
+        const payments = paymentsData[student.id] || [];
+        const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
         tableHTML += `<tr>
       <td>${student.id}</td>
@@ -306,6 +315,7 @@
       document.getElementById("studentsTable").innerHTML = tableHTML;
       hideLoading();
     }
+
 
     function populateName() {
       const id = document.getElementById("studentIdSelect").value;
