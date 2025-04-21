@@ -3,7 +3,7 @@ const { MongoClient } = require('mongodb');
 exports.handler = async (event) => {
   try {
     const client = await MongoClient.connect(process.env.MONGO_URI);
-    const db = client.db("schoolDB");
+    const db = client.db("test");
     const collection = db.collection("marks");
 
     const { grade, stream, marks } = JSON.parse(event.body);
