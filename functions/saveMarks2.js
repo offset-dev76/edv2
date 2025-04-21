@@ -83,10 +83,11 @@ exports.handler = async function (event) {
     };
 
     // Assign subject marks to sub1, sub2, ..., sub8
-    subjects.forEach((subject, index) => {
-      const subKey = `sub${index + 1}`;
-      markEntry[subKey] = marks[subject] ?? null;
-    });
+subjects.forEach((subject, index) => {
+  const subKey = `sub${index + 1}`;
+  markEntry[subKey] = marks[subKey] ?? null;
+});
+
 
     // Fill remaining subs with null
     for (let i = subjects.length + 1; i <= 8; i++) {
