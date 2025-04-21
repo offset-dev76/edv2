@@ -1,9 +1,8 @@
 const { MongoClient } = require('mongodb');
-const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 exports.handler = async (event) => {
   try {
-    const client = await MongoClient.connect(uri);
+    const client = await MongoClient.connect('mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
     const db = client.db("test");
     const collection = db.collection("marks");
 
