@@ -400,67 +400,71 @@
 
 
         async function saveMarks() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value || "";
-            const stream = document.getElementById("streamSelect")?.value || "";
-            const examName = document.getElementById("examName").value.trim();
-            const status = document.getElementById("statusMsg");
+    const grade = document.getElementById("classSelect").value;
+    const section = document.getElementById("sectionSelect").value || "";
+    const stream = document.getElementById("streamSelect")?.value || "";
+    const examName = document.getElementById("examName").value.trim();
+    const status = document.getElementById("statusMsg");
 
-            if (!grade || !examName) {
-                alert("Please select class, exam name, and section.");
-                return;
+    if (!grade || !examName) {
+        alert("Please select class, exam name, and section.");
+        return;
+    }
+
+    const rows = document.querySelectorAll("#marksTable tr[data-roll]");
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    showLoading();
+
+    for (const row of rows) {
+        const roll = row.getAttribute("data-roll");
+        const name = row.getAttribute("data-name");
+
+        // ✅ Wrap subject marks in a `marks` object
+        const marks = {};
+        for (let i = 1; i <= 8; i++) {
+            const input = row.querySelector(`input[data-sub-index='${i}']`);
+            if (input) {
+                const value = input.value.trim();
+                marks[`sub${i}`] = value === "AB" ? 0 : (value === "" ? null : parseInt(value));
+            } else {
+                marks[`sub${i}`] = null;
             }
-
-            const rows = document.querySelectorAll("#marksTable tr[data-roll]");
-
-            let successCount = 0;
-            let errorCount = 0;
-
-            showLoading();
-
-            for (const row of rows) {
-                const roll = row.getAttribute("data-roll");
-                const name = row.getAttribute("data-name");
-
-                const markData = {
-                    RollNo: roll,
-                    Name: name,
-                    Class: grade,
-                    Section: section,
-                    Stream: stream || "",
-                    Exam: examName
-                };
-
-                for (let i = 1; i <= 8; i++) {
-                    const input = row.querySelector(`input[data-sub-index='${i}']`);
-                    if (input) {
-                        const value = input.value.trim();
-                        markData[`sub${i}`] = value === "AB" ? 0 : (value === "" ? null : parseInt(value));
-                    } else {
-                        markData[`sub${i}`] = null;
-                    }
-                }
-
-                try {
-                    const res = await fetch("/.netlify/functions/saveMarks2", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(markData)
-                    });
-
-                    const result = await res.json();
-                    if (result.message?.toLowerCase().includes("success")) successCount++;
-                    else errorCount++;
-                } catch (err) {
-                    console.error("Error saving:", err);
-                    errorCount++;
-                }
-            }
-
-            hideLoading();
-            status.textContent = `Submitted: ${successCount} | Failed: ${errorCount}`;
-            setTimeout(() => status.textContent = "", 4000);
         }
+
+        const markData = {
+            RollNo: roll,
+            Name: name,
+            Class: grade,
+            Section: section,
+            Stream: stream || "",
+            Exam: examName,
+            marks  // ✅ include marks object here
+        };
+
+        try {
+            const res = await fetch("/.netlify/functions/saveMarks2", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(markData)
+            });
+
+            const result = await res.json();
+            if (result.message?.toLowerCase().includes("success")) successCount++;
+            else errorCount++;
+        } catch (err) {
+            console.error("Error saving:", err);
+            errorCount++;
+        }
+    }
+
+    hideLoading();
+    status.textContent = `Submitted: ${successCount} | Failed: ${errorCount}`;
+    setTimeout(() => status.textContent = "", 4000);
+}
+
 
 
 
