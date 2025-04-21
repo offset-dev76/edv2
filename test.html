@@ -206,6 +206,17 @@
                     <option value="11">11</option>
                     <option value="12">12</option>
                 </select>
+                <select id="sectionSelect">
+                    <option value="">Select Section</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="G">G</option>
+                </select>
+
 
                 <select id="streamSelect" style="display: none;">
                     <option value="">Select Stream</option>
@@ -259,6 +270,8 @@
 
         document.getElementById("classSelect").addEventListener("change", handleClassChange);
         document.getElementById("streamSelect").addEventListener("change", fetchStudentsForMarks);
+        document.getElementById("sectionSelect").addEventListener("change", fetchStudentsForMarks);
+
 
         async function handleClassChange() {
             const classVal = document.getElementById("classSelect").value;
@@ -279,16 +292,21 @@
         async function fetchStudentsForMarks() {
             const selectedClass = document.getElementById("classSelect").value;
             const selectedStream = document.getElementById("streamSelect").value;
+            const selectedSection = document.getElementById("sectionSelect").value;
 
             if (!selectedClass) return;
             if ((selectedClass === "11" || selectedClass === "12") && !selectedStream) return;
+            if (!selectedSection) return;
 
             showLoading();
             try {
                 const res = await fetch("/.netlify/functions/fetchStudents", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ class: selectedClass })
+                    body: JSON.stringify({
+                        class: selectedClass,
+                        section: selectedSection
+                    })
                 });
 
                 const result = await res.json();
@@ -313,6 +331,7 @@
                 hideLoading();
             }
         }
+
 
 
         function renderMarksTable() {
