@@ -1,10 +1,47 @@
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 
-exports.handler = async (event) => {
+const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+
+const markSchema = new mongoose.Schema({
+  id: String,
+  name: String,
+  grade: String,
+  stream: { type: String, default: "" },
+  sub1: Number,
+  sub2: Number,
+  sub3: Number,
+  sub4: Number,
+  sub5: Number,
+  sub6: Number,
+  sub7: Number,
+  sub8: Number,
+});
+
+const Mark = mongoose.models.Mark || mongoose.model('Mark', markSchema);
+
+let isConnected = false;
+
+async function connectToDB() {
+  if (!isConnected) {
+    await mongoose.connect(uri, {
+      dbName: 'schoolDB',
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    isConnected = true;
+  }
+}
+
+exports.handler = async function(event) {
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ message: 'Only POST requests allowed' })
+    };
+  }
+
   try {
-    const client = await MongoClient.connect('mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
-    const db = client.db("test");
-    const collection = db.collection("marks");
+    await connectToDB();
 
     const { grade, stream, marks } = JSON.parse(event.body);
 
@@ -16,7 +53,6 @@ exports.handler = async (event) => {
         stream: stream || "",
       };
 
-      // Map inputs like sub1, sub2, ...
       for (let i = 1; i <= 8; i++) {
         if (markEntry[`sub${i}`] !== undefined) {
           updateData[`sub${i}`] = markEntry[`sub${i}`];
@@ -27,19 +63,25 @@ exports.handler = async (event) => {
         updateOne: {
           filter: { id: markEntry.id, grade, stream: stream || "" },
           update: { $set: updateData },
-          upsert: true,
-        },
+          upsert: true
+        }
       };
     });
 
     if (bulkOps.length > 0) {
-      await collection.bulkWrite(bulkOps);
+      await Mark.bulkWrite(bulkOps);
     }
 
-    client.close();
-    return { statusCode: 200, body: JSON.stringify({ message: "Marks saved!" }) };
-  } catch (error) {
-    console.error("Error saving marks:", error);
-    return { statusCode: 500, body: JSON.stringify({ error: "Failed to save marks" }) };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: "Marks saved successfully" })
+    };
+
+  } catch (err) {
+    console.error('Error saving marks:', err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Server error', error: err.message })
+    };
   }
 };
