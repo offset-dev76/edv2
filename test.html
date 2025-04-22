@@ -432,7 +432,7 @@
 
             try {
                 showLoading();
-                const res = await fetch('/.netlify/functions/saveMarks2', {
+                const res = await fetch('/.netlify/functions/saveMarks', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ batch })
@@ -494,37 +494,44 @@
 
         async function tryFetchAndFillMarks() {
             const grade = document.getElementById("classSelect").value;
+            const stream = document.getElementById("streamSelect").value;
             const examName = document.getElementById("examName").value.trim();
 
             if (!grade || !examName) return;
 
             try {
-                const res = await fetch("/.netlify/functions/fetchMarks", {
+                const res = await fetch("/.netlify/functions/fetchMarks2", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ grade, exam: examName })
+                    body: JSON.stringify({ grade, stream, exam: examName })
                 });
 
                 const result = await res.json();
 
                 if (result.success && result.data?.length > 0) {
-                    const marksData = result.data;
+                    const marksData = result.data; // Array of student mark documents
+
+                    const subjectMap = {}; // subject name => Sub1...Sub8
+                    const subjects = getSubjectsForGradeStream(grade, stream);
+
+                    subjects.forEach((sub, i) => {
+                        subjectMap[sub] = `Sub${i + 1}`;
+                    });
 
                     const inputs = document.querySelectorAll("#marksTable input");
 
                     inputs.forEach(input => {
                         const id = input.getAttribute("data-id");
-                        const name = input.getAttribute("data-name");
                         const subject = input.getAttribute("data-subject");
 
-                        const markEntry = marksData.find(m =>
-                            m.student === id &&
-                            m.name === name &&
-                            m.subject === subject
-                        );
+                        const doc = marksData.find(m => m.RollNo === id);
+                        if (!doc) return;
 
-                        if (markEntry) {
-                            input.value = markEntry.marks === 0 ? "AB" : markEntry.marks;
+                        const subKey = subjectMap[subject];
+                        const val = doc[subKey];
+
+                        if (val !== undefined && val !== null) {
+                            input.value = val === 0 ? "AB" : val;
                         }
                     });
                 }
@@ -532,6 +539,14 @@
                 console.warn("No previous marks found or error fetching them.");
             }
         }
+
+        function getSubjectsForGradeStream(grade, stream) {
+            if (grade === "11" || grade === "12") {
+                return subjectsByClass[grade]?.[stream] || [];
+            }
+            return subjectsByClass[grade] || [];
+        }
+
 
     </script>
 </body>
