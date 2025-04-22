@@ -2,514 +2,656 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marks Management</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marks Management</title>
+    <style>
+        /*——————————————— 1. Variables & Global Reset ———————————————*/
+        :root {
+            --bg-page: #FAFAFA;
+            --bg-surface: #FFFFFF;
+            --primary: #9877D9;
+            --primary-light: #B99FE1;
+            --text-default: #333333;
+            --text-muted: #666666;
+            --border: #E1E1E1;
+            --radius: 0.5rem;
+            --spacing: 1rem;
+        }
 
-    body {
-      display: flex;
-      min-height: 100vh;
-      background-color: #f4f6f8;
-    }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    .sidebar {
-      width: 240px;
-      background-color: #2f3542;
-      color: white;
-      padding: 20px 0;
-    }
+        html {
+            font-size: 16px;
+        }
 
-    .sidebar h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 1.4rem;
-    }
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--bg-page);
+            color: var(--text-default);
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.5;
+        }
 
-    .sidebar a {
-      display: block;
-      color: white;
-      padding: 15px 20px;
-      text-decoration: none;
-      transition: 0.3s;
-    }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
 
-    .sidebar a:hover,
-    .sidebar a.active {
-      background-color: #57606f;
-    }
+        /*——————————————— 2. Sidebar ———————————————*/
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            padding: var(--spacing) 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .main-content {
-      flex-grow: 1;
-      padding: 20px;
-    }
+        .sidebar h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: calc(var(--spacing) * 1.5);
+            letter-spacing: 1px;
+            color: var(--text-default);
+        }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
+        .sidebar a {
+            width: 100%;
+            padding: 0.75rem var(--spacing);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: background-color 0.3s, padding-left 0.3s;
+        }
 
-    .header h1 {
-      font-size: 1.8rem;
-    }
+        .sidebar a:hover {
+            background-color: var(--primary-light);
+            padding-left: calc(var(--spacing) + 0.5rem);
+        }
 
-    .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+        .sidebar a.active {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            font-weight: 600;
+            padding-left: calc(var(--spacing) + 0.5rem);
+        }
 
-    .controls select,
-    .controls input,
-    .controls button {
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
+        /*——————————————— 3. Main Content & Header ———————————————*/
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: white;
-      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-    }
+        .header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: var(--spacing);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-    th,
-    td {
-      padding: 12px 15px;
-      text-align: center;
-      border-bottom: 1px solid #e0e0e0;
-      border-right: 1px solid #eee;
-    }
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-default);
+        }
 
-    th:last-child,
-    td:last-child {
-      border-right: none;
-    }
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+        }
 
-    th {
-      background-color: #f1f1f1;
-    }
+        .controls select,
+        .controls input,
+        .controls button {
+            height: 2.5rem;
+            padding: 0 0.75rem;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
 
-    td input {
-      width: 60px;
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      text-align: center;
-      -moz-appearance: textfield;
-    }
+        .controls select:focus,
+        .controls input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
 
-    td input::-webkit-outer-spin-button,
-    td input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
+        .controls button {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-    .btn-save {
-      background-color: #1e90ff;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+        .controls button:hover {
+            background-color: var(--primary-light);
+        }
 
-    .btn-print {
-      background-color: #2ed573;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+        /*——————————————— 4. Table Container & Table ———————————————*/
+        .table-container {
+            flex-grow: 1;
+            margin: var(--spacing);
+            background-color: var(--bg-surface);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
 
-    .status {
-      margin-top: 10px;
-      color: green;
-      font-weight: bold;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-    #loadingOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
+        thead {
+            background-color: var(--bg-page);
+        }
 
-    .spinner {
-      border: 8px solid #f3f3f3;
-      border-top: 8px solid #3498db;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-    }
+        th,
+        td {
+            padding: 0.75rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
 
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
+        th {
+            font-weight: 600;
+            color: var(--text-default);
+        }
 
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
+        tr:nth-child(even) {
+            background-color: #FBFBFB;
+        }
+
+        tr:hover {
+            background-color: #F1F1F1;
+        }
+
+        td input {
+            width: 3.5rem;
+            height: 2rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /*——————————————— 5. Action Buttons & Status ———————————————*/
+        .btn-save,
+        .btn-print {
+            width: 100px;
+            height: 2.5rem;
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn-save {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            border: none;
+        }
+
+        .btn-save:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-print {
+            background-color: transparent;
+            color: var(--text-default);
+            border: 1px solid var(--text-muted);
+        }
+
+        .btn-print:hover {
+            background-color: var(--text-muted);
+            color: var(--bg-surface);
+        }
+
+        .status {
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: green;
+            font-weight: 500;
+        }
+
+        /*——————————————— 6. Loading Overlay ———————————————*/
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 0.5rem solid #eee;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
 </head>
 
 <body>
-  <div class="sidebar">
-    <h2>Studia v1</h2>
-    <a href="./index.html">Dashboard</a>
-    <a href="./students.html">Student Directory</a>
-    <a href="./marks.html" class="active">Marks Management</a>
-    <a href="./fees.html">Fees Management</a>
-    <a href="#">Exam & Timetable</a>
-    <a href="#">Reports & Printouts</a>
-    <a href="#">Notifications</a>
-    <a href="#">Settings</a>
-  </div>
-
-  <div class="main-content">
-    <div class="header">
-      <h1>Marks Management</h1>
-      <div class="controls">
-        <select id="classSelect">
-          <option value="">Select Grade</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-          <option value="11">11</option>
-          <option value="12">12</option>
-        </select>
-
-        <select id="streamSelect" style="display: none;">
-          <option value="">Select Stream</option>
-          <option value="Science">Science</option>
-          <option value="Commerce">Commerce</option>
-          <option value="Arts">Arts</option>
-        </select>
-
-        <input type="text" id="examName" placeholder="Enter Exam Name">
-        <button class="btn-save" onclick="saveMarks()">Save</button>
-        <button class="btn-print" onclick="window.print()">Print</button>
-      </div>
+    <div class="sidebar">
+        <h2>ScholarX</h2>
+        <a href="./index.html">Dashboard</a>
+        <a href="./students.html">Student Directory</a>
+        <a href="./marks.html" class="active">Marks Management</a>
+        <a href="./fees.html">Fees Management</a>
+        <a href="#">Exam & Timetable</a>
+        <a href="#">Reports & Printouts</a>
+        <a href="#">Notifications</a>
+        <a href="#">Settings</a>
     </div>
 
-    <table id="marksTable">
-      <thead>
-        <tr id="marksHeader">
-          <th>Student ID</th>
-          <th>Student Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Dynamic Rows -->
-      </tbody>
-    </table>
-    <div class="status" id="statusMsg"></div>
-  </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>Marks Management</h1>
+            <div class="controls">
+                <select id="classSelect">
+                    <option value="">Select Grade</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
 
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" style="display:none;">
-    <div class="spinner"></div>
-  </div>
+                <select id="streamSelect" style="display: none; transition: 0.3s;">
+                    <option value="">Select Stream</option>
+                    <option value="Science">Science</option>
+                    <option value="Commerce">Commerce</option>
+                    <option value="Arts">Arts</option>
+                </select>
 
-  <script>
-    const subjectsByClass = {
-      "10": ["Maths", "Science", "Social", "English"],
-      "11": {
-        Science: ["Physics", "Chemistry", "Maths", "Computer"],
-        Commerce: ["Accountancy", "Business Studies", "Economics", "Maths"],
-        Arts: ["History", "Political Science", "Sociology", "English"]
-      },
-      "12": {
-        Science: ["Physics", "Chemistry", "Maths", "Biology"],
-        Commerce: ["Accountancy", "Business Studies", "Economics", "Informatics Practices"],
-        Arts: ["History", "Geography", "Psychology", "English"]
-      }
-    };
+                <input type="text" id="examName" placeholder="Enter Exam Name">
+                <button class="btn-save" onclick="saveMarks()">Save</button>
+                <button class="btn-print" onclick="window.print()">Print</button>
+            </div>
+        </div>
 
+        <div class="table-container">
+            <table id="marksTable">
+                <thead>
+                    <tr id="marksHeader">
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+            <div class="status" id="statusMsg"></div>
+        </div>
 
-    let studentsByClass = {}; // Will be populated dynamically
+    </div>
 
-    document.getElementById("classSelect").addEventListener("change", handleClassChange);
-    document.getElementById("streamSelect").addEventListener("change", fetchStudentsForMarks);
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display:none;">
+        <div class="spinner"></div>
+    </div>
 
-    async function handleClassChange() {
-      const classVal = document.getElementById("classSelect").value;
-      const streamSelect = document.getElementById("streamSelect");
-
-      if (classVal === "11" || classVal === "12") {
-        streamSelect.style.display = "inline-block";
-      } else {
-        streamSelect.style.display = "none";
-        streamSelect.value = "";
-
-        showLoading();
-        await fetchStudentsForMarks(); // fetch directly for classes 1-10
-        hideLoading();
-      }
-    }
-
-    async function fetchStudentsForMarks() {
-      const selectedClass = document.getElementById("classSelect").value;
-      const selectedStream = document.getElementById("streamSelect").value;
-
-      if (!selectedClass) return;
-      if ((selectedClass === "11" || selectedClass === "12") && !selectedStream) return;
-
-      showLoading();
-      try {
-        const res = await fetch("/.netlify/functions/fetchStudents", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ class: selectedClass })
-        });
-
-        const result = await res.json();
-
-        if (result.success && result.data.length > 0) {
-          let filteredStudents = result.data;
-
-          if (selectedClass === "11" || selectedClass === "12") {
-            filteredStudents = filteredStudents.filter(s => s.stream === selectedStream);
-          }
-
-          studentsByClass[selectedClass] = filteredStudents;
-          renderMarksTable();
-          tryFetchAndFillMarks();
-        } else {
-          alert("No students found.");
-        }
-      } catch (err) {
-        console.error("Error fetching students:", err);
-        alert("Error fetching student data.");
-      } finally {
-        hideLoading();
-      }
-    }
-
-
-    function renderMarksTable() {
-      const grade = document.getElementById("classSelect").value;
-      const stream = document.getElementById("streamSelect").value;
-      const headerRow = document.getElementById("marksHeader");
-      const tableBody = document.querySelector("#marksTable tbody");
-
-      headerRow.innerHTML = "<th>Student ID</th><th>Student Name</th>";
-      tableBody.innerHTML = "";
-
-      if (!grade || !studentsByClass[grade]) return;
-
-      let subjects = [];
-
-      if (grade <= 10) {
-        subjects = subjectsByClass[grade] || [];
-      } else {
-        subjects = subjectsByClass[grade]?.[stream] || [];
-      }
-
-      subjects.forEach(sub => {
-        const th = document.createElement("th");
-        th.textContent = sub;
-        headerRow.appendChild(th);
-      });
-
-      studentsByClass[grade].forEach(student => {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${student.id}</td><td>${student.name}</td>`;
-
-        subjects.forEach(subject => {
-          const td = document.createElement("td");
-          const input = document.createElement("input");
-          input.setAttribute("data-id", student.id);
-          input.setAttribute("data-name", student.name);
-          input.setAttribute("data-subject", subject);
-          input.setAttribute("type", "text");
-          input.setAttribute("maxlength", "3");
-
-          input.addEventListener("input", (e) => {
-            let value = e.target.value.toUpperCase();
-            if (value === "A") value = "AB";
-            if (value !== "AB" && (isNaN(value) || +value > 100 || +value < 0)) {
-              e.target.value = "";
-            } else {
-              e.target.value = value;
+    <script>
+        const subjectsByClass = {
+            "10": ["Maths", "Science", "Social", "English"],
+            "11": {
+                Science: ["Physics", "Chemistry", "Maths", "Computer"],
+                Commerce: ["Accountancy", "Business Studies", "Economics", "Maths"],
+                Arts: ["History", "Political Science", "Sociology", "English"]
+            },
+            "12": {
+                Science: ["Physics", "Chemistry", "Maths", "Biology"],
+                Commerce: ["Accountancy", "Business Studies", "Economics", "Informatics Practices"],
+                Arts: ["History", "Geography", "Psychology", "English"]
             }
-          });
-
-          td.appendChild(input);
-          row.appendChild(td);
-        });
-
-        tableBody.appendChild(row);
-      });
-    }
-
-
-    async function saveMarks() {
-      const grade = document.getElementById("classSelect").value;
-      const examName = document.getElementById("examName").value.trim();
-      const status = document.getElementById("statusMsg");
-
-      if (!grade || !examName) {
-        alert("Please select a class and enter an exam name.");
-        return;
-      }
-
-      const inputs = document.querySelectorAll("#marksTable input");
-
-      let successCount = 0;
-      let errorCount = 0;
-
-      showLoading();
-      for (const input of inputs) {
-        const studentId = input.getAttribute("data-id");
-        const studentName = input.getAttribute("data-name");
-        const subject = input.getAttribute("data-subject");
-        const value = input.value.trim();
-
-        if (value === "") continue;
-
-        const data = {
-          student: studentId,
-          name: studentName,
-          grade: grade,
-          exam: examName,
-          subject: subject,
-          marks: value === "AB" ? 0 : parseInt(value)
         };
 
-        try {
-          const res = await fetch('/.netlify/functions/saveMarks', {
-            method: 'POST',
-            body: JSON.stringify(data)
-          });
 
-          const result = await res.json();
-          if (result.message?.toLowerCase().includes("success")) successCount++;
-          else errorCount++;
-        } catch (err) {
-          errorCount++;
-          console.error("Error:", err);
-        }
-      }
-      hideLoading();
+        let studentsByClass = {}; // Will be populated dynamically
 
-      status.textContent = `Submitted: ${successCount} | Failed: ${errorCount}`;
-      setTimeout(() => status.textContent = "", 4000);
-    }
+        document.getElementById("classSelect").addEventListener("change", handleClassChange);
+        document.getElementById("streamSelect").addEventListener("change", fetchStudentsForMarks);
 
+        async function handleClassChange() {
+            const classVal = document.getElementById("classSelect").value;
+            const streamSelect = document.getElementById("streamSelect");
 
-    document.addEventListener("keydown", function (e) {
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
-        const active = document.activeElement;
-        if (active.tagName !== "INPUT") return;
+            if (classVal === "11" || classVal === "12") {
+                streamSelect.style.display = "inline-block";
+            } else {
+                streamSelect.style.display = "none";
+                streamSelect.value = "";
 
-        const td = active.parentElement;
-        const tr = td.parentElement;
-        const rowIndex = tr.rowIndex;
-        const cellIndex = td.cellIndex;
-
-        let targetInput;
-        switch (e.key) {
-          case "ArrowRight":
-            targetInput = tr.cells[cellIndex + 1]?.querySelector("input");
-            break;
-          case "ArrowLeft":
-            targetInput = tr.cells[cellIndex - 1]?.querySelector("input");
-            break;
-          case "ArrowDown":
-            targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex + 1}) td:nth-child(${cellIndex + 1}) input`);
-            break;
-          case "ArrowUp":
-            targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex - 1}) td:nth-child(${cellIndex + 1}) input`);
-            break;
+                showLoading();
+                await fetchStudentsForMarks(); // fetch directly for classes 1-10
+                hideLoading();
+            }
         }
 
-        if (targetInput) {
-          e.preventDefault();
-          targetInput.focus();
+        async function fetchStudentsForMarks() {
+            const selectedClass = document.getElementById("classSelect").value;
+            const selectedStream = document.getElementById("streamSelect").value;
+
+            if (!selectedClass) return;
+            if ((selectedClass === "11" || selectedClass === "12") && !selectedStream) return;
+
+            showLoading();
+            try {
+                const res = await fetch("/.netlify/functions/fetchStudents", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ class: selectedClass })
+                });
+
+                const result = await res.json();
+
+                if (result.success && result.data.length > 0) {
+                    let filteredStudents = result.data;
+
+                    if (selectedClass === "11" || selectedClass === "12") {
+                        filteredStudents = filteredStudents.filter(s => s.stream === selectedStream);
+                    }
+
+                    studentsByClass[selectedClass] = filteredStudents;
+                    renderMarksTable();
+                    tryFetchAndFillMarks();
+                } else {
+                    alert("No students found.");
+                }
+            } catch (err) {
+                console.error("Error fetching students:", err);
+                alert("Error fetching student data.");
+            } finally {
+                hideLoading();
+            }
         }
-      }
-    });
-
-    function showLoading() {
-      document.getElementById("loadingOverlay").style.display = "flex";
-    }
-
-    function hideLoading() {
-      document.getElementById("loadingOverlay").style.display = "none";
-    }
 
 
-    async function tryFetchAndFillMarks() {
-  const grade = document.getElementById("classSelect").value;
-  const examName = document.getElementById("examName").value.trim();
+        function renderMarksTable() {
+            const grade = document.getElementById("classSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const headerRow = document.getElementById("marksHeader");
+            const tableBody = document.querySelector("#marksTable tbody");
 
-  if (!grade || !examName) return;
+            headerRow.innerHTML = "<th>Student ID</th><th>Student Name</th>";
+            tableBody.innerHTML = "";
 
-  try {
-    const res = await fetch("/.netlify/functions/fetchMarks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ grade, exam: examName })
-    });
+            if (!grade || !studentsByClass[grade]) return;
 
-    const result = await res.json();
+            let subjects = [];
 
-    if (result.success && result.data?.length > 0) {
-      const marksData = result.data;
+            if (grade <= 10) {
+                subjects = subjectsByClass[grade] || [];
+            } else {
+                subjects = subjectsByClass[grade]?.[stream] || [];
+            }
 
-      const inputs = document.querySelectorAll("#marksTable input");
+            subjects.forEach(sub => {
+                const th = document.createElement("th");
+                th.textContent = sub;
+                headerRow.appendChild(th);
+            });
 
-      inputs.forEach(input => {
-        const id = input.getAttribute("data-id");
-        const name = input.getAttribute("data-name");
-        const subject = input.getAttribute("data-subject");
+            studentsByClass[grade].forEach(student => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${student.id}</td><td>${student.name}</td>`;
 
-        const markEntry = marksData.find(m =>
-          m.student === id &&
-          m.name === name &&
-          m.subject === subject
-        );
+                subjects.forEach(subject => {
+                    const td = document.createElement("td");
+                    const input = document.createElement("input");
+                    input.setAttribute("data-id", student.id);
+                    input.setAttribute("data-name", student.name);
+                    input.setAttribute("data-subject", subject);
+                    input.setAttribute("type", "text");
+                    input.setAttribute("maxlength", "3");
 
-        if (markEntry) {
-          input.value = markEntry.marks === 0 ? "AB" : markEntry.marks;
+                    input.addEventListener("input", (e) => {
+                        let value = e.target.value.toUpperCase();
+                        if (value === "A") value = "AB";
+                        if (value !== "AB" && (isNaN(value) || +value > 100 || +value < 0)) {
+                            e.target.value = "";
+                        } else {
+                            e.target.value = value;
+                        }
+                    });
+
+                    td.appendChild(input);
+                    row.appendChild(td);
+                });
+
+                tableBody.appendChild(row);
+            });
         }
-      });
-    }
-  } catch (err) {
-    console.warn("No previous marks found or error fetching them.");
-  }
-}
 
-  </script>
+        function getSubjectMap(grade, stream) {
+            let subjects = [];
+            if (+grade <= 10) {
+                subjects = subjectsByClass[grade] || [];
+            } else {
+                subjects = subjectsByClass[grade]?.[stream] || [];
+            }
+            const map = {};
+            subjects.forEach((subj, idx) => {
+                map[subj] = `Sub${idx + 1}`;
+            });
+            return map;
+        }
+
+        async function saveMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const examName = document.getElementById("examName").value.trim();
+            const status = document.getElementById("statusMsg");
+
+            if (!grade || !examName) {
+                alert("Please select a class and enter an exam name.");
+                return;
+            }
+
+            const inputs = document.querySelectorAll("#marksTable input");
+            const studentMap = {};
+
+            // Group marks by student
+            inputs.forEach(input => {
+                const id = input.getAttribute("data-id");
+                const name = input.getAttribute("data-name");
+                const subject = input.getAttribute("data-subject");
+                const rawValue = input.value.trim();
+
+                let marks = null;
+                if (rawValue === "AB") {
+                    marks = 0;
+                } else if (rawValue !== "") {
+                    const parsed = parseInt(rawValue);
+                    if (!isNaN(parsed)) {
+                        marks = parsed;
+                    }
+                }
+
+                if (!studentMap[id]) {
+                    studentMap[id] = {
+                        RollNo: id,
+                        Name: name,
+                        Class: grade,
+                        Section: "",  // Optional: fill if available
+                        Stream: (grade === "11" || grade === "12") ? stream : "",
+                        Exam: examName,
+                        Sub1: null, Sub2: null, Sub3: null, Sub4: null,
+                        Sub5: null, Sub6: null, Sub7: null, Sub8: null
+                    };
+                }
+
+                const subjectMap = getSubjectMap(grade, stream);
+                const subKey = subjectMap[subject];
+                if (subKey) {
+                    studentMap[id][subKey] = marks;
+                }
+            });
+
+            const batch = Object.values(studentMap);
+
+            try {
+                showLoading();
+                const res = await fetch('/.netlify/functions/saveMarks2', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ batch })
+                });
+                const result = await res.json();
+                status.textContent = result.message;
+            } catch (err) {
+                console.error("Save error:", err);
+                status.textContent = "Failed to save marks.";
+            } finally {
+                hideLoading();
+                setTimeout(() => (status.textContent = ""), 4000);
+            }
+        }
+
+
+
+
+        document.addEventListener("keydown", function (e) {
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+                const active = document.activeElement;
+                if (active.tagName !== "INPUT") return;
+
+                const td = active.parentElement;
+                const tr = td.parentElement;
+                const rowIndex = tr.rowIndex;
+                const cellIndex = td.cellIndex;
+
+                let targetInput;
+                switch (e.key) {
+                    case "ArrowRight":
+                        targetInput = tr.cells[cellIndex + 1]?.querySelector("input");
+                        break;
+                    case "ArrowLeft":
+                        targetInput = tr.cells[cellIndex - 1]?.querySelector("input");
+                        break;
+                    case "ArrowDown":
+                        targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex + 1}) td:nth-child(${cellIndex + 1}) input`);
+                        break;
+                    case "ArrowUp":
+                        targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex - 1}) td:nth-child(${cellIndex + 1}) input`);
+                        break;
+                }
+
+                if (targetInput) {
+                    e.preventDefault();
+                    targetInput.focus();
+                }
+            }
+        });
+
+        function showLoading() {
+            document.getElementById("loadingOverlay").style.display = "flex";
+        }
+
+        function hideLoading() {
+            document.getElementById("loadingOverlay").style.display = "none";
+        }
+
+
+        async function tryFetchAndFillMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const examName = document.getElementById("examName").value.trim();
+
+            if (!grade || !examName) return;
+
+            try {
+                const res = await fetch("/.netlify/functions/fetchMarks2", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ grade, stream, exam: examName })
+                });
+
+                const result = await res.json();
+
+                if (result.success && result.data?.length > 0) {
+                    const marksData = result.data; // Array of student mark documents
+
+                    const subjectMap = {}; // subject name => Sub1...Sub8
+                    const subjects = getSubjectsForGradeStream(grade, stream);
+
+                    subjects.forEach((sub, i) => {
+                        subjectMap[sub] = `Sub${i + 1}`;
+                    });
+
+                    const inputs = document.querySelectorAll("#marksTable input");
+
+                    inputs.forEach(input => {
+                        const id = input.getAttribute("data-id");
+                        const subject = input.getAttribute("data-subject");
+
+                        const doc = marksData.find(m => m.RollNo === id);
+                        if (!doc) return;
+
+                        const subKey = subjectMap[subject];
+                        const val = doc[subKey];
+
+                        if (val === 0) {
+                            input.value = "AB";
+                        } else if (val === null || val === undefined) {
+                            input.value = "";
+                        } else {
+                            input.value = val;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn("No previous marks found or error fetching them.");
+            }
+        }
+
+
+        function getSubjectsForGradeStream(grade, stream) {
+            if (grade === "11" || grade === "12") {
+                return subjectsByClass[grade]?.[stream] || [];
+            }
+            return subjectsByClass[grade] || [];
+        }
+
+
+    </script>
 </body>
 
 </html>
