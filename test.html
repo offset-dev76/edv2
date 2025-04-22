@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marks Management</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f4f6f8;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: #2f3542;
+            color: white;
+            padding: 20px 0;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.4rem;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 15px 20px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #57606f;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .controls select,
+        .controls input,
+        .controls button {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            border-right: 1px solid #eee;
+        }
+
+        th:last-child,
+        td:last-child {
+            border-right: none;
+        }
+
+        th {
+            background-color: #f1f1f1;
+        }
+
+        td input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+
+        td input::-webkit-outer-spin-button,
+        td input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .btn-save {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-print {
+            background-color: #2ed573;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .status {
+            margin-top: 10px;
+            color: green;
+            font-weight: bold;
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>Studia v1</h2>
+        <a href="./index.html">Dashboard</a>
+        <a href="./students.html">Student Directory</a>
+        <a href="./marks.html" class="active">Marks Management</a>
+        <a href="./fees.html">Fees Management</a>
+        <a href="#">Exam & Timetable</a>
+        <a href="#">Reports & Printouts</a>
+        <a href="#">Notifications</a>
+        <a href="#">Settings</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Marks Management</h1>
+            <div class="controls">
+                <select id="classSelect">
+                    <option value="">Select Grade</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+
+                <select id="streamSelect" style="display: none;">
+                    <option value="">Select Stream</option>
+                    <option value="Science">Science</option>
+                    <option value="Commerce">Commerce</option>
+                    <option value="Arts">Arts</option>
+                </select>
+
+                <input type="text" id="examName" placeholder="Enter Exam Name">
+                <button class="btn-save" onclick="saveMarks()">Save</button>
+                <button class="btn-print" onclick="window.print()">Print</button>
+            </div>
+        </div>
+
+        <table id="marksTable">
+            <thead>
+                <tr id="marksHeader">
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic Rows -->
+            </tbody>
+        </table>
+        <div class="status" id="statusMsg"></div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display:none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        const subjectsByClass = {
+            "10": ["Maths", "Science", "Social", "English"],
+            "11": {
+                Science: ["Physics", "Chemistry", "Maths", "Computer"],
+                Commerce: ["Accountancy", "Business Studies", "Economics", "Maths"],
+                Arts: ["History", "Political Science", "Sociology", "English"]
+            },
+            "12": {
+                Science: ["Physics", "Chemistry", "Maths", "Biology"],
+                Commerce: ["Accountancy", "Business Studies", "Economics", "Informatics Practices"],
+                Arts: ["History", "Geography", "Psychology", "English"]
+            }
+        };
+
+
+        let studentsByClass = {}; // Will be populated dynamically
+
+        document.getElementById("classSelect").addEventListener("change", handleClassChange);
+        document.getElementById("streamSelect").addEventListener("change", fetchStudentsForMarks);
+
+        async function handleClassChange() {
+            const classVal = document.getElementById("classSelect").value;
+            const streamSelect = document.getElementById("streamSelect");
+
+            if (classVal === "11" || classVal === "12") {
+                streamSelect.style.display = "inline-block";
+            } else {
+                streamSelect.style.display = "none";
+                streamSelect.value = "";
+
+                showLoading();
+                await fetchStudentsForMarks(); // fetch directly for classes 1-10
+                hideLoading();
+            }
+        }
+
+        async function fetchStudentsForMarks() {
+            const selectedClass = document.getElementById("classSelect").value;
+            const selectedStream = document.getElementById("streamSelect").value;
+
+            if (!selectedClass) return;
+            if ((selectedClass === "11" || selectedClass === "12") && !selectedStream) return;
+
+            showLoading();
+            try {
+                const res = await fetch("/.netlify/functions/fetchStudents", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ class: selectedClass })
+                });
+
+                const result = await res.json();
+
+                if (result.success && result.data.length > 0) {
+                    let filteredStudents = result.data;
+
+                    if (selectedClass === "11" || selectedClass === "12") {
+                        filteredStudents = filteredStudents.filter(s => s.stream === selectedStream);
+                    }
+
+                    studentsByClass[selectedClass] = filteredStudents;
+                    renderMarksTable();
+                    tryFetchAndFillMarks();
+                } else {
+                    alert("No students found.");
+                }
+            } catch (err) {
+                console.error("Error fetching students:", err);
+                alert("Error fetching student data.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+
+        function renderMarksTable() {
+            const grade = document.getElementById("classSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const headerRow = document.getElementById("marksHeader");
+            const tableBody = document.querySelector("#marksTable tbody");
+
+            headerRow.innerHTML = "<th>Student ID</th><th>Student Name</th>";
+            tableBody.innerHTML = "";
+
+            if (!grade || !studentsByClass[grade]) return;
+
+            let subjects = [];
+
+            if (grade <= 10) {
+                subjects = subjectsByClass[grade] || [];
+            } else {
+                subjects = subjectsByClass[grade]?.[stream] || [];
+            }
+
+            subjects.forEach(sub => {
+                const th = document.createElement("th");
+                th.textContent = sub;
+                headerRow.appendChild(th);
+            });
+
+            studentsByClass[grade].forEach(student => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${student.id}</td><td>${student.name}</td>`;
+
+                subjects.forEach(subject => {
+                    const td = document.createElement("td");
+                    const input = document.createElement("input");
+                    input.setAttribute("data-id", student.id);
+                    input.setAttribute("data-name", student.name);
+                    input.setAttribute("data-subject", subject);
+                    input.setAttribute("type", "text");
+                    input.setAttribute("maxlength", "3");
+
+                    input.addEventListener("input", (e) => {
+                        let value = e.target.value.toUpperCase();
+                        if (value === "A") value = "AB";
+                        if (value !== "AB" && (isNaN(value) || +value > 100 || +value < 0)) {
+                            e.target.value = "";
+                        } else {
+                            e.target.value = value;
+                        }
+                    });
+
+                    td.appendChild(input);
+                    row.appendChild(td);
+                });
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        function getSubjectMap(grade, stream) {
+            let subjects = [];
+            if (+grade <= 10) {
+                subjects = subjectsByClass[grade] || [];
+            } else {
+                subjects = subjectsByClass[grade]?.[stream] || [];
+            }
+            const map = {};
+            subjects.forEach((subj, idx) => {
+                map[subj] = `Sub${idx + 1}`;
+            });
+            return map;
+        }
+
+
+
+        async function saveMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const examName = document.getElementById("examName").value.trim();
+            const status = document.getElementById("statusMsg");
+
+            if (!grade || !examName) {
+                alert("Please select a class and enter an exam name.");
+                return;
+            }
+
+            const inputs = document.querySelectorAll("#marksTable input");
+            const studentMap = {};
+
+            // Group marks by student
+            inputs.forEach(input => {
+                const id = input.getAttribute("data-id");
+                const name = input.getAttribute("data-name");
+                const subject = input.getAttribute("data-subject");
+                const marks = input.value.trim() === "AB" ? 0 : parseInt(input.value.trim()) || 0;
+
+                if (!studentMap[id]) {
+                    studentMap[id] = {
+                        RollNo: id,
+                        Name: name,
+                        Class: grade,
+                        Section: "",  // Optional: fill if available
+                        Stream: (grade === "11" || grade === "12") ? stream : "",
+                        Exam: examName,
+                        Sub1: null, Sub2: null, Sub3: null, Sub4: null,
+                        Sub5: null, Sub6: null, Sub7: null, Sub8: null
+                    };
+                }
+
+                const subjectMap = getSubjectMap(grade, stream);
+                const subKey = subjectMap[subject];
+                if (subKey) {
+                    studentMap[id][subKey] = marks;
+                }
+            });
+
+            const batch = Object.values(studentMap);
+
+            try {
+                showLoading();
+                const res = await fetch('/.netlify/functions/saveMarks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ batch })
+                });
+                const result = await res.json();
+                status.textContent = result.message;
+            } catch (err) {
+                console.error("Save error:", err);
+                status.textContent = "Failed to save marks.";
+            } finally {
+                hideLoading();
+                setTimeout(() => (status.textContent = ""), 4000);
+            }
+        }
+
+
+
+        document.addEventListener("keydown", function (e) {
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+                const active = document.activeElement;
+                if (active.tagName !== "INPUT") return;
+
+                const td = active.parentElement;
+                const tr = td.parentElement;
+                const rowIndex = tr.rowIndex;
+                const cellIndex = td.cellIndex;
+
+                let targetInput;
+                switch (e.key) {
+                    case "ArrowRight":
+                        targetInput = tr.cells[cellIndex + 1]?.querySelector("input");
+                        break;
+                    case "ArrowLeft":
+                        targetInput = tr.cells[cellIndex - 1]?.querySelector("input");
+                        break;
+                    case "ArrowDown":
+                        targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex + 1}) td:nth-child(${cellIndex + 1}) input`);
+                        break;
+                    case "ArrowUp":
+                        targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex - 1}) td:nth-child(${cellIndex + 1}) input`);
+                        break;
+                }
+
+                if (targetInput) {
+                    e.preventDefault();
+                    targetInput.focus();
+                }
+            }
+        });
+
+        function showLoading() {
+            document.getElementById("loadingOverlay").style.display = "flex";
+        }
+
+        function hideLoading() {
+            document.getElementById("loadingOverlay").style.display = "none";
+        }
+
+
+        async function tryFetchAndFillMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const examName = document.getElementById("examName").value.trim();
+
+            if (!grade || !examName) return;
+
+            try {
+                const res = await fetch("/.netlify/functions/fetchMarks", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ grade, exam: examName })
+                });
+
+                const result = await res.json();
+
+                if (result.success && result.data?.length > 0) {
+                    const marksData = result.data;
+
+                    const inputs = document.querySelectorAll("#marksTable input");
+
+                    inputs.forEach(input => {
+                        const id = input.getAttribute("data-id");
+                        const name = input.getAttribute("data-name");
+                        const subject = input.getAttribute("data-subject");
+
+                        const markEntry = marksData.find(m =>
+                            m.student === id &&
+                            m.name === name &&
+                            m.subject === subject
+                        );
+
+                        if (markEntry) {
+                            input.value = markEntry.marks === 0 ? "AB" : markEntry.marks;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn("No previous marks found or error fetching them.");
+            }
+        }
+
+    </script>
+</body>
+
+</html>
