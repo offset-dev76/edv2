@@ -385,8 +385,6 @@
             return map;
         }
 
-
-
         async function saveMarks() {
             const grade = document.getElementById("classSelect").value;
             const stream = document.getElementById("streamSelect").value;
@@ -406,7 +404,17 @@
                 const id = input.getAttribute("data-id");
                 const name = input.getAttribute("data-name");
                 const subject = input.getAttribute("data-subject");
-                const marks = input.value.trim() === "AB" ? 0 : parseInt(input.value.trim()) || 0;
+                const rawValue = input.value.trim();
+
+                let marks = null;
+                if (rawValue === "AB") {
+                    marks = 0;
+                } else if (rawValue !== "") {
+                    const parsed = parseInt(rawValue);
+                    if (!isNaN(parsed)) {
+                        marks = parsed;
+                    }
+                }
 
                 if (!studentMap[id]) {
                     studentMap[id] = {
@@ -447,6 +455,7 @@
                 setTimeout(() => (status.textContent = ""), 4000);
             }
         }
+
 
 
 
@@ -530,8 +539,12 @@
                         const subKey = subjectMap[subject];
                         const val = doc[subKey];
 
-                        if (val !== undefined && val !== null) {
-                            input.value = val === 0 ? "AB" : val;
+                        if (val === 0) {
+                            input.value = "AB";
+                        } else if (val === null || val === undefined) {
+                            input.value = "";
+                        } else {
+                            input.value = val;
                         }
                     });
                 }
@@ -539,6 +552,7 @@
                 console.warn("No previous marks found or error fetching them.");
             }
         }
+
 
         function getSubjectsForGradeStream(grade, stream) {
             if (grade === "11" || grade === "12") {
