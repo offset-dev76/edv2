@@ -6,145 +6,216 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fees Dashboard</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
+    /*——————————————— 1. Variables & Global Reset ———————————————*/
+    :root {
+        --bg-page: #FAFAFA;
+        --bg-surface: #FFFFFF;
+        --primary: #9877D9;
+        --primary-light: #B99FE1;
+        --text-default: #333333;
+        --text-muted: #666666;
+        --border: #E1E1E1;
+        --radius: 0.5rem;
+        --spacing: 1rem;
+    }
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Poppins', sans-serif;
     }
 
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      height: 100vh;
+        display: flex;
+        min-height: 100vh;
+        background-color: var(--bg-page);
+        color: var(--text-default);
+        line-height: 1.5;
     }
 
+    /*——————————————— 2. Sidebar ———————————————*/
     .sidebar {
-      width: 240px;
-      background-color: #2f3542;
-      color: white;
-      padding: 20px 0;
+        width: 240px;
+        background-color: var(--bg-surface);
+        border-right: 1px solid var(--border);
+        padding: var(--spacing) 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .sidebar h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 1.4rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: calc(var(--spacing) * 1.5);
+        color: var(--text-default);
     }
 
     .sidebar a {
-      display: block;
-      color: white;
-      padding: 15px 20px;
-      text-decoration: none;
-      transition: 0.3s;
+        width: 100%;
+        padding: 0.75rem var(--spacing);
+        font-size: 1rem;
+        color: var(--text-muted);
+        transition: background-color 0.3s, padding-left 0.3s;
+        text-decoration: none;
     }
 
     .sidebar a:hover,
     .sidebar a.active {
-      background-color: #57606f;
+        background-color: var(--primary-light);
+        color: var(--bg-surface);
+        font-weight: 600;
+        padding-left: calc(var(--spacing) + 0.5rem);
     }
 
+    /*——————————————— 3. Main Content ———————————————*/
     .main {
-      flex-grow: 1;
-      padding: 20px;
+        flex-grow: 1;
+        padding: var(--spacing);
     }
 
     select,
     button,
     input {
-      padding: 8px;
-      margin-right: 10px;
-      margin-bottom: 10px;
+        height: 2.5rem;
+        padding: 0 0.75rem;
+        font-size: 0.95rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 0.75rem;
+        margin-right: 0.75rem;
     }
 
+    select:focus,
+    input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    button {
+        background-color: var(--primary);
+        color: var(--bg-surface);
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: var(--primary-light);
+    }
+
+    /*——————————————— 4. Table ———————————————*/
     table {
-      margin-top: 20px;
-      width: 100%;
-      border-collapse: collapse;
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+        background-color: var(--bg-surface);
+        border-radius: var(--radius);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
     }
 
     th,
     td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: left;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+        text-align: center;
+        font-size: 0.95rem;
     }
 
     th {
-      background: #f0f0f0;
+        background-color: var(--bg-page);
+        font-weight: 600;
+        color: var(--text-default);
+    }
+
+    tr:nth-child(even) {
+        background-color: #FBFBFB;
+    }
+
+    tr:hover {
+        background-color: #F1F1F1;
     }
 
     .no-data {
-      margin-top: 20px;
-      color: gray;
+        margin-top: 1rem;
+        font-size: 0.95rem;
+        color: var(--text-muted);
     }
 
+    /*——————————————— 5. Modal ———————————————*/
     .modal {
-      display: none;
-      position: fixed;
-      z-index: 9998;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .modal-content {
-      background-color: #fff;
-      margin: 10% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 500px;
-      border-radius: 10px;
+        background-color: var(--bg-surface);
+        padding: var(--spacing);
+        border-radius: 1rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+        position: relative;
     }
 
     .close {
-      float: right;
-      font-size: 1.2rem;
-      cursor: pointer;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: var(--text-muted);
     }
 
+    .close:hover {
+        color: var(--text-default);
+    }
+
+    /*——————————————— 6. Loading Overlay ———————————————*/
     #loadingOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
     }
 
     .spinner {
-      border: 8px solid #f3f3f3;
-      border-top: 8px solid #3498db;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
+        width: 3rem;
+        height: 3rem;
+        border: 0.5rem solid #eee;
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
     }
 
     @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
+        to {
+            transform: rotate(360deg);
+        }
     }
 
+    /*——————————————— 7. Payment History Entry ———————————————*/
     .payment-history-entry {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.95rem;
     }
-  </style>
+</style>
 </head>
 
 <body>
