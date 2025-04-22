@@ -432,7 +432,7 @@
 
             try {
                 showLoading();
-                const res = await fetch('/.netlify/functions/saveMarks', {
+                const res = await fetch('/.netlify/functions/saveMarks2', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ batch })
