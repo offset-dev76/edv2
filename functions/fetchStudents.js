@@ -11,7 +11,7 @@ const studentSchema = new mongoose.Schema({
   phone: String
 });
 
-const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
+const Student = mongoose.models.Student || mongoose.model('student', studentSchema);
 
 let isConnected = false;
 
