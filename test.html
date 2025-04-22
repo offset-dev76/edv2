@@ -6,226 +6,263 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marks Management</title>
     <style>
-        @font-face {
-            font-family: 'Nanami';
-            src: url('./Fonts/Nanami-Thin.otf') format('opentype');
-            font-weight: 100;
+        /*——————————————— 1. Variables & Global Reset ———————————————*/
+        :root {
+            --bg-page: #FAFAFA;
+            --bg-surface: #FFFFFF;
+            --primary: #9877D9;
+            --primary-light: #B99FE1;
+            --text-default: #333333;
+            --text-muted: #666666;
+            --border: #E1E1E1;
+            --radius: 0.5rem;
+            --spacing: 1rem;
         }
 
-        @font-face {
-            font-family: 'Nanami';
-            src: url('./Fonts/Nanami-ExtraLight.otf') format('opentype');
-            font-weight: 200;
-        }
-
-        @font-face {
-            font-family: 'Nanami';
-            src: url('./Fonts/Nanami-Light.otf') format('opentype');
-            font-weight: 300;
-        }
-
-        @font-face {
-            font-family: 'Nanami';
-            src: url('./Fonts/Nanami-Regular.otf') format('opentype');
-            font-weight: 400;
-        }
-
-        @font-face {
-            font-family: 'Nanami';
-            src: url('./Fonts/Nanami-Book.otf') format('opentype');
-            font-weight: 500;
-        }
-
-        @font-face {
-            font-family: 'Nanami';
-            src: url('./Fonts/Nanami-Bold.otf') format('opentype');
-            font-weight: 700;
-        }
-
-        @font-face {
-            font-family: 'Nanami';
-            src: url('./Fonts/Nanami-Heavy.otf') format('opentype');
-            font-weight: 800;
-        }
-
-        @font-face {
-            font-family: 'Nanami';
-            src: url('./Fonts/Nanami-Black.otf') format('opentype');
-            font-weight: 900;
-        }
-
-        * {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Nanami', sans-serif;
         }
 
+        html {
+            font-size: 16px;
+        }
 
         body {
             display: flex;
             min-height: 100vh;
-            background-color: #f4f6f8;
+            background-color: var(--bg-page);
+            color: var(--text-default);
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.5;
         }
 
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /*——————————————— 2. Sidebar ———————————————*/
         .sidebar {
             width: 240px;
-            background-color: #2f3542;
-            color: white;
-            padding: 20px 0;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            padding: var(--spacing) 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .sidebar h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: calc(var(--spacing) * 1.5);
+            letter-spacing: 1px;
+            color: var(--text-default);
         }
 
         .sidebar a {
-            display: block;
-            color: white;
-            padding: 15px 20px;
-            text-decoration: none;
-            transition: 0.3s;
+            width: 100%;
+            padding: 0.75rem var(--spacing);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: background-color 0.3s, padding-left 0.3s;
         }
 
-        .sidebar a:hover,
+        .sidebar a:hover {
+            background-color: var(--primary-light);
+            padding-left: calc(var(--spacing) + 0.5rem);
+        }
+
         .sidebar a.active {
-            background-color: #57606f;
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            font-weight: 600;
+            padding-left: calc(var(--spacing) + 0.5rem);
         }
 
+        /*——————————————— 3. Main Content & Header ———————————————*/
         .main-content {
             flex-grow: 1;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: var(--spacing);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
+            justify-content: space-between;
         }
 
         .header h1 {
-            font-size: 1.8rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-default);
         }
 
         .controls {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .controls select,
         .controls input,
         .controls button {
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            height: 2.5rem;
+            padding: 0 0.75rem;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .controls select:focus,
+        .controls input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .controls button {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background-color: var(--primary-light);
+        }
+
+        /*——————————————— 4. Table Container & Table ———————————————*/
+        .table-container {
+            flex-grow: 1;
+            margin: var(--spacing);
+            background-color: var(--bg-surface);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            background-color: var(--bg-page);
         }
 
         th,
         td {
-            padding: 12px 15px;
+            padding: 0.75rem 1rem;
             text-align: center;
-            border-bottom: 1px solid #e0e0e0;
-            border-right: 1px solid #eee;
-        }
-
-        th:last-child,
-        td:last-child {
-            border-right: none;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
         }
 
         th {
-            background-color: #f1f1f1;
+            font-weight: 600;
+            color: var(--text-default);
+        }
+
+        tr:nth-child(even) {
+            background-color: #FBFBFB;
+        }
+
+        tr:hover {
+            background-color: #F1F1F1;
         }
 
         td input {
-            width: 60px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            width: 3.5rem;
+            height: 2rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             text-align: center;
-            -moz-appearance: textfield;
+            font-size: 0.9rem;
         }
 
-        td input::-webkit-outer-spin-button,
-        td input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+        /*——————————————— 5. Action Buttons & Status ———————————————*/
+        .btn-save,
+        .btn-print {
+            width: 100px;
+            height: 2.5rem;
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .btn-save {
-            background-color: #1e90ff;
-            color: white;
+            background-color: var(--primary);
+            color: var(--bg-surface);
             border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
+        }
+
+        .btn-save:hover {
+            background-color: var(--primary-light);
         }
 
         .btn-print {
-            background-color: #2ed573;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
+            background-color: transparent;
+            color: var(--text-default);
+            border: 1px solid var(--text-muted);
+        }
+
+        .btn-print:hover {
+            background-color: var(--text-muted);
+            color: var(--bg-surface);
         }
 
         .status {
-            margin-top: 10px;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
             color: green;
-            font-weight: bold;
+            font-weight: 500;
         }
 
+        /*——————————————— 6. Loading Overlay ———————————————*/
         #loadingOverlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.7);
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
-            justify-content: center;
             align-items: center;
-            z-index: 9999;
+            justify-content: center;
+            z-index: 999;
         }
 
         .spinner {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
+            width: 3rem;
+            height: 3rem;
+            border: 0.5rem solid #eee;
+            border-top-color: var(--primary);
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
             animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
+            to {
                 transform: rotate(360deg);
             }
         }
     </style>
+
 </head>
 
 <body>
     <div class="sidebar">
-        <h2>Studia v1</h2>
+        <h2>ScholarX</h2>
         <a href="./index.html">Dashboard</a>
         <a href="./students.html">Student Directory</a>
         <a href="./marks.html" class="active">Marks Management</a>
@@ -256,7 +293,7 @@
                     <option value="12">12</option>
                 </select>
 
-                <select id="streamSelect" style="display: none;">
+                <select id="streamSelect" style="display: none; transition: 0.3s;">
                     <option value="">Select Stream</option>
                     <option value="Science">Science</option>
                     <option value="Commerce">Commerce</option>
@@ -269,18 +306,21 @@
             </div>
         </div>
 
-        <table id="marksTable">
-            <thead>
-                <tr id="marksHeader">
-                    <th>Student ID</th>
-                    <th>Student Name</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Dynamic Rows -->
-            </tbody>
-        </table>
-        <div class="status" id="statusMsg"></div>
+        <div class="table-container">
+            <table id="marksTable">
+                <thead>
+                    <tr id="marksHeader">
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+            <div class="status" id="statusMsg"></div>
+        </div>
+
     </div>
 
     <!-- Loading Overlay -->
