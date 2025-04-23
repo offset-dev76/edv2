@@ -150,7 +150,6 @@
   }
   .table-container {
             flex-grow: 1;
-            margin: var(--spacing);
             background-color: var(--bg-surface);
             border-radius: var(--radius);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -188,11 +187,14 @@
     cursor: pointer;
   }
 
-  thead tr{
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  }
+  thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--primary); /* Important: needs solid background */
+  color: var(--bg-surface);
+}
+
 
   tr:nth-child(even) {
     background-color: #FBFBFB;
@@ -316,6 +318,10 @@
           <option value="A">A</option>
           <option value="B">B</option>
           <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+          <option value="F">F</option>
+          <option value="G">G</option>
         </select>
 
         <label for="streamSelect">Stream:</label>
@@ -336,7 +342,7 @@
         <button onclick="fetchStudents()">Fetch</button>
         <button onclick="openModal()">Add Student</button>
 
-        <span id="studentCount" style="margin-left: auto;">Total: 0</span>
+       <span id="studentCount" style="display: block; text-align: center;">Total: 0</span>
       </div>
     </div>
 
