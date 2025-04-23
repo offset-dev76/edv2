@@ -1,157 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Marks Report</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 2rem;
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    .filters {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      margin-bottom: 2rem;
-    }
-
-    .filters select {
-      padding: 0.5rem;
-    }
-
-    #marksTable {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-
-    #marksTable th, #marksTable td {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      text-align: center;
-    }
-
-    #printBtn {
-      margin: 1rem auto;
-      display: block;
-      padding: 0.6rem 1.2rem;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    #printBtn:hover {
-      background-color: #45a049;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports Management</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
 
-  <h1>Marks Report</h1>
+<body class="bg-gray-50 text-gray-800 flex">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-blue-600 text-white min-h-screen p-6 shadow-lg fixed">
+    <h2 class="text-2xl font-semibold mb-6">Studia v1</h2>
+    <nav class="flex flex-col gap-4">
+      <a href="./index.html" class="hover:bg-blue-500 p-2 rounded">Dashboard</a>
+      <a href="./students.html" class="hover:bg-blue-500 p-2 rounded">Student Directory</a>
+      <a href="./marks.html" class="hover:bg-blue-500 p-2 rounded">Marks Management</a>
+      <a href="./fees.html" class="hover:bg-blue-500 p-2 rounded">Fees Management</a>
+      <a href="./reports.html" class="bg-blue-700 p-2 rounded">Reports & Printouts</a>
+      <a href="./settings.html" class="hover:bg-blue-500 p-2 rounded">Settings</a>
+    </nav>
+  </aside>
 
-  <div class="filters">
-    <select id="classSelect">
-      <option value="">Select Class</option>
-      <option value="10">10</option>
-      <option value="11">11</option>
-      <option value="12">12</option>
-    </select>
+  <!-- Main Content -->
+  <main class="ml-64 p-8 w-full">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold">Reports Management</h1>
+    </div>
 
-    <select id="examSelect">
-      <option value="">Select Exam</option>
-      <option value="Midterm">Midterm</option>
-      <option value="Final">Final</option>
-    </select>
+    <!-- Filters -->
+    <div class="flex flex-wrap gap-4 mb-6">
+      <select id="classSelect" class="p-2 border rounded w-40">
+        <option value="">Select Class</option>
+        ${[...Array(12)].map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
+      </select>
 
-    <button onclick="loadMarks()">View Marks</button>
+      <select id="sectionSelect" class="p-2 border rounded w-40">
+        <option value="">Select Section</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+      </select>
+
+      <select id="streamSelect" class="p-2 border rounded w-48 hidden">
+        <option value="">Select Stream</option>
+        <option value="Science">Science</option>
+        <option value="Commerce">Commerce</option>
+        <option value="Arts">Arts</option>
+      </select>
+
+      <input id="examName" class="p-2 border rounded w-64" type="text" placeholder="Enter Exam Name" />
+
+      <button onclick="fetchMarks()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Generate Report</button>
+      <button onclick="printReport()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Print</button>
+      <button onclick="exportPDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export PDF</button>
+    </div>
+
+    <!-- Report Table -->
+    <div class="bg-white rounded shadow p-4">
+      <h2 class="text-xl font-semibold mb-4">Class Report Preview</h2>
+      <div class="overflow-auto">
+        <table id="reportTable" class="min-w-full text-sm border">
+          <thead class="bg-gray-100 text-left">
+            <tr>
+              <th class="p-2 border">Roll No</th>
+              <th class="p-2 border">Name</th>
+              ${[...Array(8)].map((_, i) => `<th class="p-2 border">Sub${i + 1}</th>`).join('')}
+              <th class="p-2 border">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-100">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Chart Modal -->
+  <div id="chartModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+      <button onclick="closeChart()" class="absolute top-2 right-2 text-gray-500 hover:text-black">✕</button>
+      <canvas id="marksChart" width="300" height="300"></canvas>
+    </div>
   </div>
 
-  <div id="marksContainer">
-    <table id="marksTable">
-      <thead>
-        <tr>
-          <th>Student Name</th>
-          <th>Student ID</th>
-          <th>Subject</th>
-          <th>Marks</th>
-        </tr>
-      </thead>
-      <tbody id="marksBody">
-        <!-- Populated by JS -->
-      </tbody>
-    </table>
-  </div>
-
-  <button id="printBtn" onclick="printPDF()">Print/Save as PDF</button>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
-    async function loadMarks() {
-      const classValue = document.getElementById('classSelect').value;
-      const examValue = document.getElementById('examSelect').value;
+    const classSelect = document.getElementById("classSelect");
+    const streamSelect = document.getElementById("streamSelect");
 
-      if (!classValue || !examValue) {
-        alert("Please select both class and exam.");
-        return;
-      }
+    classSelect.addEventListener("change", () => {
+      const selectedClass = parseInt(classSelect.value);
+      streamSelect.classList.toggle("hidden", selectedClass < 11);
+    });
 
-      // Fetch students in class
-      const studentsRes = await fetch('/.netlify/functions/fetchStudents', {
+    async function fetchMarks() {
+      const grade = classSelect.value;
+      const section = document.getElementById("sectionSelect").value;
+      const exam = document.getElementById("examName").value.trim();
+      const stream = streamSelect.classList.contains("hidden") ? "" : streamSelect.value;
+
+      if (!grade || !exam) return alert("Please select class and enter exam name.");
+
+      const res = await fetch('/.netlify/functions/fetchMarks2', {
         method: 'POST',
-        body: JSON.stringify({ class: classValue })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ grade, section, exam, stream })
       });
 
-      const studentsData = await studentsRes.json();
-      if (!studentsData.success) {
-        alert("Failed to load students.");
-        return;
-      }
+      const result = await res.json();
+      if (result.success) renderReport(result.data);
+      else alert("No marks found.");
+    }
 
-      const studentMap = {};
-      studentsData.data.forEach(stu => {
-        studentMap[stu.id] = stu.name;
-      });
-
-      // Fetch marks for grade and exam
-      const marksRes = await fetch('/.netlify/functions/fetchMarks', {
-        method: 'POST',
-        body: JSON.stringify({ grade: classValue, exam: examValue })
-      });
-
-      const marksData = await marksRes.json();
-      if (!marksData.success) {
-        alert("Failed to load marks.");
-        return;
-      }
-
-      const tbody = document.getElementById('marksBody');
-      tbody.innerHTML = '';
-
-      marksData.data.forEach(entry => {
-        const tr = document.createElement('tr');
-
-        tr.innerHTML = `
-          <td>${studentMap[entry.student] || entry.name}</td>
-          <td>${entry.student}</td>
-          <td>${entry.subject}</td>
-          <td>${entry.marks}</td>
+    function renderReport(data) {
+      const tbody = document.querySelector("#reportTable tbody");
+      tbody.innerHTML = "";
+      data.forEach(student => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="p-2 border">${student.RollNo}</td>
+          <td class="p-2 border">${student.Name}</td>
+          ${[...Array(8)].map((_, i) => `<td class="p-2 border">${student["Sub" + (i + 1)] ?? "-"}</td>`).join('')}
+          <td class="p-2 border">
+            <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs" onclick="showChart(${JSON.stringify(student)})">View Chart</button>
+          </td>
         `;
-
-        tbody.appendChild(tr);
+        tbody.appendChild(row);
       });
     }
 
-    function printPDF() {
-      const element = document.getElementById('marksContainer');
-      html2pdf().from(element).save('marks-report.pdf');
+    function printReport() {
+      window.print();
+    }
+
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Class Report", 14, 16);
+      doc.autoTable({ html: "#reportTable", startY: 20 });
+      doc.save("class-report.pdf");
+    }
+
+    function showChart(student) {
+      document.getElementById("chartModal").classList.remove("hidden");
+      const ctx = document.getElementById("marksChart").getContext("2d");
+      if (window.marksChartInstance) window.marksChartInstance.destroy();
+
+      const labels = Object.keys(student).filter(k => k.startsWith("Sub"));
+      const data = labels.map(key => student[key] || 0);
+
+      window.marksChartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "Marks",
+            data,
+            backgroundColor: "#4a90e2"
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+
+    function closeChart() {
+      document.getElementById("chartModal").classList.add("hidden");
     }
   </script>
 </body>
+
 </html>
