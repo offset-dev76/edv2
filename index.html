@@ -2,42 +2,47 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marks Management</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Studia Dashboard</title>
   <style>
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
     }
 
     body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: #2f3542;
       display: flex;
       min-height: 100vh;
-      background-color: #f4f6f8;
     }
 
     .sidebar {
       width: 240px;
       background-color: #2f3542;
       color: white;
-      padding: 20px 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: fixed;
+      height: 100vh;
     }
 
     .sidebar h2 {
+      margin: 0 0 20px;
       text-align: center;
-      margin-bottom: 30px;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
     }
 
     .sidebar a {
-      display: block;
       color: white;
-      padding: 15px 20px;
+      padding: 12px 16px;
       text-decoration: none;
-      transition: 0.3s;
+      border-radius: 8px;
+      transition: background 0.3s;
     }
 
     .sidebar a:hover,
@@ -45,9 +50,13 @@
       background-color: #57606f;
     }
 
-    .main-content {
-      flex-grow: 1;
-      padding: 20px;
+    .main {
+      margin-left: 240px;
+      padding: 30px;
+      width: calc(100% - 240px);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
     .header {
@@ -55,297 +64,263 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
     }
 
     .header h1 {
-      font-size: 1.8rem;
+      font-size: 2rem;
     }
 
-    .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .controls select,
-    .controls input,
-    .controls button {
-      padding: 8px;
-      border-radius: 5px;
+    .search-box input {
+      padding: 10px;
       border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 250px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
       background-color: white;
-      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease;
     }
 
-    th,
-    td {
-      padding: 12px 15px;
-      text-align: center;
-      border-bottom: 1px solid #e0e0e0;
-      border-right: 1px solid #eee;
+    .card:hover {
+      transform: translateY(-3px);
     }
 
-    th:last-child,
-    td:last-child {
-      border-right: none;
+    .card h3 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #3498db;
     }
 
-    th {
-      background-color: #f1f1f1;
-    }
-
-    td input {
-      width: 60px;
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      text-align: center;
-      -moz-appearance: textfield;
-    }
-
-    td input::-webkit-outer-spin-button,
-    td input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-
-    .btn-save {
-      background-color: #1e90ff;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .btn-print {
-      background-color: #2ed573;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .status {
-      margin-top: 10px;
-      color: green;
+    .card p {
+      font-size: 1.5rem;
       font-weight: bold;
+      margin: 8px 0 0;
+    }
+
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .section h2 {
+      margin-top: 0;
+      font-size: 1.4rem;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .quick-actions button {
+      padding: 10px 16px;
+      margin: 5px;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .quick-actions button:hover {
+      background-color: #2980b9;
+    }
+
+    .notifications p,
+    .activity-feed li {
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .spinner {
+      border: 8px solid rgba(0, 0, 0, 0.1);
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 
 <body>
   <div class="sidebar">
-    <h2>School Panel</h2>
-    <a href="#">Dashboard</a>
-    <a href="#">Student Directory</a>
-    <a href="#" class="active">Marks Management</a>
-    <a href="#">Fees Management</a>
+    <h2>Studia v1</h2>
+    <a href="./index.html" class="active">Dashboard</a>
+    <a href="./students.html">Student Directory</a>
+    <a href="./marks.html">Marks Management</a>
+    <a href="./fees.html">Fees Management</a>
     <a href="#">Exam & Timetable</a>
-    <a href="#">Reports & Printouts</a>
+    <a href="#">Reports</a>
     <a href="#">Notifications</a>
     <a href="#">Settings</a>
   </div>
 
-  <div class="main-content">
+  <div class="main">
     <div class="header">
-      <h1>Marks Management</h1>
-      <div class="controls">
-        <select id="classSelect">
-          <option value="">Select Grade</option>
-          <option value="10A">10A</option>
-          <option value="10B">10B</option>
-          <option value="11A">11A</option>
-        </select>
-        <input type="text" id="examName" placeholder="Enter Exam Name">
-        <button class="btn-save" onclick="saveMarks()">Save</button>
-        <button class="btn-print" onclick="window.print()">Print</button>
+      <h1>Dashboard</h1>
+      <div class="search-box">
+        <input type="text" placeholder="Search students, exams..." />
       </div>
     </div>
 
-    <table id="marksTable">
-      <thead>
-        <tr id="marksHeader">
-          <th>Student ID</th>
-          <th>Student Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Dynamic Rows -->
-      </tbody>
-    </table>
-    <div class="status" id="statusMsg"></div>
+    <div class="cards">
+      <div class="card">
+        <h3>Total Students</h3>
+        <p id="totalStudents">Loading...</p>
+      </div>
+      <div class="card">
+        <h3>Average Marks</h3>
+        <p id="averageMarks">Loading...</p>
+      </div>
+      <div class="card">
+        <h3>Total Payments</h3>
+        <p id="totalPayments">Loading...</p>
+      </div>
+      <div class="card">
+        <h3>Pending Fees</h3>
+        <p id="pendingFees">Loading...</p>
+      </div>
+    </div>
+
+    <div class="section quick-actions">
+      <h2>Quick Actions</h2>
+      <button onclick="window.location.href='./students.html'">Add New Student</button>
+      <button onclick="window.location.href='./marks.html'">Upload Marks</button>
+      <button onclick="window.location.href='./fees.html'">Record Payment</button>
+    </div>
+
+    <div class="section">
+      <h2>Recent Activity</h2>
+      <ul class="activity-feed">
+        <li>10 students were added to Class 11.</li>
+        <li>Fee collection report generated for March.</li>
+        <li>PTM scheduled for 25th April 2025.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
   </div>
 
   <script>
-    const subjectsByClass = {
-      "10A": ["Maths", "Science", "Social", "English"],
-      "10B": ["Maths", "Science", "Social", "English"],
-      "11A": ["Physics", "Chemistry", "Maths", "Computer"]
-    };
-
-    let studentsByClass = {}; // Will be populated dynamically
-
-    document.getElementById("classSelect").addEventListener("change", async function () {
-      const grade = this.value;
-      if (!grade) return;
-
-      // Fetch students from server
+    async function fetchTotalStudents() {
       try {
-        const res = await fetch(`/.netlify/functions/fetchMarks?grade=${grade}`);
-        const data = await res.json();
-
-        if (!data.success) {
-          alert("Failed to load student data.");
-          return;
-        }
-
-        // Update local studentsByClass
-        studentsByClass[grade] = data.students;
-        renderMarksTable();
-      } catch (err) {
-        console.error("Error fetching students:", err);
-      }
-    });
-
-    function renderMarksTable() {
-      const grade = document.getElementById("classSelect").value;
-      const headerRow = document.getElementById("marksHeader");
-      const tableBody = document.querySelector("#marksTable tbody");
-
-      headerRow.innerHTML = "<th>Student ID</th><th>Student Name</th>";
-      tableBody.innerHTML = "";
-
-      if (!grade || !studentsByClass[grade]) return;
-
-      const subjects = subjectsByClass[grade] || [];
-      subjects.forEach(sub => {
-        const th = document.createElement("th");
-        th.textContent = sub;
-        headerRow.appendChild(th);
-      });
-
-      studentsByClass[grade].forEach(student => {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${student.id}</td><td>${student.name}</td>`;
-        subjects.forEach(subject => {
-          const td = document.createElement("td");
-          const input = document.createElement("input");
-          input.setAttribute("data-id", student.id);
-          input.setAttribute("data-name", student.name);
-          input.setAttribute("data-subject", subject);
-          input.setAttribute("type", "text");
-          input.setAttribute("maxlength", "3");
-
-          input.addEventListener("input", (e) => {
-            let value = e.target.value.toUpperCase();
-            if (value === "A") value = "AB";
-            if (value !== "AB" && (isNaN(value) || +value > 100 || +value < 0)) {
-              e.target.value = "";
-            } else {
-              e.target.value = value;
-            }
-          });
-
-          td.appendChild(input);
-          row.appendChild(td);
+        const res = await fetch('/.netlify/functions/fetchStudents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ class: '' })
         });
-        tableBody.appendChild(row);
-      });
+        const result = await res.json();
+        if (result.success) {
+          document.getElementById('totalStudents').textContent = result.data.length;
+        }
+      } catch (err) {
+        console.error('Error fetching total students:', err);
+      }
     }
 
-    async function saveMarks() {
-      const grade = document.getElementById("classSelect").value;
-      const examName = document.getElementById("examName").value.trim();
-      const status = document.getElementById("statusMsg");
-
-      if (!grade || !examName) {
-        alert("Please select a class and enter an exam name.");
-        return;
-      }
-
-      const inputs = document.querySelectorAll("#marksTable input");
-
-      let successCount = 0;
-      let errorCount = 0;
-
-      for (const input of inputs) {
-        const studentId = input.getAttribute("data-id");
-        const studentName = input.getAttribute("data-name");
-        const subject = input.getAttribute("data-subject");
-        const value = input.value.trim();
-
-        if (value === "") continue;
-
-        const data = {
-          student: studentId,
-          name: studentName,
-          grade: grade,
-          exam: examName,
-          subject: subject,
-          marks: value === "AB" ? 0 : parseInt(value)
-        };
-
-        try {
-          const res = await fetch('/.netlify/functions/saveMarks', {
-            method: 'POST',
-            body: JSON.stringify(data)
-          });
-
-          const result = await res.json();
-          if (result.message?.toLowerCase().includes("success")) successCount++;
-          else errorCount++;
-        } catch (err) {
-          errorCount++;
-          console.error("Error:", err);
+    async function fetchAverageMarks() {
+      try {
+        const res = await fetch('/.netlify/functions/fetchMarks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ grade: '', exam: '' })
+        });
+        const result = await res.json();
+        if (result.success) {
+          const totalMarks = result.data.reduce((sum, mark) => sum + (mark.Sub1 || 0) + (mark.Sub2 || 0) + (mark.Sub3 || 0) + (mark.Sub4 || 0) + (mark.Sub5 || 0) + (mark.Sub6 || 0) + (mark.Sub7 || 0) + (mark.Sub8 || 0), 0);
+          const averageMarks = totalMarks / (result.data.length * 8);
+          document.getElementById('averageMarks').textContent = averageMarks.toFixed(2);
         }
+      } catch (err) {
+        console.error('Error fetching average marks:', err);
       }
-
-      status.textContent = `Submitted: ${successCount} | Failed: ${errorCount}`;
-      setTimeout(() => status.textContent = "", 4000);
     }
 
-
-    document.addEventListener("keydown", function (e) {
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
-        const active = document.activeElement;
-        if (active.tagName !== "INPUT") return;
-
-        const td = active.parentElement;
-        const tr = td.parentElement;
-        const rowIndex = tr.rowIndex;
-        const cellIndex = td.cellIndex;
-
-        let targetInput;
-        switch (e.key) {
-          case "ArrowRight":
-            targetInput = tr.cells[cellIndex + 1]?.querySelector("input");
-            break;
-          case "ArrowLeft":
-            targetInput = tr.cells[cellIndex - 1]?.querySelector("input");
-            break;
-          case "ArrowDown":
-            targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex + 1}) td:nth-child(${cellIndex + 1}) input`);
-            break;
-          case "ArrowUp":
-            targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex - 1}) td:nth-child(${cellIndex + 1}) input`);
-            break;
-        }
-
-        if (targetInput) {
-          e.preventDefault();
-          targetInput.focus();
-        }
+    async function fetchTotalPayments() {
+      try {
+        const res = await fetch('/.netlify/functions/getPaymentsBatch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: [] })
+        });
+        const result = await res.json();
+        const totalPayments = Object.values(result).reduce((sum, payments) => sum + payments.reduce((t, p) => t + p.amount, 0), 0);
+        document.getElementById('totalPayments').textContent = totalPayments.toFixed(2);
+      } catch (err) {
+        console.error('Error fetching total payments:', err);
       }
-    });
+    }
+
+    async function fetchPendingFees() {
+      try {
+        const res = await fetch('/.netlify/functions/getPaymentsBatch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: [] })
+        });
+        const result = await res.json();
+        const pendingFees = Object.values(result).reduce((sum, payments) => sum + payments.reduce((t, p) => t + (p.status === 'pending' ? p.amount : 0), 0), 0);
+        document.getElementById('pendingFees').textContent = pendingFees.toFixed(2);
+      } catch (err) {
+        console.error('Error fetching pending fees:', err);
+      }
+    }
+
+    function showLoading() {
+      document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    async function initializeDashboard() {
+      showLoading();
+      await Promise.all([
+        fetchTotalStudents(),
+        fetchAverageMarks(),
+        fetchTotalPayments(),
+        fetchPendingFees()
+      ]);
+      hideLoading();
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeDashboard);
   </script>
 </body>
 
