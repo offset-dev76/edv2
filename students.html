@@ -33,6 +33,7 @@
   body {
     display: flex;
     min-height: 100vh;
+    max-height: 100vh;
     background-color: var(--bg-page);
     color: var(--text-default);
     font-family: 'Poppins', sans-serif;
@@ -143,6 +144,15 @@
     overflow: auto;
     flex-grow: 1;
   }
+  .table-container {
+            flex-grow: 1;
+            margin: var(--spacing);
+            background-color: var(--bg-surface);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: auto;
+            height: 100%;
+  }
 
   table {
     width: 100%;
@@ -172,6 +182,11 @@
     background-color: var(--primary-light);
     color: var(--text-default);
     cursor: pointer;
+  }
+  #studentsTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   }
 
   tr:nth-child(even) {
@@ -322,20 +337,21 @@
 
     <div class="content">
       <div id="message" class="message"></div>
-
-      <table id="studentsTable" style="display: none;">
-        <thead>
-          <tr>
-            <th class="sortable" onclick="sortTable('id')">ID</th>
-            <th class="sortable" onclick="sortTable('name')">Name</th>
-            <th>Class</th>
-            <th>Section</th>
-            <th>Stream</th>
-            <th>Phone</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="studentsTable" style="display: none;">
+          <thead>
+            <tr>
+              <th class="sortable" onclick="sortTable('id')">ID</th>
+              <th class="sortable" onclick="sortTable('name')">Name</th>
+              <th>Class</th>
+              <th>Section</th>
+              <th>Stream</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
   </div>
