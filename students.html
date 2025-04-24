@@ -17,15 +17,16 @@
   }
 
   :root {
-    --bg-page: #FAFAFA;
-    --bg-surface: #FFFFFF;
-    --primary: #9877D9;
-    --primary-light: #B99FE1;
-    --text-default: #333333;
-    --text-muted: #666666;
-    --border: #E1E1E1;
+    --bg-page: linear-gradient(135deg, #d4e9f9, #f0f4ff); /* light blue gradient */
+    --bg-surface: rgba(255, 255, 255, 0.2); /* translucent glass */
+    --primary: #9cafff;
+    --primary-light: #c9d4ff;
+    --text-default: #2c2c2c;
+    --text-muted: #5e5e5e;
+    --border: rgba(255, 255, 255, 0.3);
     --radius: 0.5rem;
     --spacing: 1rem;
+    --glass-blur: blur(12px);
   }
 
   *,
@@ -44,7 +45,8 @@
     display: flex;
     min-height: 100vh;
     max-height: 100vh;
-    background-color: var(--bg-page);
+    background: var(--bg-page);
+    backdrop-filter: var(--glass-blur);
     color: var(--text-default);
     font-family: "YDGothic 140 Pro", 'Poppins', sans-serif; /* Updated font-family */
     line-height: 1.5;
@@ -52,7 +54,7 @@
 
   .sidebar {
     width: 240px;
-    background-color: var(--bg-surface);
+    background: var(--bg-surface);
     border-right: 1px solid var(--border);
     padding: var(--spacing) 0;
     display: flex;
@@ -85,8 +87,8 @@
   }
 
   .sidebar a.active {
-    background-color: var(--primary);
-    color: var(--bg-surface);
+    background: var(--primary);
+    color: white;
     font-weight: 600;
     padding-left: calc(var(--spacing) + 0.5rem);
   }
@@ -99,7 +101,7 @@
   }
 
   .header {
-    background-color: var(--bg-surface);
+    background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
     padding: var(--spacing);
     display: flex;
@@ -120,6 +122,7 @@
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+    align-items: center;
   }
 
   .controls select,
@@ -129,7 +132,11 @@
     font-size: 0.95rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s background-color 0.3s;
+    background: var(--bg-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow);
   }
       .controls label {
     align-content: center;
@@ -144,16 +151,20 @@
   }
 
   .controls button {
-    background-color: var(--primary);
-    color: var(--bg-surface);
-    border: none;
+    background-color: none;
+    color: rgb(16, 16, 16);
+    border: solid 1px rgba(93, 147, 255, 0.153);
     font-weight: 600;
     cursor: pointer;
   }
 
   .controls button:hover {
-    background-color: var(--primary-light);
+    background-color: var(--primary);
+    transition: background-color 0.3s;
   }
+
+
+
 
   .content {
     padding: var(--spacing);
@@ -162,9 +173,9 @@
   }
   .table-container {
             flex-grow: 1;
-            background-color: var(--bg-surface);
-            border-radius: var(--radius);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            background: #ffffff47;
+            border-radius: 10px;
+            box-shadow: var(--glass-shadow);
             overflow: auto;
             height: 100%;
   }
@@ -172,7 +183,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    background-color: var(--bg-surface);
+    background: transparent;
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -188,8 +199,8 @@
   }
 
   th {
-    background-color: var(--primary);
-    color: var (--bg-surface);
+    background-color: rgba(156, 175, 255, 0.9); /* soft purple */
+    color: white;
     font-weight: 600;
     cursor: default;
   }
@@ -210,7 +221,7 @@
 
 
   tr:nth-child(even) {
-    background-color: #FBFBFB;
+    background-color: rgba(255, 255, 255, 0.3);
   }
 
   .message {
@@ -230,11 +241,11 @@
   }
 
   .modal-content {
-    background-color: var(--bg-surface);
+    background: #c9d4ff;
     padding: var(--spacing);
     width: 400px;
     border-radius: var(--radius);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--glass-shadow);
   }
 
   .modal-content h2 {
@@ -268,11 +279,12 @@
   #loadingOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  backdrop-filter: blur(10px);
 }
 
 .loading-gif {
@@ -570,6 +582,7 @@
 
     function sortTable(key) {
       const tbody = document.getElementById("studentsTable").querySelector("tbody");
+      const selectedClass = document.getElementById("classSelect").value; // Retrieve selected class
       const sorted = studentDataGlobal.sort((a, b) => a[key].localeCompare(b[key]));
       tbody.innerHTML = "";
 
