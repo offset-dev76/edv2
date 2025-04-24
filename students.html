@@ -6,6 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Directory</title>
 <style>
+  @font-face {
+    font-family: "YDGothic 140 Pro";
+    src: url("https://db.onlinewebfonts.com/t/ea3e7fc93b901fd715689f4e07b21d27.eot");
+    src: url("https://db.onlinewebfonts.com/t/ea3e7fc93b901fd715689f4e07b21d27.eot?#iefix") format("embedded-opentype"),
+         url("https://db.onlinewebfonts.com/t/ea3e7fc93b901fd715689f4e07b21d27.woff2") format("woff2"),
+         url("https://db.onlinewebfonts.com/t/ea3e7fc93b901fd715689f4e07b21d27.woff") format("woff"),
+         url("https://db.onlinewebfonts.com/t/ea3e7fc93b901fd715689f4e07b21d27.ttf") format("truetype"),
+         url("https://db.onlinewebfonts.com/t/ea3e7fc93b901fd715689f4e07b21d27.svg#YDGothic 140 Pro") format("svg");
+  }
+
   :root {
     --bg-page: #FAFAFA;
     --bg-surface: #FFFFFF;
@@ -36,7 +46,7 @@
     max-height: 100vh;
     background-color: var(--bg-page);
     color: var(--text-default);
-    font-family: 'Poppins', sans-serif;
+    font-family: "YDGothic 140 Pro", 'Poppins', sans-serif; /* Updated font-family */
     line-height: 1.5;
   }
 
@@ -51,6 +61,7 @@
   }
 
   .sidebar h2 {
+    font-family: "YDGothic 140 Pro", sans-serif; /* Updated font-family */
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: calc(var(--spacing) * 1.5);
@@ -99,6 +110,7 @@
   }
 
   .header h1 {
+    font-family: "YDGothic 140 Pro", sans-serif; /* Updated font-family */
     font-size: 1.75rem;
     font-weight: 600;
     color: var(--text-default);
@@ -168,6 +180,7 @@
 
   th,
   td {
+    font-family: "YDGothic 140 Pro", sans-serif; /* Updated font-family */
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border);
     text-align: left;
@@ -176,7 +189,7 @@
 
   th {
     background-color: var(--primary);
-    color: var(--bg-surface);
+    color: var (--bg-surface);
     font-weight: 600;
     cursor: default;
   }
@@ -348,7 +361,7 @@
               <th class="sortable" onclick="sortTable('name')">Name</th>
               <th>Class</th>
               <th>Section</th>
-              <th>Stream</th>
+              <th id="groupColumnHeader" style="display: none;">Group/Stream</th>
               <th>Phone</th>
             </tr>
           </thead>
@@ -364,12 +377,48 @@
     <div class="modal-content">
       <h2>Add Student</h2>
       <form id="studentForm">
-        <input type="text" id="studentId" placeholder="ID" required />
+        <input type="text" id="studentId" placeholder="Admission No" required />
         <input type="text" id="studentName" placeholder="Name" required />
-        <input type="text" id="studentClass" placeholder="Class" required />
-        <input type="text" id="studentSection" placeholder="Section" required />
-        <input type="text" id="studentStream" placeholder="Stream" required />
-        <input type="text" id="studentPhone" placeholder="Phone" required />
+        <select id="studentClass" required>
+          <option value="">Select Class</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+        <select id="studentSection" required>
+          <option value="">Select Section</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+          <option value="F">F</option>
+          <option value="G">G</option>
+        </select>
+        <select id="studentLanguage" required>
+          <option value="">Select Language</option>
+          <option value="French">French</option>
+          <option value="Tamil">Tamil</option>
+          <option value="Hindi">Hindi</option>
+        </select>
+        <input type="text" id="parentPhone" placeholder="Parent Phone" required />
+        <input type="email" id="parentEmail" placeholder="Parent Email" required />
+        <select id="studentGroup" style="display: none;">
+          <option value="">Select Group</option>
+          <option value="Commerce">Commerce</option>
+          <option value="Science">Science</option>
+          <option value="Computer Science">Computer Science</option>
+        </select>
+        <input type="text" id="academicYear" placeholder="Academic Year" value="24-2025" readonly />
         <button type="submit">Submit</button>
         <button type="button" onclick="closeModal()">Cancel</button>
       </form>
@@ -403,12 +452,21 @@
         name: document.getElementById("studentName").value.trim(),
         class: document.getElementById("studentClass").value.trim(),
         section: document.getElementById("studentSection").value.trim(),
-        stream: document.getElementById("studentStream").value.trim(),
-        phone: document.getElementById("studentPhone").value.trim(),
+        language: document.getElementById("studentLanguage").value.trim(),
+        parentPhone: document.getElementById("parentPhone").value.trim(),
+        parentEmail: document.getElementById("parentEmail").value.trim(),
+        group: document.getElementById("studentGroup").value.trim(),
+        academicYear: document.getElementById("academicYear").value.trim(),
       };
 
-      if (!studentData.id || !studentData.name || !studentData.class || !studentData.section || !studentData.phone) {
+      if (!studentData.id || !studentData.name || !studentData.class || !studentData.section || !studentData.language || !studentData.parentPhone || !studentData.parentEmail || !studentData.academicYear) {
         alert("Please fill out all required fields.");
+        hideLoading(); // <--- hide spinner if form validation fails
+        return;
+      }
+
+      if ((studentData.class === "11" || studentData.class === "12") && !studentData.group) {
+        alert("Please select a group for classes 11 and 12.");
         hideLoading(); // <--- hide spinner if form validation fails
         return;
       }
@@ -436,6 +494,14 @@
       hideLoading(); // <--- hide spinner
     });
 
+    document.getElementById("studentClass").addEventListener("change", function () {
+      const groupField = document.getElementById("studentGroup");
+      if (this.value === "11" || this.value === "12") {
+        groupField.style.display = "block";
+      } else {
+        groupField.style.display = "none";
+      }
+    });
 
     let studentDataGlobal = [];
 
@@ -450,10 +516,12 @@
       const messageDiv = document.getElementById("message");
       const table = document.getElementById("studentsTable");
       const tbody = table.querySelector("tbody");
+      const groupColumnHeader = document.getElementById("groupColumnHeader");
 
       messageDiv.textContent = "";
       tbody.innerHTML = "";
       table.style.display = "none";
+      groupColumnHeader.style.display = selectedClass === "11" || selectedClass === "12" ? "table-cell" : "none";
 
       try {
         const res = await fetch("/.netlify/functions/fetchStudents", {
@@ -468,7 +536,7 @@
           studentDataGlobal = result.data
             .filter(s =>
               (!section || s.section === section) &&
-              (!stream || s.stream === stream)
+              (!stream || s.group === stream)
             )
             .sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
 
@@ -479,8 +547,8 @@
                     <td>${student.name}</td>
                     <td>${student.class}</td>
                     <td>${student.section}</td>
-                    <td>${student.stream}</td>
-                    <td>${student.phone}</td>
+                    <td style="display: ${selectedClass === "11" || selectedClass === "12" ? "table-cell" : "none"};">${student.group || ""}</td>
+                    <td>${student.parentPhone}</td>
                 `;
             tbody.appendChild(row);
           });
@@ -512,7 +580,7 @@
           <td>${student.name}</td>
           <td>${student.class}</td>
           <td>${student.section}</td>
-          <td>${student.stream}</td>
+          <td style="display: ${selectedClass === "11" || selectedClass === "12" ? "table-cell" : "none"};">${student.group || ""}</td>
           <td>${student.phone}</td>
         `;
         tbody.appendChild(row);
