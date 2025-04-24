@@ -7,11 +7,14 @@ const studentSchema = new mongoose.Schema({
   name: String,
   class: String,
   section: String,
-  stream: String,
-  phone: String
+  language: String,
+  parentPhone: String,
+  parentEmail: String,
+  group: String, // Optional for classes 11 and 12
+  academicYear: String
 });
 
-const Student = mongoose.models.Student || mongoose.model('student', studentSchema);
+const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
 
 let isConnected = false;
 
