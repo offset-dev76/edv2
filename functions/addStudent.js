@@ -7,8 +7,11 @@ const studentSchema = new mongoose.Schema({
   name: String,
   class: String,
   section: String,
-  stream: String,
-  phone: String
+  language: String,
+  parentPhone: String,
+  parentEmail: String,
+  group: String, // Optional for classes 11 and 12
+  academicYear: String
 });
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
@@ -38,13 +41,21 @@ exports.handler = async function(event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const requiredFields = ['id', 'name', 'class', 'section', 'stream', 'phone'];
+    const requiredFields = ['id', 'name', 'class', 'section', 'language', 'parentPhone', 'parentEmail', 'academicYear'];
     const missingFields = requiredFields.filter(field => !data[field]);
 
     if (missingFields.length > 0) {
       return {
         statusCode: 400,
         body: JSON.stringify({ success: false, message: 'Missing fields: ' + missingFields.join(', ') })
+      };
+    }
+
+    // Validate group for classes 11 and 12
+    if ((data.class === '11' || data.class === '12') && !data.group) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ success: false, message: 'Group is required for classes 11 and 12' })
       };
     }
 
