@@ -497,7 +497,7 @@
       const res = await fetch('/.netlify/functions/fetchStudents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ grade: grade })
+        body: JSON.stringify({ class: grade })
       });
 
       const result = await res.json();
@@ -699,7 +699,7 @@
         dueAmount: parseFloat(document.getElementById("dueAmount").value),
         dueDate: document.getElementById("dueDate").value,
         studentId: isBatchUpdate ? null : document.getElementById("studentIdDue").value,
-        class: isBatchUpdate ? document.getElementById("classSelect").value : null, // Use main class
+        grade: isBatchUpdate ? document.getElementById("classSelect").value : null, // Use main class
         section: isBatchUpdate ? document.getElementById("sectionSelect").value : null, // Use main section
       };
 
