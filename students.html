@@ -550,7 +550,7 @@
         academicYear: document.getElementById("academicYear").value.trim(),
       };
 
-      if (!studentData.name || !studentData.id || !studentData.class || !studentData.section || !studentData.language || !studentData.parentPhone || !studentData.email) {
+      if (!studentData.name || !studentData.id || !studentData.class || !studentData.section || !studentData.language || !studentData.parentPhone || !studentData.parentEmail) {
         alert("Please fill out all required fields.");
         hideLoading(); // <--- hide spinner if form validation fails
         return;
