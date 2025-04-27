@@ -3,63 +3,102 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ScholarX Dashboard</title>
   <style>
-    * {
+    :root {
+      --bg-page: #FAFAFA;
+      --bg-surface: #FFFFFF;
+      --primary: #9877D9;
+      --primary-light: #B99FE1;
+      --text-default: #333333;
+      --text-muted: #666666;
+      --border: #E1E1E1;
+      --radius: 0.5rem;
+      --border2: solid 1px #E1E1E1;
+      --spacing: 1rem;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #121212;
+      --bg-surface: #1E1E1E;
+      --text-default: #ffffff;
+      --primary: #BB86FC;
+      --primary-light: #985EFF;
+      --text-muted: #A1A1A1;
+      --border: #333333;
+      --border2: solid 1px #333333;
+    }
+
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f7fa;
-      color: #2f3542;
       display: flex;
       min-height: 100vh;
+      background-color: var(--bg-page);
+      color: var(--text-default);
+      font-family: "YDGothic 140 Pro", 'Poppins', sans-serif;
+      line-height: 1.5;
     }
 
     .sidebar {
       width: 240px;
-      background-color: #2f3542;
-      color: white;
-      padding: 20px;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      padding: var(--spacing) 0;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      position: fixed;
-      height: 100vh;
+      align-items: center;
     }
 
     .sidebar h2 {
-      margin: 0 0 20px;
-      text-align: center;
       font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: calc(var(--spacing) * 1.5);
+      letter-spacing: 1px;
+      color: var(--text-default);
     }
 
     .sidebar a {
-      color: white;
-      padding: 12px 16px;
+      width: 100%;
+      padding: 0.75rem var(--spacing);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-muted);
       text-decoration: none;
-      border-radius: 8px;
-      transition: background 0.3s;
+      transition: background-color 0.3s, padding-left 0.3s;
     }
 
-    .sidebar a:hover,
+    .sidebar a:hover {
+      background-color: var(--primary-light);
+      color: var(--text-default);
+      padding-left: calc(var(--spacing) + 0.5rem);
+    }
+
     .sidebar a.active {
-      background-color: #57606f;
+      background-color: var(--primary);
+      color: var(--bg-surface);
+      font-weight: 600;
+      padding-left: calc(var(--spacing) + 0.5rem);
     }
 
-    .main {
-      margin-left: 240px;
-      padding: 30px;
-      width: calc(100% - 240px);
+    .main-content {
+      flex-grow: 1;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      background-color: var(--bg-page);
     }
 
     .header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: var(--spacing);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -67,26 +106,35 @@
     }
 
     .header h1 {
-      font-size: 2rem;
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--text-default);
     }
 
-    .search-box input {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      width: 250px;
+    .dark-mode-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: var(--text-default);
+      transition: color 0.3s;
+    }
+
+    .dark-mode-toggle:hover {
+      color: var(--primary);
     }
 
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
+      gap: var(--spacing);
+      padding: var(--spacing);
     }
 
     .card {
-      background-color: white;
-      padding: 20px;
-      border-radius: 12px;
+      background-color: var(--bg-surface);
+      padding: var(--spacing);
+      border-radius: var(--radius);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
       transition: transform 0.2s ease;
     }
@@ -98,7 +146,7 @@
     .card h3 {
       margin-top: 0;
       font-size: 1.2rem;
-      color: #3498db;
+      color: var(--primary);
     }
 
     .card p {
@@ -107,69 +155,64 @@
       margin: 8px 0 0;
     }
 
-    .section {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--spacing);
+      padding: var(--spacing);
+    }
+
+    .quick-action-card {
+      background-color: var(--bg-surface);
+      padding: var(--spacing);
+      border-radius: var(--radius);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    }
-
-    .section h2 {
-      margin-top: 0;
-      font-size: 1.4rem;
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
-
-    .quick-actions button {
-      padding: 10px 16px;
-      margin: 5px;
-      border: none;
-      background-color: #3498db;
-      color: white;
-      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-align: center;
     }
 
-    .quick-actions button:hover {
-      background-color: #2980b9;
+    .quick-action-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .notifications p,
-    .activity-feed li {
-      padding: 6px 0;
-      border-bottom: 1px solid #eee;
+    .quick-action-card h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    .quick-action-card p {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      color: var(--text-muted);
     }
 
     .loading-overlay {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       background: rgba(255, 255, 255, 0.8);
       justify-content: center;
       align-items: center;
-      z-index: 1000;
+      z-index: 9999;
     }
 
-    #loadingOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
+    .spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 0.5rem solid #eee;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
 
-.loading-gif {
-  width: 80px; /* adjust as needed */
-  height: 80px;
-}
-
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
@@ -184,12 +227,10 @@
     <a href="./settings.html">Settings</a>
   </div>
 
-  <div class="main">
+  <div class="main-content">
     <div class="header">
       <h1>Dashboard</h1>
-      <div class="search-box">
-        <input type="text" placeholder="Search students, exams..." />
-      </div>
+      <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
     </div>
 
     <div class="cards">
@@ -211,113 +252,64 @@
       </div>
     </div>
 
-    <div class="section quick-actions">
-      <h2>Quick Actions</h2>
-      <button onclick="window.location.href='./students.html'">Add New Student</button>
-      <button onclick="window.location.href='./marks.html'">Upload Marks</button>
-      <button onclick="window.location.href='./fees.html'">Record Payment</button>
-    </div>
-
-    <div class="section">
-      <h2>Recent Activity</h2>
-      <ul class="activity-feed">
-        <li>10 students were added to Class 11.</li>
-        <li>Fee collection report generated for March.</li>
-        <li>PTM scheduled for 25th April 2025.</li>
-      </ul>
+    <div class="quick-actions">
+      <div class="quick-action-card" onclick="window.location.href='./students.html'">
+        <h3>Add New Student</h3>
+        <p>Quickly add a new student to the directory.</p>
+      </div>
+      <div class="quick-action-card" onclick="window.location.href='./marks.html'">
+        <h3>Upload Marks</h3>
+        <p>Upload marks for exams and assessments.</p>
+      </div>
+      <div class="quick-action-card" onclick="window.location.href='./fees.html'">
+        <h3>Record Payment</h3>
+        <p>Record fee payments for students.</p>
+      </div>
     </div>
   </div>
 
-  <div id="loadingOverlay" style="display:none;">
-    <img src="loader.gif" alt="Loading..." class="loading-gif" />
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
   </div>
-  
 
   <script>
-    async function fetchTotalStudents() {
-      try {
-        const res = await fetch('/.netlify/functions/fetchStudents', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ class: '' })
-        });
-        const result = await res.json();
-        if (result.success) {
-          document.getElementById('totalStudents').textContent = result.data.length;
+    function toggleDarkMode() {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+      const toggleButton = document.querySelector(".dark-mode-toggle");
+      toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      const toggleButton = document.querySelector(".dark-mode-toggle");
+      toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+    });
+
+    async function fetchData() {
+      const endpoints = [
+        { id: "totalStudents", url: "/.netlify/functions/fetchStudents" },
+        { id: "averageMarks", url: "/.netlify/functions/fetchMarks" },
+        { id: "totalPayments", url: "/.netlify/functions/getPaymentsBatch" },
+        { id: "pendingFees", url: "/.netlify/functions/getPaymentsBatch" }
+      ];
+
+      for (const { id, url } of endpoints) {
+        try {
+          const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" } });
+          const data = await res.json();
+          document.getElementById(id).textContent = data.success ? data.data : "Error";
+        } catch (err) {
+          console.error(`Error fetching ${id}:`, err);
+          document.getElementById(id).textContent = "Error";
         }
-      } catch (err) {
-        console.error('Error fetching total students:', err);
       }
     }
 
-    async function fetchAverageMarks() {
-      try {
-        const res = await fetch('/.netlify/functions/fetchMarks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ grade: '', exam: '' })
-        });
-        const result = await res.json();
-        if (result.success) {
-          const totalMarks = result.data.reduce((sum, mark) => sum + (mark.Sub1 || 0) + (mark.Sub2 || 0) + (mark.Sub3 || 0) + (mark.Sub4 || 0) + (mark.Sub5 || 0) + (mark.Sub6 || 0) + (mark.Sub7 || 0) + (mark.Sub8 || 0), 0);
-          const averageMarks = totalMarks / (result.data.length * 8);
-          document.getElementById('averageMarks').textContent = averageMarks.toFixed(2);
-        }
-      } catch (err) {
-        console.error('Error fetching average marks:', err);
-      }
-    }
-
-    async function fetchTotalPayments() {
-      try {
-        const res = await fetch('/.netlify/functions/getPaymentsBatch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: [] })
-        });
-        const result = await res.json();
-        const totalPayments = Object.values(result).reduce((sum, payments) => sum + payments.reduce((t, p) => t + p.amount, 0), 0);
-        document.getElementById('totalPayments').textContent = totalPayments.toFixed(2);
-      } catch (err) {
-        console.error('Error fetching total payments:', err);
-      }
-    }
-
-    async function fetchPendingFees() {
-      try {
-        const res = await fetch('/.netlify/functions/getPaymentsBatch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: [] })
-        });
-        const result = await res.json();
-        const pendingFees = Object.values(result).reduce((sum, payments) => sum + payments.reduce((t, p) => t + (p.status === 'pending' ? p.amount : 0), 0), 0);
-        document.getElementById('pendingFees').textContent = pendingFees.toFixed(2);
-      } catch (err) {
-        console.error('Error fetching pending fees:', err);
-      }
-    }
-
-    function showLoading() {
-      document.getElementById('loadingOverlay').classList.add('active');
-    }
-
-    function hideLoading() {
-      document.getElementById('loadingOverlay').classList.remove('active');
-    }
-
-    async function initializeDashboard() {
-      showLoading();
-      await Promise.all([
-        fetchTotalStudents(),
-        fetchAverageMarks(),
-        fetchTotalPayments(),
-        fetchPendingFees()
-      ]);
-      hideLoading();
-    }
-
-    document.addEventListener('DOMContentLoaded', initializeDashboard);
+    document.addEventListener("DOMContentLoaded", fetchData);
   </script>
 </body>
 
