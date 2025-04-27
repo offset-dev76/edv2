@@ -391,14 +391,6 @@
           <option value="G">G</option>
         </select>
 
-        <label for="streamSelect">Stream:</label>
-        <select id="streamSelect">
-          <option value="">All</option>
-          <option value="Science">Science</option>
-          <option value="Commerce">Commerce</option>
-          <option value="Arts">Arts</option>
-        </select>
-
         <label for="sortBy">Sort by:</label>
         <select id="sortBy">
           <option value="name">Name</option>
@@ -423,7 +415,7 @@
               <th class="sortable" onclick="sortTable('name')">Name</th>
               <th>Class</th>
               <th>Section</th>
-              <th>Stream</th>
+              <th id="streamHeader" style="display: none;">Stream</th>
               <th>Phone</th>
             </tr>
           </thead>
@@ -692,6 +684,25 @@
       const groupField = document.getElementById("groupField");
       groupField.style.display = classValue === "11" || classValue === "12" ? "block" : "none";
     }
+
+    function toggleStreamColumn() {
+      const classValue = document.getElementById("classSelect").value;
+      const streamHeader = document.getElementById("streamHeader");
+      const streamCells = document.querySelectorAll("#studentsTable tbody tr td:nth-child(5)");
+
+      if (classValue === "11" || classValue === "12") {
+        streamHeader.style.display = "";
+        streamCells.forEach(cell => (cell.style.display = ""));
+      } else {
+        streamHeader.style.display = "none";
+        streamCells.forEach(cell => (cell.style.display = "none"));
+      }
+    }
+
+    document.getElementById("classSelect").addEventListener("change", toggleStreamColumn);
+
+    // Call toggleStreamColumn on page load to ensure correct visibility
+    document.addEventListener("DOMContentLoaded", toggleStreamColumn);
 
   </script>
 </body>
