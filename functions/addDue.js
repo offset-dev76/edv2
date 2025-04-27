@@ -43,7 +43,7 @@ exports.handler = async function (event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const { studentId, dueAmount, dueDate, class: classVal, section } = data;
+    const { studentId, dueAmount, dueDate, class, section } = data;
 
     if (!dueAmount || !dueDate) {
       return {
