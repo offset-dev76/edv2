@@ -779,6 +779,23 @@
                 });
         }
 
+        document.getElementById("examSelect").addEventListener("change", async function () {
+            const selectedExam = this.value;
+            if (!selectedExam) return;
+
+            // Find the selected exam details
+            const examDetails = exams.find(exam => exam.examName === selectedExam);
+            if (examDetails) {
+                // Populate grade and section
+                document.getElementById("classSelect").value = examDetails.grade;
+                document.getElementById("sectionSelect").value = examDetails.section;
+
+                // Trigger fetch for students and marks
+                await fetchStudentsForMarks();
+                await tryFetchAndFillMarks();
+            }
+        });
+
         function toggleDarkMode() {
             const currentTheme = document.documentElement.getAttribute("data-theme");
             const newTheme = currentTheme === "dark" ? "light" : "dark";
