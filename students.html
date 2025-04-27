@@ -106,10 +106,16 @@
       border-bottom: 1px solid var(--border);
       padding: var(--spacing);
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      justify-content: space-around;
       flex-wrap: wrap;
       gap: 0.5rem;
+    }
+
+    .headline {
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
     }
 
     .header h1 {
@@ -359,8 +365,10 @@
   <div class="main">
 
     <div class="header">
-      <h1>Students Overview</h1>
-      <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+      <div class="headline">
+        <h1>Students Overview</h1>
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+      </div>
       <div class="controls">
         <label for="classSelect">Class:</label>
         <select id="classSelect">
@@ -579,7 +587,6 @@
 
       const selectedClass = document.getElementById("classSelect").value;
       const section = document.getElementById("sectionSelect").value;
-      const stream = document.getElementById("streamSelect").value;
       const sortBy = document.getElementById("sortBy").value;
 
       const messageDiv = document.getElementById("message");
