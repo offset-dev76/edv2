@@ -414,34 +414,47 @@
             const section = document.getElementById("sectionSelect").value;
             const examName = document.getElementById("examSelect").value;
 
+            console.log("Fetching report with:", { grade, section, examName });
+
             if (!grade || !section || !examName) {
+                console.log("Validation failed: Missing grade, section, or exam.");
                 alert("Please select grade, section, and exam.");
                 return;
             }
 
             showLoading();
+            console.log("Loading overlay displayed.");
+
             try {
+                console.log("Sending request to fetchClassReport API...");
                 const res = await fetch("/.netlify/functions/fetchClassReport", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ grade, section, exam: examName })
                 });
 
+                console.log("Response received from API.");
                 const result = await res.json();
+                console.log("Parsed response:", result);
+
                 if (result.success) {
+                    console.log("Report data fetched successfully. Rendering report...");
                     renderClassReport(result.data);
                 } else {
+                    console.log("No data found for the given criteria.");
                     alert("No data found.");
                 }
             } catch (err) {
                 console.error("Error fetching class report:", err);
                 alert("Error fetching class report.");
             } finally {
+                console.log("Hiding loading overlay.");
                 hideLoading();
             }
         }
 
         function renderClassReport(data) {
+            console.log("Rendering report table...");
             const headerRow = document.getElementById("reportHeader");
             const tableBody = document.querySelector("#reportTable tbody");
 
@@ -449,6 +462,8 @@
             tableBody.innerHTML = "";
 
             const subjects = Object.keys(data[0]).filter(key => key.startsWith("Sub"));
+            console.log("Subjects identified:", subjects);
+
             subjects.forEach(sub => {
                 const th = document.createElement("th");
                 th.textContent = sub;
@@ -464,6 +479,8 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            console.log("Report table rendered successfully.");
         }
 
         function printClassPDF() {
