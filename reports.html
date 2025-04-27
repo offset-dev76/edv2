@@ -83,7 +83,7 @@
 
         .sidebar a:hover {
             background-color: var(--primary-light);
-            color: var(--text-default);
+            color: var (--text-default);
             padding-left: calc(var(--spacing) + 0.5rem);
         }
 
@@ -331,92 +331,91 @@
     </div>
 
     <script>
-        const subjectsByClass = {
-            "1": ["English", "Maths", "EVS"],
-            "2": ["English", "Maths", "EVS"],
-            "3": ["English", "Maths", "EVS"],
-            "4": ["English", "Maths", "EVS"],
-            "5": ["English", "Maths", "EVS"],
-            "6": ["English", "Maths", "Science", "Social Studies"],
-            "7": ["English", "Maths", "Science", "Social Studies"],
-            "8": ["English", "Maths", "Science", "Social Studies"],
-            "9": ["English", "Maths", "Science", "Social Studies"],
-            "10": ["English", "Maths", "Science", "Social Studies"],
-            "11": {
-                "Science": ["Physics", "Chemistry", "Maths", "Biology"],
-                "Commerce": ["Accountancy", "Business Studies", "Economics", "Maths"],
-                "Arts": ["History", "Political Science", "Sociology", "English"]
-            },
-            "12": {
-                "Science": ["Physics", "Chemistry", "Maths", "Biology"],
-                "Commerce": ["Accountancy", "Business Studies", "Economics", "Informatics Practices"],
-                "Arts": ["History", "Geography", "Psychology", "English"]
-            }
-        };
+        let exams = []; // Store all fetched exams
 
-        document.getElementById("classSelect").addEventListener("change", handleClassChange);
-        document.getElementById("sectionSelect").addEventListener("change", fetchExams);
-
-        async function handleClassChange() {
-            const classVal = document.getElementById("classSelect").value;
-            if (classVal) {
-                showLoading();
-                await fetchSections(classVal);
-                hideLoading();
-            }
-        }
-
-        async function fetchSections(classVal) {
-            // Fetch sections for the selected class
-            // Populate sectionSelect dropdown
-        }
+        document.addEventListener("DOMContentLoaded", async () => {
+            await fetchExams(); // Fetch exams on page load
+            populateClassDropdown(); // Populate class dropdown
+            populateSectionDropdown(); // Populate section dropdown
+            const savedTheme = localStorage.getItem("theme") || "light";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+            const toggleButton = document.querySelector(".dark-mode-toggle");
+            toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+        });
 
         async function fetchExams() {
-            const classVal = document.getElementById("classSelect").value;
-            const sectionVal = document.getElementById("sectionSelect").value;
-
-            if (!classVal || !sectionVal) {
-                alert("Please select both class and section.");
-                return;
-            }
-
-            showLoading();
             try {
                 const res = await fetch("/.netlify/functions/fetchExams", {
-                    method: "POST",
+                    method: "GET",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ class: classVal, section: sectionVal })
                 });
-
                 const result = await res.json();
-                const examSelect = document.getElementById("examSelect");
-                examSelect.innerHTML = '<option value="">Select Exam</option>';
-
-                if (result.success && result.data.length > 0) {
-                    result.data.forEach(exam => {
-                        const option = document.createElement("option");
-                        option.value = exam.name;
-                        option.textContent = exam.name;
-                        examSelect.appendChild(option);
-                    });
-                } else {
-                    alert("No exams found for the selected class and section.");
+                if (result.success) {
+                    exams = result.data; // Store fetched exams
+                    populateExamDropdown(); // Populate dropdown with all exams
                 }
             } catch (err) {
                 console.error("Error fetching exams:", err);
-                alert("Error fetching exams.");
-            } finally {
-                hideLoading();
             }
         }
 
-        async function fetchClassReport() {
-            const classVal = document.getElementById("classSelect").value;
-            const sectionVal = document.getElementById("sectionSelect").value;
-            const examVal = document.getElementById("examSelect").value;
+        function populateExamDropdown() {
+            const examSelect = document.getElementById("examSelect");
+            examSelect.innerHTML = '<option value="">Select Exam</option>';
+            exams.forEach(exam => {
+                const option = document.createElement("option");
+                option.value = exam.examName;
+                option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
+                examSelect.appendChild(option);
+            });
+        }
 
-            if (!classVal || !sectionVal || !examVal) {
-                alert("Please select class, section, and exam.");
+        document.getElementById("classSelect").addEventListener("change", filterExams);
+        document.getElementById("sectionSelect").addEventListener("change", filterExams);
+
+        function filterExams() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const examSelect = document.getElementById("examSelect");
+
+            examSelect.innerHTML = '<option value="">Select Exam</option>';
+            exams
+                .filter(exam => (!grade || exam.grade === grade) && (!section || exam.section === section))
+                .forEach(exam => {
+                    const option = document.createElement("option");
+                    option.value = exam.examName;
+                    option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
+                    examSelect.appendChild(option);
+                });
+        }
+
+        function populateClassDropdown() {
+            const classSelect = document.getElementById("classSelect");
+            for (let i = 1; i <= 12; i++) {
+                const option = document.createElement("option");
+                option.value = i;
+                option.textContent = i;
+                classSelect.appendChild(option);
+            }
+        }
+
+        function populateSectionDropdown() {
+            const sectionSelect = document.getElementById("sectionSelect");
+            ["A", "B", "C", "D", "E", "F", "G"].forEach(section => {
+                const option = document.createElement("option");
+                option.value = section;
+                option.textContent = section;
+                sectionSelect.appendChild(option);
+            });
+        }
+
+        async function fetchClassReport() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const examName = document.getElementById("examSelect").value;
+
+            if (!grade || !section || !examName) {
+                alert("Please select grade, section, and exam.");
                 return;
             }
 
@@ -425,7 +424,7 @@
                 const res = await fetch("/.netlify/functions/fetchClassReport", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ class: classVal, section: sectionVal, exam: examVal })
+                    body: JSON.stringify({ grade, section, examName })
                 });
 
                 const result = await res.json();
@@ -502,28 +501,6 @@
             doc.save(`student-report-${studentData[0]}.pdf`);
         }
 
-        // Populate class and section dropdowns
-        document.addEventListener("DOMContentLoaded", () => {
-            const classSelect = document.getElementById("classSelect");
-            const sectionSelect = document.getElementById("sectionSelect");
-
-            // Populate class dropdown (1-12)
-            for (let i = 1; i <= 12; i++) {
-                const option = document.createElement("option");
-                option.value = i;
-                option.textContent = i;
-                classSelect.appendChild(option);
-            }
-
-            // Populate section dropdown (A-G)
-            ["A", "B", "C", "D", "E", "F", "G"].forEach(section => {
-                const option = document.createElement("option");
-                option.value = section;
-                option.textContent = section;
-                sectionSelect.appendChild(option);
-            });
-        });
-
         function showLoading() {
             document.getElementById("loadingOverlay").style.display = "flex";
         }
@@ -531,14 +508,6 @@
         function hideLoading() {
             document.getElementById("loadingOverlay").style.display = "none";
         }
-
-        // Initialize theme from localStorage
-        document.addEventListener("DOMContentLoaded", () => {
-            const savedTheme = localStorage.getItem("theme") || "light";
-            document.documentElement.setAttribute("data-theme", savedTheme);
-            const toggleButton = document.querySelector(".dark-mode-toggle");
-            toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
-        });
 
         function toggleDarkMode() {
             const currentTheme = document.documentElement.getAttribute("data-theme");
