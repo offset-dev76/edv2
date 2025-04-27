@@ -180,7 +180,7 @@
             width: 100%;
             border-collapse: collapse;
             background-color: var(--bg-surface);
-            border-radius: var(--radius);
+            border-radius: var (--radius);
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
@@ -260,7 +260,7 @@
             border: none;
             cursor: pointer;
             font-size: 1.5rem;
-            color: var(--text-default);
+            color: var (--text-default);
             transition: color 0.3s;
         }
 
@@ -274,6 +274,18 @@
 
         #marksTable.show thead {
             display: table-header-group; /* Show the table head when data is fetched */
+        }
+
+        [data-theme="dark"] #marksTable input {
+            background-color: #333333; /* Dark background for inputs */
+            color: #ffffff; /* White text for better contrast */
+            border: 1px solid #555555; /* Subtle border for inputs */
+        }
+
+        [data-theme="dark"] #marksTable input:focus {
+            outline: none;
+            border-color: var(--primary-light); /* Highlight border on focus */
+            box-shadow: 0 0 0 2px var(--primary-light);
         }
     </style>
 
@@ -331,12 +343,13 @@
                     <option value="Arts">Arts</option>
                 </select>
 
-                <select id="examSelect">
+                <select id="examSelect" onchange="handleExamSelection()">
                     <option value="">Select Existing Exam</option>
                     <!-- Dynamic options will be added here -->
+                    <option value="new">Enter New Exam</option>
                 </select>
 
-                <input type="text" id="examName" placeholder="Enter New Exam Name">
+                <input type="text" id="examName" placeholder="Enter New Exam Name" style="display: none;">
                 <button class="btn-save" onclick="saveMarks()">Save</button>
                 <button class="btn-print" onclick="window.print()">Print</button>
         
@@ -389,11 +402,21 @@
 
         async function handleClassChange() {
             const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
             const streamSelect = document.getElementById("streamSelect");
 
-            // Show stream dropdown only for classes 11 and 12
+            // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
                 streamSelect.style.display = "inline-block";
+                if (section === "A") {
+                    streamSelect.value = "Science";
+                } else if (section === "B") {
+                    streamSelect.value = "Commerce";
+                } else if (section === "C") {
+                    streamSelect.value = "Arts";
+                } else {
+                    streamSelect.value = ""; // Reset if no valid section
+                }
             } else {
                 streamSelect.style.display = "none";
                 streamSelect.value = "";
@@ -421,7 +444,7 @@
             const section = document.getElementById("sectionSelect").value;
 
             if (!grade || !section) return; // Ensure both grade and section are selected
-
+            await handleClassChange();
             showLoading();
             try {
                 const res = await fetch("/.netlify/functions/fetchStudents", {
@@ -528,7 +551,7 @@
             const stream = document.getElementById("streamSelect").value;
             const examSelect = document.getElementById("examSelect").value;
             const examNameInput = document.getElementById("examName").value.trim();
-            const examName = examSelect || examNameInput; // Use selected exam or new exam name
+            const examName = examSelect === "new" ? examNameInput : examSelect; // Use new exam name if "Enter New Exam" is selected
             const status = document.getElementById("statusMsg");
 
             if (!grade || !examName) {
@@ -597,7 +620,7 @@
                 });
 
                 // Save exam details if it's a new exam
-                if (!examSelect) {
+                if (examSelect === "new") {
                     const examRes = await fetch('/.netlify/functions/addExam', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -668,19 +691,21 @@
         async function tryFetchAndFillMarks() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
+            const stream = document.getElementById("streamSelect").value;
             const examSelect = document.getElementById("examSelect").value;
             const examNameInput = document.getElementById("examName").value.trim();
 
-            let examName = examNameInput; // Default to new exam name
-            if (examSelect) {
-                // Parse the selected exam value to extract the exam name
-                const match = examSelect.match(/^(.*?) \(Grade: (\d+), Section: ([A-Z])\)$/);
-                if (match) {
-                    examName = match[1]; // Extract the exam name
-                }
-            }
+            let examName = examSelect === "new" ? examNameInput : examSelect; // Use new exam name if "Enter New Exam" is selected
 
-            if (!grade || !section || !examName) return; // Ensure all required fields are present
+            console.log("Grade:", grade);
+            console.log("Section:", section);
+            console.log("Stream:", stream);
+            console.log("Exam Name:", examName);
+
+            if (!grade || !section || !examName) {
+                console.warn("Missing required fields: grade, section, or exam name.");
+                return;
+            }
 
             try {
                 const res = await fetch("/.netlify/functions/fetchMarks2", {
@@ -689,17 +714,25 @@
                     body: JSON.stringify({ grade, section, exam: examName })
                 });
 
+                console.log("Request sent to fetchMarks2 with:", { grade, section, exam: examName });
+
                 const result = await res.json();
+
+                console.log("Response from fetchMarks2:", result);
 
                 if (result.success && result.data?.length > 0) {
                     const marksData = result.data; // Array of student mark documents
 
                     const subjectMap = {}; // subject name => Sub1...Sub8
-                    const subjects = getSubjectsForGradeStream(grade, null); // Stream is not needed here
+                    const subjects = getSubjectsForGradeStream(grade, stream);
+
+                    console.log("Subjects for grade and stream:", subjects);
 
                     subjects.forEach((sub, i) => {
                         subjectMap[sub] = `Sub${i + 1}`;
                     });
+
+                    console.log("Subject map:", subjectMap);
 
                     const inputs = document.querySelectorAll("#marksTable input");
 
@@ -713,6 +746,8 @@
                         const subKey = subjectMap[subject];
                         const val = doc[subKey];
 
+                        console.log(`Setting value for Student ID: ${id}, Subject: ${subject}, Value: ${val}`);
+
                         if (val === 0) {
                             input.value = "AB";
                         } else if (val === null || val === undefined) {
@@ -723,7 +758,7 @@
                     });
                 }
             } catch (err) {
-                console.warn("No previous marks found or error fetching them.");
+                console.error("Error in tryFetchAndFillMarks:", err);
             }
         }
 
@@ -805,6 +840,18 @@
                 await tryFetchAndFillMarks();
             }
         });
+
+        function handleExamSelection() {
+            const examSelect = document.getElementById("examSelect");
+            const examNameInput = document.getElementById("examName");
+
+            if (examSelect.value === "new") {
+                examNameInput.style.display = "inline-block"; // Show input box for new exam name
+            } else {
+                examNameInput.style.display = "none"; // Hide input box
+                examNameInput.value = ""; // Clear the input box
+            }
+        }
 
         function toggleDarkMode() {
             const currentTheme = document.documentElement.getAttribute("data-theme");
