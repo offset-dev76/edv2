@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"="width=device-width, initial-scale=1.0">
     <title>Marks Management</title>
     <style>
         :root {
@@ -667,16 +667,26 @@
 
         async function tryFetchAndFillMarks() {
             const grade = document.getElementById("classSelect").value;
-            const stream = document.getElementById("streamSelect").value;
-            const examName = document.getElementById("examName").value.trim();
+            const section = document.getElementById("sectionSelect").value;
+            const examSelect = document.getElementById("examSelect").value;
+            const examNameInput = document.getElementById("examName").value.trim();
 
-            if (!grade || !examName) return;
+            let examName = examNameInput; // Default to new exam name
+            if (examSelect) {
+                // Parse the selected exam value to extract the exam name
+                const match = examSelect.match(/^(.*?) \(Grade: (\d+), Section: ([A-Z])\)$/);
+                if (match) {
+                    examName = match[1]; // Extract the exam name
+                }
+            }
+
+            if (!grade || !section || !examName) return; // Ensure all required fields are present
 
             try {
                 const res = await fetch("/.netlify/functions/fetchMarks2", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ grade, stream, exam: examName })
+                    body: JSON.stringify({ grade, section, exam: examName })
                 });
 
                 const result = await res.json();
@@ -685,7 +695,7 @@
                     const marksData = result.data; // Array of student mark documents
 
                     const subjectMap = {}; // subject name => Sub1...Sub8
-                    const subjects = getSubjectsForGradeStream(grade, stream);
+                    const subjects = getSubjectsForGradeStream(grade, null); // Stream is not needed here
 
                     subjects.forEach((sub, i) => {
                         subjectMap[sub] = `Sub${i + 1}`;
