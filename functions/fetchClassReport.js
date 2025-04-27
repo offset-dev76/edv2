@@ -6,7 +6,7 @@ const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mong
 const markSchema = new mongoose.Schema({
   RollNo: String,
   Name: String,
-  grade: String, // Changed from Class to grade
+  grade: String,
   Section: String,
   Stream: String,
   Exam: String,
@@ -46,21 +46,27 @@ exports.handler = async function (event) {
   try {
     await connectToDB();
 
-    const { class: grade, section, stream, exam } = JSON.parse(event.body); // Ensure `class` is destructured correctly
+    const body = JSON.parse(event.body);
+
+    // Support both ways: either 'class' or 'grade', and 'exam' or 'examName'
+    const grade = body.class || body.grade;
+    const section = body.section;
+    const stream = body.stream || null;
+    const exam = body.exam || body.examName;
 
     if (!grade || !section || !exam) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: 'Class, section, and exam are required' })
+        body: JSON.stringify({ message: 'Grade (or Class), section, and exam (or examName) are required' })
       };
     }
 
-    const query = { grade, Section: section, Exam: exam }; // Changed Class to grade
+    const query = { grade, Section: section, Exam: exam };
     if (stream) query.Stream = stream;
 
     const marks = await Mark.find(query).lean();
 
-    if (marks.length === 0) {
+    if (!marks.length) {
       return {
         statusCode: 404,
         body: JSON.stringify({ success: false, message: 'No data found for the specified criteria' })
