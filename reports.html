@@ -2,183 +2,556 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reports Management</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports Management</title>
+    <style>
+        :root {
+            --bg-page: #FAFAFA;
+            --bg-surface: #FFFFFF;
+            --primary: #9877D9;
+            --primary-light: #B99FE1;
+            --text-default: #333333;
+            --text-muted: #666666;
+            --border: #E1E1E1;
+            --radius: 0.5rem;
+            --border2: solid 1px #E1E1E1;
+            --spacing: 1rem;
+        }
+
+        [data-theme="dark"] {
+            --bg-page: #121212;
+            --bg-page2: #12121259;
+            --bg-surface: #1E1E1E;
+            --text-default: #ffffff;
+            --primary: #BB86FC;
+            --primary-light: #985EFF;
+            --text-muted: #A1A1A1;
+            --border: #333333;
+            --border2: solid 1px #333333;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            max-height: 100vh;
+            background-color: var(--bg-page);
+            color: var(--text-default);
+            font-family: "YDGothic 140 Pro", 'Poppins', sans-serif;
+            line-height: 1.5;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            padding: var(--spacing) 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: calc(var(--spacing) * 1.5);
+            letter-spacing: 1px;
+            color: var(--text-default);
+        }
+
+        .sidebar a {
+            width: 100%;
+            padding: 0.75rem var(--spacing);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: background-color 0.3s, padding-left 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: var(--primary-light);
+            color: var(--text-default);
+            padding-left: calc(var(--spacing) + 0.5rem);
+        }
+
+        .sidebar a.active {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            font-weight: 600;
+            padding-left: calc(var(--spacing) + 0.5rem);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-page);
+        }
+
+        .header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: var(--spacing);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: left;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .headline {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-default);
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls input,
+        .controls select {
+            background-color: var(--bg-page2);
+            color: var(--text-default);
+        }
+
+        .controls select,
+        .controls input,
+        .controls button {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .controls select:focus,
+        .controls input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .controls button {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background-color: var(--primary-light);
+        }
+
+        .table-container {
+            flex-grow: 1;
+            background-color: var(--bg-surface);
+            border-radius: var(--radius);
+            border: var(--border2);
+            overflow: auto;
+            height: 100%;
+            margin: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--bg-surface);
+            border-radius: var (--radius);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        th,
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            font-weight: 600;
+            cursor: default;
+        }
+
+        th.sortable:hover {
+            background-color: var(--primary-light);
+            color: var(--text-default);
+            cursor: pointer;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            border-radius: 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #FBFBFB;
+        }
+
+        [data-theme="dark"] tr:nth-child(even) {
+            background-color: #1E1E1E;
+        }
+
+        .status {
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: green;
+            font-weight: 500;
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 0.5rem solid #eee;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .dark-mode-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--text-default);
+            transition: color 0.3s;
+        }
+
+        .dark-mode-toggle:hover {
+            color: var(--primary);
+        }
+    </style>
 </head>
 
-<body class="bg-gray-50 text-gray-800 flex">
-  <!-- Sidebar -->
-  <aside class="w-64 bg-blue-600 text-white min-h-screen p-6 shadow-lg fixed">
-    <h2 class="text-2xl font-semibold mb-6">Studia v1</h2>
-    <nav class="flex flex-col gap-4">
-      <a href="./index.html" class="hover:bg-blue-500 p-2 rounded">Dashboard</a>
-      <a href="./students.html" class="hover:bg-blue-500 p-2 rounded">Student Directory</a>
-      <a href="./marks.html" class="hover:bg-blue-500 p-2 rounded">Marks Management</a>
-      <a href="./fees.html" class="hover:bg-blue-500 p-2 rounded">Fees Management</a>
-      <a href="./reports.html" class="bg-blue-700 p-2 rounded">Reports & Printouts</a>
-      <a href="./settings.html" class="hover:bg-blue-500 p-2 rounded">Settings</a>
-    </nav>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="ml-64 p-8 w-full">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">Reports Management</h1>
+<body>
+    <div class="sidebar">
+        <h2>ScholarX</h2>
+        <a href="./index.html">Dashboard</a>
+        <a href="./students.html">Student Directory</a>
+        <a href="./marks.html">Marks Management</a>
+        <a href="./fees.html">Fees Management</a>
+        <a href="./reports.html" class="active">Reports & Printouts</a>
+        <a href="./settings.html">Settings</a>
     </div>
 
-    <!-- Filters -->
-    <div class="flex flex-wrap gap-4 mb-6">
-      <select id="classSelect" class="p-2 border rounded w-40">
-        <option value="">Select Class</option>
-        ${[...Array(12)].map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
-      </select>
+    <div class="main-content">
+        <div class="header">
+            <div class="headline">
+                <h1>Reports Management</h1>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+            </div>
+            <div class="controls">
+                <select id="classSelect">
+                    <option value="">Select Grade</option>
+                    <!-- Options dynamically populated -->
+                </select>
 
-      <select id="sectionSelect" class="p-2 border rounded w-40">
-        <option value="">Select Section</option>
-        <option value="A">A</option>
-        <option value="B">B</option>
-        <option value="C">C</option>
-      </select>
+                <select id="sectionSelect">
+                    <option value="">Select Section</option>
+                    <!-- Options dynamically populated -->
+                </select>
 
-      <select id="streamSelect" class="p-2 border rounded w-48 hidden">
-        <option value="">Select Stream</option>
-        <option value="Science">Science</option>
-        <option value="Commerce">Commerce</option>
-        <option value="Arts">Arts</option>
-      </select>
+                <select id="examSelect">
+                    <option value="">Select Exam</option>
+                    <!-- Options dynamically populated -->
+                </select>
 
-      <input id="examName" class="p-2 border rounded w-64" type="text" placeholder="Enter Exam Name" />
+                <button class="btn-preview" onclick="fetchClassReport()">Preview Report</button>
+                <button class="btn-print" onclick="printClassPDF()">Print Class PDF</button>
+            </div>
+        </div>
 
-      <button onclick="fetchMarks()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Generate Report</button>
-      <button onclick="printReport()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Print</button>
-      <button onclick="exportPDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export PDF</button>
+        <div class="table-container">
+            <table id="reportTable">
+                <thead>
+                    <tr id="reportHeader">
+                        <th>Roll No</th>
+                        <th>Student Name</th>
+                        <!-- Subject headers dynamically populated -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamic rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="controls">
+            <button class="btn-print" onclick="printStudentPDF()">Print Individual Report</button>
+        </div>
     </div>
 
-    <!-- Report Table -->
-    <div class="bg-white rounded shadow p-4">
-      <h2 class="text-xl font-semibold mb-4">Class Report Preview</h2>
-      <div class="overflow-auto">
-        <table id="reportTable" class="min-w-full text-sm border">
-          <thead class="bg-gray-100 text-left">
-            <tr>
-              <th class="p-2 border">Roll No</th>
-              <th class="p-2 border">Name</th>
-              ${[...Array(8)].map((_, i) => `<th class="p-2 border">Sub${i + 1}</th>`).join('')}
-              <th class="p-2 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-100">
-            <!-- Dynamic rows -->
-          </tbody>
-        </table>
-      </div>
+    <div id="loadingOverlay" style="display:none;">
+        <div class="spinner"></div>
     </div>
-  </main>
 
-  <!-- Chart Modal -->
-  <div id="chartModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-96 relative">
-      <button onclick="closeChart()" class="absolute top-2 right-2 text-gray-500 hover:text-black">✕</button>
-      <canvas id="marksChart" width="300" height="300"></canvas>
-    </div>
-  </div>
-
-  <script>
-    const classSelect = document.getElementById("classSelect");
-    const streamSelect = document.getElementById("streamSelect");
-
-    classSelect.addEventListener("change", () => {
-      const selectedClass = parseInt(classSelect.value);
-      streamSelect.classList.toggle("hidden", selectedClass < 11);
-    });
-
-    async function fetchMarks() {
-      const grade = classSelect.value;
-      const section = document.getElementById("sectionSelect").value;
-      const exam = document.getElementById("examName").value.trim();
-      const stream = streamSelect.classList.contains("hidden") ? "" : streamSelect.value;
-
-      if (!grade || !exam) return alert("Please select class and enter exam name.");
-
-      const res = await fetch('/.netlify/functions/fetchMarks2', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ grade, section, exam, stream })
-      });
-
-      const result = await res.json();
-      if (result.success) renderReport(result.data);
-      else alert("No marks found.");
-    }
-
-    function renderReport(data) {
-      const tbody = document.querySelector("#reportTable tbody");
-      tbody.innerHTML = "";
-      data.forEach(student => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td class="p-2 border">${student.RollNo}</td>
-          <td class="p-2 border">${student.Name}</td>
-          ${[...Array(8)].map((_, i) => `<td class="p-2 border">${student["Sub" + (i + 1)] ?? "-"}</td>`).join('')}
-          <td class="p-2 border">
-            <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs" onclick="showChart(${JSON.stringify(student)})">View Chart</button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function printReport() {
-      window.print();
-    }
-
-    function exportPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Class Report", 14, 16);
-      doc.autoTable({ html: "#reportTable", startY: 20 });
-      doc.save("class-report.pdf");
-    }
-
-    function showChart(student) {
-      document.getElementById("chartModal").classList.remove("hidden");
-      const ctx = document.getElementById("marksChart").getContext("2d");
-      if (window.marksChartInstance) window.marksChartInstance.destroy();
-
-      const labels = Object.keys(student).filter(k => k.startsWith("Sub"));
-      const data = labels.map(key => student[key] || 0);
-
-      window.marksChartInstance = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [{
-            label: "Marks",
-            data,
-            backgroundColor: "#4a90e2"
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100
+    <script>
+        const subjectsByClass = {
+            "1": ["English", "Maths", "EVS"],
+            "2": ["English", "Maths", "EVS"],
+            "3": ["English", "Maths", "EVS"],
+            "4": ["English", "Maths", "EVS"],
+            "5": ["English", "Maths", "EVS"],
+            "6": ["English", "Maths", "Science", "Social Studies"],
+            "7": ["English", "Maths", "Science", "Social Studies"],
+            "8": ["English", "Maths", "Science", "Social Studies"],
+            "9": ["English", "Maths", "Science", "Social Studies"],
+            "10": ["English", "Maths", "Science", "Social Studies"],
+            "11": {
+                "Science": ["Physics", "Chemistry", "Maths", "Biology"],
+                "Commerce": ["Accountancy", "Business Studies", "Economics", "Maths"],
+                "Arts": ["History", "Political Science", "Sociology", "English"]
+            },
+            "12": {
+                "Science": ["Physics", "Chemistry", "Maths", "Biology"],
+                "Commerce": ["Accountancy", "Business Studies", "Economics", "Informatics Practices"],
+                "Arts": ["History", "Geography", "Psychology", "English"]
             }
-          }
-        }
-      });
-    }
+        };
 
-    function closeChart() {
-      document.getElementById("chartModal").classList.add("hidden");
-    }
-  </script>
+        document.getElementById("classSelect").addEventListener("change", handleClassChange);
+        document.getElementById("sectionSelect").addEventListener("change", fetchExams);
+
+        async function handleClassChange() {
+            const classVal = document.getElementById("classSelect").value;
+            if (classVal) {
+                showLoading();
+                await fetchSections(classVal);
+                hideLoading();
+            }
+        }
+
+        async function fetchSections(classVal) {
+            // Fetch sections for the selected class
+            // Populate sectionSelect dropdown
+        }
+
+        async function fetchExams() {
+            const classVal = document.getElementById("classSelect").value;
+            const sectionVal = document.getElementById("sectionSelect").value;
+
+            if (!classVal || !sectionVal) {
+                alert("Please select both class and section.");
+                return;
+            }
+
+            showLoading();
+            try {
+                const res = await fetch("/.netlify/functions/fetchExams", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ class: classVal, section: sectionVal })
+                });
+
+                const result = await res.json();
+                const examSelect = document.getElementById("examSelect");
+                examSelect.innerHTML = '<option value="">Select Exam</option>';
+
+                if (result.success && result.data.length > 0) {
+                    result.data.forEach(exam => {
+                        const option = document.createElement("option");
+                        option.value = exam.name;
+                        option.textContent = exam.name;
+                        examSelect.appendChild(option);
+                    });
+                } else {
+                    alert("No exams found for the selected class and section.");
+                }
+            } catch (err) {
+                console.error("Error fetching exams:", err);
+                alert("Error fetching exams.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function fetchClassReport() {
+            const classVal = document.getElementById("classSelect").value;
+            const sectionVal = document.getElementById("sectionSelect").value;
+            const examVal = document.getElementById("examSelect").value;
+
+            if (!classVal || !sectionVal || !examVal) {
+                alert("Please select class, section, and exam.");
+                return;
+            }
+
+            showLoading();
+            try {
+                const res = await fetch("/.netlify/functions/fetchClassReport", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ class: classVal, section: sectionVal, exam: examVal })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    renderClassReport(result.data);
+                } else {
+                    alert("No data found.");
+                }
+            } catch (err) {
+                console.error("Error fetching class report:", err);
+                alert("Error fetching class report.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderClassReport(data) {
+            const headerRow = document.getElementById("reportHeader");
+            const tableBody = document.querySelector("#reportTable tbody");
+
+            headerRow.innerHTML = "<th>Roll No</th><th>Student Name</th>";
+            tableBody.innerHTML = "";
+
+            const subjects = Object.keys(data[0]).filter(key => key.startsWith("Sub"));
+            subjects.forEach(sub => {
+                const th = document.createElement("th");
+                th.textContent = sub;
+                headerRow.appendChild(th);
+            });
+
+            data.forEach(student => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${student.RollNo}</td>
+                    <td>${student.Name}</td>
+                    ${subjects.map(sub => `<td>${student[sub] ?? "-"}</td>`).join("")}
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function printClassPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF("landscape");
+            doc.text("Class Report", 14, 16);
+            doc.autoTable({ html: "#reportTable", startY: 20 });
+            doc.save("class-report.pdf");
+        }
+
+        function printStudentPDF() {
+            const { jsPDF } = window.jspdf;
+            const selectedRow = document.querySelector("#reportTable tbody tr.selected");
+            if (!selectedRow) {
+                alert("Please select a student row.");
+                return;
+            }
+
+            const studentData = Array.from(selectedRow.children).map(td => td.textContent);
+            const doc = new jsPDF();
+            doc.text("Student Report", 14, 16);
+            doc.text(`Roll No: ${studentData[0]}`, 14, 26);
+            doc.text(`Name: ${studentData[1]}`, 14, 36);
+
+            const subjects = Array.from(document.querySelectorAll("#reportHeader th")).slice(2);
+            const marks = studentData.slice(2);
+
+            const tableData = subjects.map((sub, i) => [sub.textContent, marks[i]]);
+            doc.autoTable({
+                head: [["Subject", "Marks"]],
+                body: tableData,
+                startY: 46
+            });
+
+            doc.save(`student-report-${studentData[0]}.pdf`);
+        }
+
+        // Populate class and section dropdowns
+        document.addEventListener("DOMContentLoaded", () => {
+            const classSelect = document.getElementById("classSelect");
+            const sectionSelect = document.getElementById("sectionSelect");
+
+            // Populate class dropdown (1-12)
+            for (let i = 1; i <= 12; i++) {
+                const option = document.createElement("option");
+                option.value = i;
+                option.textContent = i;
+                classSelect.appendChild(option);
+            }
+
+            // Populate section dropdown (A-G)
+            ["A", "B", "C", "D", "E", "F", "G"].forEach(section => {
+                const option = document.createElement("option");
+                option.value = section;
+                option.textContent = section;
+                sectionSelect.appendChild(option);
+            });
+        });
+
+        function showLoading() {
+            document.getElementById("loadingOverlay").style.display = "flex";
+        }
+
+        function hideLoading() {
+            document.getElementById("loadingOverlay").style.display = "none";
+        }
+
+        // Initialize theme from localStorage
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedTheme = localStorage.getItem("theme") || "light";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+            const toggleButton = document.querySelector(".dark-mode-toggle");
+            toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+        });
+
+        function toggleDarkMode() {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+            const toggleButton = document.querySelector(".dark-mode-toggle");
+            toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
+        }
+    </script>
 </body>
 
 </html>
