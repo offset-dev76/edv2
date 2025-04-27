@@ -6,7 +6,7 @@ const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mong
 const markSchema = new mongoose.Schema({
   RollNo: String,
   Name: String,
-  Class: String,
+  grade: String, // Changed from Class to grade
   Section: String,
   Stream: String,
   Exam: String,
@@ -46,7 +46,7 @@ exports.handler = async function (event) {
   try {
     await connectToDB();
 
-    const { class: grade, section, stream, exam } = JSON.parse(event.body);
+    const { class: grade, section, stream, exam } = JSON.parse(event.body); // Ensure `class` is destructured correctly
 
     if (!grade || !section || !exam) {
       return {
@@ -55,10 +55,9 @@ exports.handler = async function (event) {
       };
     }
 
-    const query = { Class: grade, Section: section, Exam: exam };
+    const query = { grade, Section: section, Exam: exam }; // Changed Class to grade
     if (stream) query.Stream = stream;
 
-    // Fetch all marks for the specified class, section, and exam
     const marks = await Mark.find(query).lean();
 
     if (marks.length === 0) {
