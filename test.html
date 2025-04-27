@@ -272,6 +272,78 @@
     .dark-mode-toggle:hover {
       color: var(--primary);
     }
+
+    #addDueModal {
+      display: none;
+      gap: 20px;
+      flex-direction: column;
+    }
+
+    #addDueModal .modal-content {
+      background-color: var(--bg-surface);
+      padding: var(--spacing);
+      border-radius: 1rem;
+      box-sizing: border-box;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #addDueModal .close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    #addDueModal .close:hover {
+      color: var(--text-default);
+    }
+
+    #addDueModal form {
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    #addDueModal input,
+    #addDueModal select,
+    #addDueModal button {
+      height: 2.5rem;
+      padding: 0 0.75rem;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 0.75rem;
+      background-color: var(--bg-surface);
+      color: var(--text-default);
+    }
+
+    #addDueModal input:focus,
+    #addDueModal select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    #addDueModal button {
+      background-color: var(--primary);
+      color: var(--bg-surface);
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #addDueModal button:hover {
+      background-color: var(--primary-light);
+    }
   </style>
 </head>
 
@@ -387,40 +459,11 @@
       <form id="addDueForm">
         <select id="studentNameSelectDue" required onchange="populateStudentIdDue()">
           <option value="" disabled selected>Select Student Name</option>
-          <option value="all">All Students</option>
+          <option value="all">All Students</option> <!-- Added All Students option -->
           <!-- Options will be dynamically populated -->
         </select>
 
         <input type="text" id="studentIdDue" placeholder="Student ID" disabled>
-
-        <label for="classSelectDue">Class:</label>
-        <select id="classSelectDue" required>
-          <option value="" disabled selected>Select Class</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-          <option value="11">11</option>
-          <option value="12">12</option>
-        </select>
-
-        <label for="sectionSelectDue">Section:</label>
-        <select id="sectionSelectDue">
-          <option value="">Select Section</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="D">D</option>
-          <option value="E">E</option>
-          <option value="F">F</option>
-          <option value="G">G</option>
-        </select>
 
         <input type="number" id="dueAmount" placeholder="Due Amount" required>
 
@@ -471,8 +514,14 @@
       studentsList = filtered;
 
       // Populate dropdown for Add Payment modal
-      const dropdown = document.getElementById("studentNameSelect");
-      dropdown.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
+      const dropdownPayment = document.getElementById("studentNameSelect");
+      dropdownPayment.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
+        filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+
+      // Populate dropdown for Add Due modal
+      const dropdownDue = document.getElementById("studentNameSelectDue");
+      dropdownDue.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
+        '<option value="all">All Students</option>' + // Added All Students option
         filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
 
       // Prepare student ID array
@@ -529,10 +578,9 @@
 
     function closeAddPaymentModal() {
       document.getElementById("paymentForm").reset();
-      document.getElementById("studentName").value = ''; // <-- corrected this line
+      document.getElementById("studentId").value = ''; // Reset student ID field
       document.getElementById("paymentModal").style.display = "none";
-      document.getElementById("message").textContent = '';
-
+      document.getElementById("message").textContent = ''; // Clear message
     }
 
 
@@ -630,15 +678,15 @@
 
     function closeAddDueModal() {
       document.getElementById("addDueForm").reset();
-      document.getElementById("studentIdDue").value = '';
+      document.getElementById("studentIdDue").value = ''; // Reset student ID field
       document.getElementById("addDueModal").style.display = "none";
-      document.getElementById("dueMessage").textContent = '';
+      document.getElementById("dueMessage").textContent = ''; // Clear message
     }
 
     function populateStudentIdDue() {
       const name = document.getElementById("studentNameSelectDue").value;
       const student = studentsList.find(s => s.name === name);
-      document.getElementById("studentIdDue").value = student ? student.id : '';
+      document.getElementById("studentIdDue").value = name === "all" ? '' : (student ? student.id : '');
     }
 
     document.getElementById("addDueForm").addEventListener("submit", async function (e) {
@@ -651,8 +699,8 @@
         dueAmount: parseFloat(document.getElementById("dueAmount").value),
         dueDate: document.getElementById("dueDate").value,
         studentId: isBatchUpdate ? null : document.getElementById("studentIdDue").value,
-        class: isBatchUpdate ? document.getElementById("classSelectDue").value : null,
-        section: isBatchUpdate ? document.getElementById("sectionSelectDue").value : null,
+        class: isBatchUpdate ? document.getElementById("classSelect").value : null, // Use main class
+        section: isBatchUpdate ? document.getElementById("sectionSelect").value : null, // Use main section
       };
 
       const res = await fetch("/.netlify/functions/addDue", {
