@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 const studentSchema = new mongoose.Schema({
-  id: { type: String, unique: true },
+  studentId: { type: String, unique: true },
   name: String,
   class: String,
   section: String,
