@@ -2,723 +2,848 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fees Dashboard</title>
-  <style>
-    :root {
-      --bg-page: #FAFAFA;
-      --bg-surface: #FFFFFF;
-      --primary: #9877D9;
-      --primary-light: #B99FE1;
-      --text-default: #333333;
-      --text-muted: #666666;
-      --border: #E1E1E1;
-      --radius: 0.5rem;
-      --spacing: 1rem;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <title>Marks Management</title>
+    <style>
+        :root {
+            --bg-page: #FAFAFA;
+            --bg-surface: #FFFFFF;
+            --primary: #9877D9;
+            --primary-light: #B99FE1;
+            --text-default: #333333;
+            --text-muted: #666666;
+            --border: #E1E1E1;
+            --radius: 0.5rem;
+            --border2: solid 1px #E1E1E1;
+            --spacing: 1rem;
+        }
 
-    [data-theme="dark"] {
-      --bg-page: #121212;
-      --bg-surface: #1E1E1E;
-      --primary: #BB86FC;
-      --primary-light: #985EFF;
-      --text-default: #FFFFFF;
-      --text-muted: #A1A1A1;
-      --border: #333333;
-    }
+        [data-theme="dark"] {
+            --bg-page: #121212;
+            --bg-page2: #12121259;
+            --bg-surface: #1E1E1E;
+            --text-default: #ffffff;
+            --primary: #BB86FC;
+            --primary-light: #985EFF;
+            --text-muted: #A1A1A1;
+            --border: #333333;
+            --border2: solid 1px #333333;
+        }
 
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-    }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    body {
-      display: flex;
-      min-height: 100vh;
-      background-color: var(--bg-page);
-      color: var(--text-default);
-      line-height: 1.5;
-    }
+        html {
+            font-size: 16px;
+        }
 
-    .sidebar {
-      width: 240px;
-      background-color: var(--bg-surface);
-      border-right: 1px solid var(--border);
-      padding: var(--spacing) 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        body {
+            display: flex;
+            min-height: 100vh;
+            max-height: 100vh;
+            background-color: var(--bg-page);
+            color: var(--text-default);
+            font-family: "YDGothic 140 Pro", 'Poppins', sans-serif;
+            line-height: 1.5;
+        }
 
-    .sidebar h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: calc(var(--spacing) * 1.5);
-      color: var(--text-default);
-    }
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            padding: var(--spacing) 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .sidebar a {
-      width: 100%;
-      padding: 0.75rem var(--spacing);
-      font-size: 1rem;
-      color: var(--text-muted);
-      transition: background-color 0.3s, padding-left 0.3s;
-      text-decoration: none;
-    }
+        .sidebar h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: calc(var(--spacing) * 1.5);
+            letter-spacing: 1px;
+            color: var(--text-default);
+        }
 
-    .sidebar a:hover,
-    .sidebar a.active {
-      background-color: var(--primary-light);
-      color: var(--bg-surface);
-      font-weight: 600;
-      padding-left: calc(var(--spacing) + 0.5rem);
-    }
+        .sidebar a {
+            width: 100%;
+            padding: 0.75rem var(--spacing);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: background-color 0.3s, padding-left 0.3s;
+        }
 
-    .main {
-      flex-grow: 1;
-      /* padding: var(--spacing); */
-    }
+        .sidebar a:hover {
+            background-color: var(--primary-light);
+            color: var(--text-default);
+            padding-left: calc(var(--spacing) + 0.5rem);
+        }
 
-    select,
-    button,
-    input {
-      height: 2.5rem;
-      padding: 0 0.75rem;
-      font-size: 0.95rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 0.75rem;
-      background-color: var(--bg-surface);
-      color: var(--text-default);
-    }
+        .sidebar a.active {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            font-weight: 600;
+            padding-left: calc(var(--spacing) + 0.5rem);
+        }
 
-    select:focus,
-    input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px var(--primary-light);
-    }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-page);
+        }
 
-    button {
-      background-color: var(--primary);
-      color: var(--bg-surface);
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
+        .header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: var(--spacing);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: left;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .headline {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
 
-    button:hover {
-      background-color: var(--primary-light);
-    }
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-default);
+        }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1.5rem;
-      background-color: var(--bg-surface);
-      border-radius: var(--radius);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-    }
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
-    th,
-    td {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-      font-size: 0.95rem;
-    }
+        .controls input,
+        .controls select {
+            background-color: var(--bg-page2);
+            color: var(--text-default);
+        }
 
-    th {
-      background-color: var(--bg-page);
-      font-weight: 600;
-      color: var (--text-default);
-    }
+        .controls select,
+        .controls input,
+        .controls button {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
 
-    tr:nth-child(even) {
-      background-color: #FBFBFB;
-    }
+        .controls select:focus,
+        .controls input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
 
-    [data-theme="dark"] tr:nth-child(even) {
-      background-color: #1E1E1E;
-    }
+        .controls button {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-    tr:hover {
-      background-color: #F1F1F1;
-    }
+        .controls button:hover {
+            background-color: var(--primary-light);
+        }
 
-    .no-data {
-      margin-top: 1rem;
-      font-size: 0.95rem;
-      color: var(--text-muted);
-    }
+        .table-container {
+            flex-grow: 1;
+            background-color: var(--bg-surface);
+            border-radius: var(--radius);
+            border: var(--border2);
+            overflow: auto;
+            height: 100%;
+            margin: 15px;
+        }
 
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--bg-surface);
+            border-radius: var (--radius);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
 
-    .modal-content {
-      background-color: var(--bg-surface);
-      padding: var(--spacing);
-      border-radius: 1rem;
-      box-sizing: border-box;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 500px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
+        th,
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            font-size: 0.95rem;
+        }
 
-    .headline {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-    }
+        th {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            font-weight: 600;
+            cursor: default;
+        }
 
-    #paymentForm {
-      display: flex;
-      flex-direction: column;
-      box-sizing: border-box;
-    }
+        th.sortable:hover {
+            background-color: var(--primary-light);
+            color: var(--text-default);
+            cursor: pointer;
+        }
 
-    .payment-history-entry {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.95rem;
-    }
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            border-radius: 0;
+        }
 
+        tr:nth-child(even) {
+            background-color: #FBFBFB;
+        }
 
-    #paymentModal,
-    #historyModal {
-      display: none;
-      gap: 20px;
-      flex-direction: column;
-    }
+        [data-theme="dark"] tr:nth-child(even) {
+            background-color: #1E1E1E;
+        }
 
-    .header {
-      background-color: var(--bg-surface);
-      border-bottom: 1px solid var(--border);
-      padding: var(--spacing);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: left;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
+        .status {
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: green;
+            font-weight: 500;
+        }
 
-    .close {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      font-size: 1.2rem;
-      cursor: pointer;
-      color: var(--text-muted);
-    }
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
 
-    .close:hover {
-      color: var(--text-default);
-    }
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 0.5rem solid #eee;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
 
-    #loadingOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
-    .spinner {
-      width: 3rem;
-      height: 3rem;
-      border: 0.5rem solid #eee;
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
+        .dark-mode-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var (--text-default);
+            transition: color 0.3s;
+        }
 
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
+        .dark-mode-toggle:hover {
+            color: var(--primary);
+        }
 
-    .dark-mode-toggle {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.5rem;
-      color: var(--text-default);
-      transition: color 0.3s;
-    }
+        #marksTable thead {
+            display: none; /* Initially hide the table head */
+        }
 
-    .dark-mode-toggle:hover {
-      color: var(--primary);
-    }
+        #marksTable.show thead {
+            display: table-header-group; /* Show the table head when data is fetched */
+        }
+    </style>
 
-    #addDueModal {
-      display: none;
-      gap: 20px;
-      flex-direction: column;
-    }
-
-    #addDueModal .modal-content {
-      background-color: var(--bg-surface);
-      padding: var(--spacing);
-      border-radius: 1rem;
-      box-sizing: border-box;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 500px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    #addDueModal .close {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      font-size: 1.2rem;
-      cursor: pointer;
-      color: var(--text-muted);
-    }
-
-    #addDueModal .close:hover {
-      color: var(--text-default);
-    }
-
-    #addDueModal form {
-      display: flex;
-      flex-direction: column;
-      box-sizing: border-box;
-    }
-
-    #addDueModal input,
-    #addDueModal select,
-    #addDueModal button {
-      height: 2.5rem;
-      padding: 0 0.75rem;
-      font-size: 0.95rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 0.75rem;
-      background-color: var(--bg-surface);
-      color: var(--text-default);
-    }
-
-    #addDueModal input:focus,
-    #addDueModal select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px var(--primary-light);
-    }
-
-    #addDueModal button {
-      background-color: var(--primary);
-      color: var(--bg-surface);
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    #addDueModal button:hover {
-      background-color: var(--primary-light);
-    }
-  </style>
 </head>
 
 <body>
-  <div id="loadingOverlay" style="display:none;">
-    <div class="spinner"></div>
-  </div>
-
-  <div class="sidebar">
-    <h2>ScholarX</h2>
-    <a href="./index.html">Dashboard</a>
-    <a href="./students.html">Student Directory</a>
-    <a href="./marks.html">Marks Management</a>
-    <a href="./fees.html" class="active">Fees Management</a>
-    <a href="./reports.html">Reports & Printouts</a>
-    <a href="./settings.html">Settings</a>
-  </div>
-
-  <div class="main">
-    <div class="header">
-      <div class="headline">
-          <h2>Fees Overview</h2>
-          <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
-      </div>
-      <div class="controls">
-        <label for="classSelect">Class:</label>
-        <select id="classSelect">
-          <option value="">Select Grade</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-          <option value="11">11</option>
-          <option value="12">12</option>
-        </select>
-
-        <label for="sectionSelect">Section:</label>
-        <select id="sectionSelect">
-          <option value="">Select Section</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="D">D</option>
-          <option value="E">E</option>
-          <option value="F">F</option>
-          <option value="G">G</option>
-        </select>
-
-        <button onclick="loadStudents()">Load Students</button>
-        <button onclick="openModal()">Add Payment</button>
-        <button onclick="openAddDueModal()">Add Due</button>
-      </div>
+    <div class="sidebar">
+        <h2>ScholarX</h2>
+        <a href="./index.html">Dashboard</a>
+        <a href="./students.html">Student Directory</a>
+        <a href="./marks.html" class="active">Marks Management</a>
+        <a href="./fees.html">Fees Management</a>
+        <a href="./reports.html">Reports & Printouts</a>
+        <a href="./settings.html">Settings</a>
     </div>
 
-    <div id="studentsTable"></div>
-  </div>
+    <div class="main-content">
+        <div class="header">
+            <div class="headline">
+            <h1>Marks Management</h1>
+            <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+            </div>
+            <div class="controls">
+                <select id="classSelect">
+                    <option value="">Select Grade</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
 
+                  <select id="sectionSelect">
+                      <option value="">Select Section</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                      <option value="E">E</option>
+                      <option value="F">F</option>
+                      <option value="G">G</option>
+                </select>
 
-  <!-- Payment Modal -->
-  <div id="paymentModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeAddPaymentModal()">&times;</span>
-      <h3>Add Payment</h3>
-      <br>
-      <form id="paymentForm">
-        <select id="studentNameSelect" required onchange="populateStudentId()">
-          <option value="" disabled selected>Select Student Name</option>
-          <!-- Options will be dynamically populated -->
-        </select>
+                <select id="streamSelect" style="display: none; transition: 0.3s;">
+                    <option value="">Select Stream</option>
+                    <option value="Science">Science</option>
+                    <option value="Commerce">Commerce</option>
+                    <option value="Arts">Arts</option>
+                </select>
 
-        <input type="text" id="studentId" placeholder="Student ID" disabled>
+                <select id="examSelect">
+                    <option value="">Select Existing Exam</option>
+                    <!-- Dynamic options will be added here -->
+                </select>
 
-        <input type="number" id="amountPaid" placeholder="Amount Paid" required>
+                <input type="text" id="examName" placeholder="Enter New Exam Name">
+                <button class="btn-save" onclick="saveMarks()">Save</button>
+                <button class="btn-print" onclick="window.print()">Print</button>
+        
+            </div>
+        </div>
 
-        <input type="date" id="paymentDate" required>
+        <div class="table-container">
+            <table id="marksTable">
+                <thead>
+                    <tr id="marksHeader">
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+            <div class="status" id="statusMsg"></div>
+        </div>
 
-        <input type="text" id="referenceNumber" placeholder="Reference Number (optional)">
-
-        <select id="paymentMode">
-          <option value="" disabled selected>Select Payment Mode</option>
-          <option value="Cash">Cash</option>
-          <option value="Bank Transfer">Bank Transfer</option>
-          <option value="UPI">UPI</option>
-          <option value="Other">Other</option>
-        </select>
-
-        <button type="submit">Submit</button>
-      </form>
-      <p id="message"></p>
     </div>
-  </div>
-  <!-- History Modal -->
-  <div id="historyModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeHistoryModal()">&times;</span>
-      <h3>Payment History</h3>
-      <div id="historyContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display:none;">
+        <div class="spinner"></div>
     </div>
-  </div>
 
-  <!-- Add Due Modal -->
-  <div id="addDueModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeAddDueModal()">&times;</span>
-      <h3>Add Due</h3>
-      <br>
-      <form id="addDueForm">
-        <select id="studentNameSelectDue" required onchange="populateStudentIdDue()">
-          <option value="" disabled selected>Select Student Name</option>
-          <option value="all">All Students</option> <!-- Added All Students option -->
-          <!-- Options will be dynamically populated -->
-        </select>
-
-        <input type="text" id="studentIdDue" placeholder="Student ID" disabled>
-
-        <input type="number" id="dueAmount" placeholder="Due Amount" required>
-
-        <input type="date" id="dueDate" required>
-
-        <button type="submit">Submit</button>
-      </form>
-      <p id="dueMessage"></p>
-    </div>
-  </div>
-
-  <script>
-    let studentsList = [];
-
-    function showLoading() {
-      document.getElementById("loadingOverlay").style.display = "flex";
-    }
-
-    function hideLoading() {
-      document.getElementById("loadingOverlay").style.display = "none";
-    }
-
-    async function loadStudents() {
-      const classVal = document.getElementById('classSelect').value;
-      const sectionVal = document.getElementById('sectionSelect').value;
-
-      if (!classVal) return alert("Please select a class.");
-
-      showLoading();
-
-      const res = await fetch('/.netlify/functions/fetchStudents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ class: classVal })
-      });
-
-      const result = await res.json();
-      if (!result.success) {
-        document.getElementById("studentsTable").innerHTML = `<p class="no-data">Failed to load students.</p>`;
-        hideLoading();
-        return;
-      }
-
-      let filtered = sectionVal
-        ? result.data.filter(s => s.section === sectionVal)
-        : result.data;
-
-      studentsList = filtered;
-
-      // Populate dropdown for Add Payment modal
-      const dropdownPayment = document.getElementById("studentNameSelect");
-      dropdownPayment.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
-        filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-
-      // Populate dropdown for Add Due modal
-      const dropdownDue = document.getElementById("studentNameSelectDue");
-      dropdownDue.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
-        '<option value="all">All Students</option>' + // Added All Students option
-        filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-
-      // Prepare student ID array
-      const studentIds = filtered.map(s => s.id);
-      const paymentsRes = await fetch('/.netlify/functions/getPaymentsBatch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: studentIds })
-      });
-
-      const paymentsData = await paymentsRes.json(); // { [id]: [payments] }
-
-      let tableHTML = `<table><thead><tr>
-    <th>ID</th><th>Name</th><th>Class</th><th>Section</th>
-    <th>Stream</th><th>Phone</th><th>Total Paid</th><th>Fees Due</th><th>Due Date</th></tr></thead><tbody>`;
-
-      for (const student of filtered) {
-        const payments = paymentsData[student.id] || [];
-        const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-        const dueDate = student.dueDate ? new Date(student.dueDate) : null;
-        const isOverdue = dueDate && dueDate < new Date();
-        const dueDateDisplay = dueDate ? dueDate.toLocaleDateString() : '-';
-        const dueAmountDisplay = student.dueAmount || '-';
-
-        tableHTML += `<tr>
-      <td>${student.id}</td>
-      <td><a href="#" onclick="viewHistory('${student.id}')">${student.name}</a></td>
-      <td>${student.class}</td>
-      <td>${student.section}</td>
-      <td>${student.stream || '-'}</td>
-      <td>${student.phone}</td>
-      <td>₹${totalPaid}</td>
-      <td style="color: ${isOverdue ? 'red' : 'inherit'};">₹${dueAmountDisplay}</td>
-      <td style="color: ${isOverdue ? 'red' : 'inherit'};">${dueDateDisplay}</td>
-      </tr>`;
-      }
-
-      tableHTML += `</tbody></table>`;
-      document.getElementById("studentsTable").innerHTML = tableHTML;
-      hideLoading();
-    }
+    <script>
+        const subjectsByClass = {
+            "10": ["Maths", "Science", "Social", "English"],
+            "11": {
+                Science: ["Physics", "Chemistry", "Maths", "Computer"],
+                Commerce: ["Accountancy", "Business Studies", "Economics", "Maths"],
+                Arts: ["History", "Political Science", "Sociology", "English"]
+            },
+            "12": {
+                Science: ["Physics", "Chemistry", "Maths", "Biology"],
+                Commerce: ["Accountancy", "Business Studies", "Economics", "Informatics Practices"],
+                Arts: ["History", "Geography", "Psychology", "English"]
+            }
+        };
 
 
-    function populateName() {
-      const id = document.getElementById("studentIdSelect").value;
-      const student = studentsList.find(s => s.id === id);
-      document.getElementById("studentName").value = student ? student.name : '';
-    }
+        let studentsByClass = {}; // Will be populated dynamically
 
-    function openModal() {
-      document.getElementById("paymentModal").style.display = "block";
-    }
+        document.getElementById("classSelect").addEventListener("change", handleClassChange);
+        document.getElementById("sectionSelect").addEventListener("change", fetchStudentsForMarks);
+        document.getElementById("streamSelect").addEventListener("change", handleStreamChange);
 
+        async function handleClassChange() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const streamSelect = document.getElementById("streamSelect");
 
-    function closeAddPaymentModal() {
-      document.getElementById("paymentForm").reset();
-      document.getElementById("studentId").value = ''; // Reset student ID field
-      document.getElementById("paymentModal").style.display = "none";
-      document.getElementById("message").textContent = ''; // Clear message
-    }
+            // Automatically select stream for grades 11 and 12 based on section
+            if (grade === "11" || grade === "12") {
+                streamSelect.style.display = "inline-block";
+                if (section === "A") {
+                    streamSelect.value = "Science";
+                } else if (section === "B") {
+                    streamSelect.value = "Commerce";
+                } else if (section === "C") {
+                    streamSelect.value = "Arts";
+                } else {
+                    streamSelect.value = ""; // Reset if no valid section
+                }
+            } else {
+                streamSelect.style.display = "none";
+                streamSelect.value = "";
+            }
 
+            if (grade) {
+                showLoading();
+                await fetchStudentsForMarks(); // Fetch students directly after class is selected
+                hideLoading();
+            }
+        }
 
-    function closeHistoryModal() {
-      document.getElementById("historyModal").style.display = "none";
-      document.getElementById("historyContainer").innerHTML = '';
-    }
+        async function handleStreamChange() {
+            const grade = document.getElementById("classSelect").value;
+            const streamVal = document.getElementById("streamSelect").value;
 
-    async function viewHistory(id) {
-      showLoading();
-      const res = await fetch(`/.netlify/functions/getPayments?id=${id}`);
-      const data = await res.json();
-      const grouped = {};
+            // Re-render the table to update subjects based on the selected stream
+            if (grade === "11" || grade === "12") {
+                renderMarksTable();
+            }
+        }
 
-      data.forEach(p => {
-        const date = new Date(p.date);
-        const year = date.getFullYear();
-        const month = date.toLocaleString('default', { month: 'long' });
-        const key = `${year} - ${month}`;
-        grouped[key] = grouped[key] || [];
-        grouped[key].push(p);
-      });
+        async function fetchStudentsForMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
 
-      const container = document.getElementById("historyContainer");
-      for (const [key, payments] of Object.entries(grouped)) {
-        const div = document.createElement("div");
-        div.innerHTML = `<h4>${key}</h4>`;
-        payments.forEach(p => {
-          const pDiv = document.createElement("div");
-          pDiv.className = "payment-history-entry";
-          pDiv.innerHTML = `<strong>Date:</strong> ${new Date(p.date).toLocaleDateString()}<br>
-        <strong>Amount:</strong> ₹${p.amount}<br>
-        <strong>Mode:</strong> ${p.mode}
-        ${p.reference ? `<br><strong>Ref:</strong> ${p.reference}` : ''}`;
-          div.appendChild(pDiv);
+            if (!grade || !section) return; // Ensure both grade and section are selected
+
+            showLoading();
+            try {
+                const res = await fetch("/.netlify/functions/fetchStudents", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ grade, section })
+                });
+
+                const result = await res.json();
+
+                if (result.success && result.data.length > 0) {
+                    studentsByClass[grade] = result.data.filter(s => s.section === section);
+                    renderMarksTable();
+                    tryFetchAndFillMarks();
+                } else {
+                    alert("No students found.");
+                }
+            } catch (err) {
+                console.error("Error fetching students:", err);
+                alert("Error fetching student data.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderMarksTable() {
+            const grade = document.getElementById("classSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const headerRow = document.getElementById("marksHeader");
+            const tableBody = document.querySelector("#marksTable tbody");
+
+            headerRow.innerHTML = "<th>Student ID</th><th>Student Name</th>";
+            tableBody.innerHTML = "";
+
+            if (!grade || !studentsByClass[grade]) {
+                document.getElementById("marksTable").classList.remove("show");
+                return;
+            }
+
+            let subjects = [];
+
+            if (grade <= 10) {
+                subjects = subjectsByClass[grade] || [];
+            } else {
+                subjects = subjectsByClass[grade]?.[stream] || [];
+            }
+
+            subjects.forEach(sub => {
+                const th = document.createElement("th");
+                th.textContent = sub;
+                headerRow.appendChild(th);
+            });
+
+            studentsByClass[grade].forEach(student => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${student.id}</td><td>${student.name}</td>`;
+
+                subjects.forEach(subject => {
+                    const td = document.createElement("td");
+                    const input = document.createElement("input");
+                    input.setAttribute("data-id", student.id);
+                    input.setAttribute("data-name", student.name);
+                    input.setAttribute("data-subject", subject);
+                    input.setAttribute("type", "text");
+                    input.setAttribute("maxlength", "3");
+
+                    input.addEventListener("input", (e) => {
+                        let value = e.target.value.toUpperCase();
+                        if (value === "A") value = "AB";
+                        if (value !== "AB" && (isNaN(value) || +value > 100 || +value < 0)) {
+                            e.target.value = "";
+                        } else {
+                            e.target.value = value;
+                        }
+                    });
+
+                    td.appendChild(input);
+                    row.appendChild(td);
+                });
+
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById("marksTable").classList.add("show");
+        }
+
+        function getSubjectMap(grade, stream) {
+            let subjects = [];
+            if (+grade <= 10) {
+                subjects = subjectsByClass[grade] || [];
+            } else {
+                subjects = subjectsByClass[grade]?.[stream] || [];
+            }
+            const map = {};
+            subjects.forEach((subj, idx) => {
+                map[subj] = `Sub${idx + 1}`;
+            });
+            return map;
+        }
+
+        async function saveMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const examSelect = document.getElementById("examSelect").value;
+            const examNameInput = document.getElementById("examName").value.trim();
+            const examName = examSelect || examNameInput; // Use selected exam or new exam name
+            const status = document.getElementById("statusMsg");
+
+            if (!grade || !examName) {
+                alert("Please select a grade and enter or select an exam name.");
+                return;
+            }
+
+            if ((grade === "11" || grade === "12") && !stream) {
+                alert("Please select a stream.");
+                return;
+            }
+
+            if (!(grade === "11" || grade === "12") && !section) {
+                alert("Please select a section.");
+                return;
+            }
+
+            const inputs = document.querySelectorAll("#marksTable input");
+            const studentMap = {};
+
+            inputs.forEach(input => {
+                const id = input.getAttribute("data-id");
+                const name = input.getAttribute("data-name");
+                const subject = input.getAttribute("data-subject");
+                const rawValue = input.value.trim();
+
+                let marks = null;
+                if (rawValue === "AB") {
+                    marks = 0;
+                } else if (rawValue !== "") {
+                    const parsed = parseInt(rawValue);
+                    if (!isNaN(parsed)) {
+                        marks = parsed;
+                    }
+                }
+
+                if (!studentMap[id]) {
+                    studentMap[id] = {
+                        RollNo: id,
+                        Name: name,
+                        Grade: grade,
+                        Section: section,
+                        Stream: (grade === "11" || grade === "12") ? stream : "",
+                        Exam: examName,
+                        Sub1: null, Sub2: null, Sub3: null, Sub4: null,
+                        Sub5: null, Sub6: null, Sub7: null, Sub8: null
+                    };
+                }
+
+                const subjectMap = getSubjectMap(grade, stream);
+                const subKey = subjectMap[subject];
+                if (subKey) {
+                    studentMap[id][subKey] = marks;
+                }
+            });
+
+            const batch = Object.values(studentMap);
+
+            try {
+                showLoading();
+                // Save marks
+                const marksRes = await fetch('/.netlify/functions/saveMarks2', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ batch })
+                });
+
+                // Save exam details if it's a new exam
+                if (!examSelect) {
+                    const examRes = await fetch('/.netlify/functions/addExam', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ grade, section, examName })
+                    });
+                    const examResult = await examRes.json();
+                    if (!examResult.success) {
+                        throw new Error("Failed to save exam details.");
+                    }
+                }
+
+                const marksResult = await marksRes.json();
+                if (marksResult.success) {
+                    status.textContent = "Marks and exam details saved successfully.";
+                } else {
+                    throw new Error("Failed to save marks.");
+                }
+            } catch (err) {
+                console.error("Save error:", err);
+                status.textContent = "Failed to save marks or exam details.";
+            } finally {
+                hideLoading();
+                setTimeout(() => (status.textContent = ""), 4000);
+            }
+        }
+
+        document.addEventListener("keydown", function (e) {
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+                const active = document.activeElement;
+                if (active.tagName !== "INPUT") return;
+
+                const td = active.parentElement;
+                const tr = td.parentElement;
+                const rowIndex = tr.rowIndex;
+                const cellIndex = td.cellIndex;
+
+                let targetInput;
+                switch (e.key) {
+                    case "ArrowRight":
+                        targetInput = tr.cells[cellIndex + 1]?.querySelector("input");
+                        break;
+                    case "ArrowLeft":
+                        targetInput = tr.cells[cellIndex - 1]?.querySelector("input");
+                        break;
+                    case "ArrowDown":
+                        targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex + 1}) td:nth-child(${cellIndex + 1}) input`);
+                        break;
+                    case "ArrowUp":
+                        targetInput = document.querySelector(`#marksTable tr:nth-child(${rowIndex - 1}) td:nth-child(${cellIndex + 1}) input`);
+                        break;
+                }
+
+                if (targetInput) {
+                    e.preventDefault();
+                    targetInput.focus();
+                }
+            }
         });
-        container.appendChild(div);
-      }
-      document.getElementById("historyModal").style.display = "block";
-      hideLoading();
-    }
 
-    document.getElementById("paymentForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      showLoading();
+        function showLoading() {
+            document.getElementById("loadingOverlay").style.display = "flex";
+        }
 
-      const body = {
-        studentId: document.getElementById("studentId").value,
-        amount: parseFloat(document.getElementById("amountPaid").value),
-        date: document.getElementById("paymentDate").value,
-        mode: document.getElementById("paymentMode").value,
-        reference: document.getElementById("referenceNumber").value || null
-      };
+        function hideLoading() {
+            document.getElementById("loadingOverlay").style.display = "none";
+        }
 
-      const res = await fetch("/.netlify/functions/addPayment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
+        async function tryFetchAndFillMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const examSelect = document.getElementById("examSelect").value;
+            const examNameInput = document.getElementById("examName").value.trim();
 
-      const result = await res.json();
-      if (result.success) {
-        closeAddPaymentModal();
-        await loadStudents();
-      }
-      hideLoading();
-    });
+            let examName = examNameInput; // Default to new exam name
+            if (examSelect) {
+                // Parse the selected exam value to extract the exam name
+                const match = examSelect.match(/^(.*?) \(Grade: (\d+), Section: ([A-Z])\)$/);
+                if (match) {
+                    examName = match[1]; // Extract the exam name
+                }
+            }
 
-    // Initialize theme from localStorage
-    document.addEventListener("DOMContentLoaded", () => {
-      const savedTheme = localStorage.getItem("theme") || "light";
-      document.documentElement.setAttribute("data-theme", savedTheme);
-      const toggleButton = document.querySelector(".dark-mode-toggle");
-      toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
-    });
+            console.log("Grade:", grade);
+            console.log("Section:", section);
+            console.log("Stream:", stream);
+            console.log("Exam Name:", examName);
 
-    function toggleDarkMode() {
-      const currentTheme = document.documentElement.getAttribute("data-theme");
-      const newTheme = currentTheme === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-theme", newTheme);
-      localStorage.setItem("theme", newTheme);
-      const toggleButton = document.querySelector(".dark-mode-toggle");
-      toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
-    }
+            if (!grade || !section || !examName) {
+                console.warn("Missing required fields: grade, section, or exam name.");
+                return;
+            }
 
-    function populateStudentId() {
-      const name = document.getElementById("studentNameSelect").value;
-      const student = studentsList.find(s => s.name === name);
-      document.getElementById("studentId").value = student ? student.id : '';
-    }
+            try {
+                const res = await fetch("/.netlify/functions/fetchMarks2", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ grade, section, exam: examName })
+                });
 
-    function openAddDueModal() {
-      document.getElementById("addDueModal").style.display = "block";
-    }
+                console.log("Request sent to fetchMarks2 with:", { grade, section, exam: examName });
 
-    function closeAddDueModal() {
-      document.getElementById("addDueForm").reset();
-      document.getElementById("studentIdDue").value = ''; // Reset student ID field
-      document.getElementById("addDueModal").style.display = "none";
-      document.getElementById("dueMessage").textContent = ''; // Clear message
-    }
+                const result = await res.json();
 
-    function populateStudentIdDue() {
-      const name = document.getElementById("studentNameSelectDue").value;
-      const student = studentsList.find(s => s.name === name);
-      document.getElementById("studentIdDue").value = name === "all" ? '' : (student ? student.id : '');
-    }
+                console.log("Response from fetchMarks2:", result);
 
-    document.getElementById("addDueForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      showLoading();
+                if (result.success && result.data?.length > 0) {
+                    const marksData = result.data; // Array of student mark documents
 
-      const studentName = document.getElementById("studentNameSelectDue").value;
-      const isBatchUpdate = studentName === "all";
-      const body = {
-        dueAmount: parseFloat(document.getElementById("dueAmount").value),
-        dueDate: document.getElementById("dueDate").value,
-        studentId: isBatchUpdate ? null : document.getElementById("studentIdDue").value,
-        class: isBatchUpdate ? document.getElementById("classSelect").value : null, // Use main class
-        section: isBatchUpdate ? document.getElementById("sectionSelect").value : null, // Use main section
-      };
+                    const subjectMap = {}; // subject name => Sub1...Sub8
+                    const subjects = getSubjectsForGradeStream(grade, stream);
 
-      const res = await fetch("/.netlify/functions/addDue", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+                    console.log("Subjects for grade and stream:", subjects);
 
-      const result = await res.json();
-      if (result.success) {
-        closeAddDueModal();
-        await loadStudents();
-      } else {
-        document.getElementById("dueMessage").textContent = result.message || "Failed to add due.";
-      }
-      hideLoading();
-    });
-  </script>
+                    subjects.forEach((sub, i) => {
+                        subjectMap[sub] = `Sub${i + 1}`;
+                    });
+
+                    console.log("Subject map:", subjectMap);
+
+                    const inputs = document.querySelectorAll("#marksTable input");
+
+                    inputs.forEach(input => {
+                        const id = input.getAttribute("data-id");
+                        const subject = input.getAttribute("data-subject");
+
+                        const doc = marksData.find(m => m.RollNo === id);
+                        if (!doc) return;
+
+                        const subKey = subjectMap[subject];
+                        const val = doc[subKey];
+
+                        console.log(`Setting value for Student ID: ${id}, Subject: ${subject}, Value: ${val}`);
+
+                        if (val === 0) {
+                            input.value = "AB";
+                        } else if (val === null || val === undefined) {
+                            input.value = "";
+                        } else {
+                            input.value = val;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Error in tryFetchAndFillMarks:", err);
+            }
+        }
+
+        function getSubjectsForGradeStream(grade, stream) {
+            if (grade === "11" || grade === "12") {
+                return subjectsByClass[grade]?.[stream] || [];
+            }
+            return subjectsByClass[grade] || [];
+        }
+
+        // Initialize theme from localStorage
+        document.addEventListener("DOMContentLoaded", async () => {
+            await fetchExams(); // Fetch exams on page load
+            const savedTheme = localStorage.getItem("theme") || "light";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+            const toggleButton = document.querySelector(".dark-mode-toggle");
+            toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+        });
+
+        async function fetchExams() {
+            try {
+                const res = await fetch("/.netlify/functions/fetchExams", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                });
+                const result = await res.json();
+                if (result.success) {
+                    exams = result.data; // Store fetched exams
+                    populateExamDropdown(); // Populate dropdown with all exams
+                }
+            } catch (err) {
+                console.error("Error fetching exams:", err);
+            }
+        }
+
+        function populateExamDropdown() {
+            const examSelect = document.getElementById("examSelect");
+            examSelect.innerHTML = '<option value="">Select Existing Exam</option>';
+            exams.forEach(exam => {
+                const option = document.createElement("option");
+                option.value = exam.examName;
+                option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
+                examSelect.appendChild(option);
+            });
+        }
+
+        document.getElementById("classSelect").addEventListener("change", filterExams);
+        document.getElementById("sectionSelect").addEventListener("change", filterExams);
+
+        function filterExams() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const examSelect = document.getElementById("examSelect");
+
+            examSelect.innerHTML = '<option value="">Select Existing Exam</option>';
+            exams
+                .filter(exam => (!grade || exam.grade === grade) && (!section || exam.section === section))
+                .forEach(exam => {
+                    const option = document.createElement("option");
+                    option.value = exam.examName;
+                    option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
+                    examSelect.appendChild(option);
+                });
+        }
+
+        document.getElementById("examSelect").addEventListener("change", async function () {
+            const selectedExam = this.value;
+            if (!selectedExam) return;
+
+            // Find the selected exam details
+            const examDetails = exams.find(exam => exam.examName === selectedExam);
+            if (examDetails) {
+                // Populate grade and section
+                document.getElementById("classSelect").value = examDetails.grade;
+                document.getElementById("sectionSelect").value = examDetails.section;
+
+                // Trigger fetch for students and marks
+                await fetchStudentsForMarks();
+                await tryFetchAndFillMarks();
+            }
+        });
+
+        function toggleDarkMode() {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme); // Save theme to localStorage
+            const toggleButton = document.querySelector(".dark-mode-toggle");
+            toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
+        }
+    </script>
 </body>
 
 </html>
