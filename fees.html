@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fees Dashboard</title>
   <style>
-    /*——————————————— 1. Variables & Global Reset ———————————————*/
     :root {
       --bg-page: #FAFAFA;
       --bg-surface: #FFFFFF;
@@ -17,6 +16,16 @@
       --border: #E1E1E1;
       --radius: 0.5rem;
       --spacing: 1rem;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #121212;
+      --bg-surface: #1E1E1E;
+      --primary: #BB86FC;
+      --primary-light: #985EFF;
+      --text-default: #FFFFFF;
+      --text-muted: #A1A1A1;
+      --border: #333333;
     }
 
     *,
@@ -36,7 +45,6 @@
       line-height: 1.5;
     }
 
-    /*——————————————— 2. Sidebar ———————————————*/
     .sidebar {
       width: 240px;
       background-color: var(--bg-surface);
@@ -71,10 +79,9 @@
       padding-left: calc(var(--spacing) + 0.5rem);
     }
 
-    /*——————————————— 3. Main Content ———————————————*/
     .main {
       flex-grow: 1;
-      padding: var(--spacing);
+      /* padding: var(--spacing); */
     }
 
     select,
@@ -86,7 +93,8 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       margin-bottom: 0.75rem;
-      margin-right: 0.75rem;
+      background-color: var(--bg-surface);
+      color: var(--text-default);
     }
 
     select:focus,
@@ -109,7 +117,6 @@
       background-color: var(--primary-light);
     }
 
-    /*——————————————— 4. Table ———————————————*/
     table {
       width: 100%;
       border-collapse: collapse;
@@ -131,11 +138,15 @@
     th {
       background-color: var(--bg-page);
       font-weight: 600;
-      color: var(--text-default);
+      color: var (--text-default);
     }
 
     tr:nth-child(even) {
       background-color: #FBFBFB;
+    }
+
+    [data-theme="dark"] tr:nth-child(even) {
+      background-color: #1E1E1E;
     }
 
     tr:hover {
@@ -148,7 +159,6 @@
       color: var(--text-muted);
     }
 
-    /*——————————————— 5. Modal ———————————————*/
     .modal {
       display: none;
       position: fixed;
@@ -160,13 +170,6 @@
       justify-content: center;
     }
 
-    #paymentModal,
-    #historyModal {
-      display: none;
-      gap: 20px;
-      flex-direction: column;
-    }
-
     .modal-content {
       background-color: var(--bg-surface);
       padding: var(--spacing);
@@ -175,18 +178,48 @@
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
       width: 100%;
       max-width: 500px;
-
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
     }
 
+    .headline {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
 
     #paymentForm {
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
+    }
+
+    .payment-history-entry {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+
+    #paymentModal,
+    #historyModal {
+      display: none;
+      gap: 20px;
+      flex-direction: column;
+    }
+
+    .header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: var(--spacing);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: left;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
     .close {
@@ -202,7 +235,6 @@
       color: var(--text-default);
     }
 
-    /*——————————————— 6. Loading Overlay ———————————————*/
     #loadingOverlay {
       position: fixed;
       inset: 0;
@@ -228,11 +260,89 @@
       }
     }
 
-    /*——————————————— 7. Payment History Entry ———————————————*/
-    .payment-history-entry {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border);
+    .dark-mode-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: var(--text-default);
+      transition: color 0.3s;
+    }
+
+    .dark-mode-toggle:hover {
+      color: var(--primary);
+    }
+
+    #addDueModal {
+      display: none;
+      gap: 20px;
+      flex-direction: column;
+    }
+
+    #addDueModal .modal-content {
+      background-color: var(--bg-surface);
+      padding: var(--spacing);
+      border-radius: 1rem;
+      box-sizing: border-box;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #addDueModal .close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    #addDueModal .close:hover {
+      color: var(--text-default);
+    }
+
+    #addDueModal form {
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    #addDueModal input,
+    #addDueModal select,
+    #addDueModal button {
+      height: 2.5rem;
+      padding: 0 0.75rem;
       font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 0.75rem;
+      background-color: var(--bg-surface);
+      color: var(--text-default);
+    }
+
+    #addDueModal input:focus,
+    #addDueModal select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    #addDueModal button {
+      background-color: var(--primary);
+      color: var(--bg-surface);
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #addDueModal button:hover {
+      background-color: var(--primary-light);
     }
   </style>
 </head>
@@ -253,61 +363,73 @@
   </div>
 
   <div class="main">
-    <h2>Fees Overview</h2>
-    <label for="classSelect">Class:</label>
-    <select id="classSelect">
-      <option value="">Select Grade</option>
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-      <option value="6">6</option>
-      <option value="7">7</option>
-      <option value="8">8</option>
-      <option value="9">9</option>
-      <option value="10">10</option>
-      <option value="11">11</option>
-      <option value="12">12</option>
-    </select>
+    <div class="header">
+      <div class="headline">
+          <h2>Fees Overview</h2>
+          <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+      </div>
+      <div class="controls">
+        <label for="classSelect">Class:</label>
+        <select id="classSelect">
+          <option value="">Select Grade</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
 
-    <label for="sectionSelect">Section:</label>
-    <select id="sectionSelect">
-      <option value="">Select Section</option>
-      <option value="A">A</option>
-      <option value="B">B</option>
-      <option value="C">C</option>
-    </select>
+        <label for="sectionSelect">Section:</label>
+        <select id="sectionSelect">
+          <option value="">Select Section</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+          <option value="F">F</option>
+          <option value="G">G</option>
+        </select>
 
-    <button onclick="loadStudents()">Load Students</button>
-    <button onclick="openModal()">Add Payment</button>
+        <button onclick="loadStudents()">Load Students</button>
+        <button onclick="openModal()">Add Payment</button>
+        <button onclick="openAddDueModal()">Add Due</button>
+      </div>
+    </div>
 
     <div id="studentsTable"></div>
   </div>
+
 
   <!-- Payment Modal -->
   <div id="paymentModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeAddPaymentModal()">&times;</span>
       <h3>Add Payment</h3>
+      <br>
       <form id="paymentForm">
-        <label for="studentIdSelect">Student ID:</label>
-        <select id="studentIdSelect" required onchange="populateName()"></select>
+        <select id="studentNameSelect" required onchange="populateStudentId()">
+          <option value="" disabled selected>Select Student Name</option>
+          <!-- Options will be dynamically populated -->
+        </select>
 
-        <label for="studentName">Name:</label>
-        <input type="text" id="studentName" disabled>
+        <input type="text" id="studentId" placeholder="Student ID" disabled>
 
-        <label for="amountPaid">Amount Paid:</label>
-        <input type="number" id="amountPaid" required>
+        <input type="number" id="amountPaid" placeholder="Amount Paid" required>
 
-        <label for="paymentDate">Payment Date:</label>
         <input type="date" id="paymentDate" required>
 
-        <label>Reference Number (optional):</label>
-        <input type="text" id="referenceNumber" />
+        <input type="text" id="referenceNumber" placeholder="Reference Number (optional)">
 
-        <label for="paymentMode">Payment Mode:</label>
         <select id="paymentMode">
+          <option value="" disabled selected>Select Payment Mode</option>
           <option value="Cash">Cash</option>
           <option value="Bank Transfer">Bank Transfer</option>
           <option value="UPI">UPI</option>
@@ -325,6 +447,31 @@
       <span class="close" onclick="closeHistoryModal()">&times;</span>
       <h3>Payment History</h3>
       <div id="historyContainer"></div>
+    </div>
+  </div>
+
+  <!-- Add Due Modal -->
+  <div id="addDueModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeAddDueModal()">&times;</span>
+      <h3>Add Due</h3>
+      <br>
+      <form id="addDueForm">
+        <select id="studentNameSelectDue" required onchange="populateStudentIdDue()">
+          <option value="" disabled selected>Select Student Name</option>
+          <option value="all">All Students</option> <!-- Added All Students option -->
+          <!-- Options will be dynamically populated -->
+        </select>
+
+        <input type="text" id="studentIdDue" placeholder="Student ID" disabled>
+
+        <input type="number" id="dueAmount" placeholder="Due Amount" required>
+
+        <input type="date" id="dueDate" required>
+
+        <button type="submit">Submit</button>
+      </form>
+      <p id="dueMessage"></p>
     </div>
   </div>
 
@@ -367,10 +514,15 @@
       studentsList = filtered;
 
       // Populate dropdown for Add Payment modal
-      const dropdown = document.getElementById("studentIdSelect");
-      dropdown.innerHTML = '<option value="">Select Student</option>' +
-        filtered.map(s => `<option value="${s.id}">${s.id}</option>`).join('');
+      const dropdownPayment = document.getElementById("studentNameSelect");
+      dropdownPayment.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
+        filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
 
+      // Populate dropdown for Add Due modal
+      const dropdownDue = document.getElementById("studentNameSelectDue");
+      dropdownDue.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
+        '<option value="all">All Students</option>' + // Added All Students option
+        filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
 
       // Prepare student ID array
       const studentIds = filtered.map(s => s.id);
@@ -384,11 +536,15 @@
 
       let tableHTML = `<table><thead><tr>
     <th>ID</th><th>Name</th><th>Class</th><th>Section</th>
-    <th>Stream</th><th>Phone</th><th>Total Paid</th></tr></thead><tbody>`;
+    <th>Stream</th><th>Phone</th><th>Total Paid</th><th>Fees Due</th><th>Due Date</th></tr></thead><tbody>`;
 
       for (const student of filtered) {
         const payments = paymentsData[student.id] || [];
         const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        const dueDate = student.dueDate ? new Date(student.dueDate) : null;
+        const isOverdue = dueDate && dueDate < new Date();
+        const dueDateDisplay = dueDate ? dueDate.toLocaleDateString() : '-';
+        const dueAmountDisplay = student.dueAmount || '-';
 
         tableHTML += `<tr>
       <td>${student.id}</td>
@@ -397,7 +553,10 @@
       <td>${student.section}</td>
       <td>${student.stream || '-'}</td>
       <td>${student.phone}</td>
-      <td>₹${totalPaid}</td></tr>`;
+      <td>₹${totalPaid}</td>
+      <td style="color: ${isOverdue ? 'red' : 'inherit'};">₹${dueAmountDisplay}</td>
+      <td style="color: ${isOverdue ? 'red' : 'inherit'};">${dueDateDisplay}</td>
+      </tr>`;
       }
 
       tableHTML += `</tbody></table>`;
@@ -419,10 +578,9 @@
 
     function closeAddPaymentModal() {
       document.getElementById("paymentForm").reset();
-      document.getElementById("studentName").value = ''; // <-- corrected this line
+      document.getElementById("studentId").value = ''; // Reset student ID field
       document.getElementById("paymentModal").style.display = "none";
-      document.getElementById("message").textContent = '';
-
+      document.getElementById("message").textContent = ''; // Clear message
     }
 
 
@@ -470,7 +628,7 @@
       showLoading();
 
       const body = {
-        studentId: document.getElementById("studentIdSelect").value,
+        studentId: document.getElementById("studentId").value,
         amount: parseFloat(document.getElementById("amountPaid").value),
         date: document.getElementById("paymentDate").value,
         mode: document.getElementById("paymentMode").value,
@@ -487,6 +645,76 @@
       if (result.success) {
         closeAddPaymentModal();
         await loadStudents();
+      }
+      hideLoading();
+    });
+
+    // Initialize theme from localStorage
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      const toggleButton = document.querySelector(".dark-mode-toggle");
+      toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+    });
+
+    function toggleDarkMode() {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+      const toggleButton = document.querySelector(".dark-mode-toggle");
+      toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
+    }
+
+    function populateStudentId() {
+      const name = document.getElementById("studentNameSelect").value;
+      const student = studentsList.find(s => s.name === name);
+      document.getElementById("studentId").value = student ? student.id : '';
+    }
+
+    function openAddDueModal() {
+      document.getElementById("addDueModal").style.display = "block";
+    }
+
+    function closeAddDueModal() {
+      document.getElementById("addDueForm").reset();
+      document.getElementById("studentIdDue").value = ''; // Reset student ID field
+      document.getElementById("addDueModal").style.display = "none";
+      document.getElementById("dueMessage").textContent = ''; // Clear message
+    }
+
+    function populateStudentIdDue() {
+      const name = document.getElementById("studentNameSelectDue").value;
+      const student = studentsList.find(s => s.name === name);
+      document.getElementById("studentIdDue").value = name === "all" ? '' : (student ? student.id : '');
+    }
+
+    document.getElementById("addDueForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      showLoading();
+
+      const studentName = document.getElementById("studentNameSelectDue").value;
+      const isBatchUpdate = studentName === "all";
+      const body = {
+        dueAmount: parseFloat(document.getElementById("dueAmount").value),
+        dueDate: document.getElementById("dueDate").value,
+        studentId: isBatchUpdate ? null : document.getElementById("studentIdDue").value,
+        class: isBatchUpdate ? document.getElementById("classSelect").value : null, // Use main class
+        section: isBatchUpdate ? document.getElementById("sectionSelect").value : null, // Use main section
+      };
+
+      const res = await fetch("/.netlify/functions/addDue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        closeAddDueModal();
+        await loadStudents();
+      } else {
+        document.getElementById("dueMessage").textContent = result.message || "Failed to add due.";
       }
       hideLoading();
     });
