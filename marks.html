@@ -804,13 +804,20 @@
 
         function populateExamDropdown() {
             const examSelect = document.getElementById("examSelect");
-            examSelect.innerHTML = '<option value="">Select Existing Exam</option>';
+            examSelect.innerHTML = '<option value="">Select Existing Exam</option>'; // Reset dropdown
+
             exams.forEach(exam => {
                 const option = document.createElement("option");
                 option.value = exam.examName;
                 option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
                 examSelect.appendChild(option);
             });
+
+            // Add the "Enter New Exam" option
+            const newExamOption = document.createElement("option");
+            newExamOption.value = "new";
+            newExamOption.textContent = "Enter New Exam";
+            examSelect.appendChild(newExamOption);
         }
 
         document.getElementById("classSelect").addEventListener("change", filterExams);
