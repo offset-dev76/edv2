@@ -602,7 +602,7 @@
         const res = await fetch("/.netlify/functions/fetchStudents", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ class: selectedClass })
+          body: JSON.stringify({ grade: selectedClass })
         });
 
         const result = await res.json();
