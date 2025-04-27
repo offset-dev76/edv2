@@ -607,22 +607,23 @@
         const result = await res.json();
 
         if (result.success && result.data.length > 0) {
+          const isSeniorGrade = selectedClass === "11" || selectedClass === "12";
+          document.getElementById("streamHeader").style.display = isSeniorGrade ? "" : "none";
+
           studentDataGlobal = result.data
-            .filter(s =>
-              (!section || s.section === section)
-            )
+            .filter(s => (!section || s.section === section))
             .sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
 
           studentDataGlobal.forEach(student => {
             const row = document.createElement("tr");
             row.innerHTML = `
-                    <td>${student.id}</td>
-                    <td>${student.name}</td>
-                    <td>${student.class}</td>
-                    <td>${student.section}</td>
-                    <td>${student.stream}</td>
-                    <td>${student.phone}</td>
-                `;
+              <td>${student.id}</td>
+              <td>${student.name}</td>
+              <td>${student.class}</td>
+              <td>${student.section}</td>
+              <td style="display: ${isSeniorGrade ? "" : "none"};">${student.stream || ""}</td>
+              <td>${student.phone}</td>
+            `;
             tbody.appendChild(row);
           });
 
