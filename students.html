@@ -609,8 +609,7 @@
         if (result.success && result.data.length > 0) {
           studentDataGlobal = result.data
             .filter(s =>
-              (!section || s.section === section) &&
-              (!stream || s.stream === stream)
+              (!section || s.section === section)
             )
             .sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
 
