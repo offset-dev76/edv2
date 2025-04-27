@@ -4,12 +4,12 @@ const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mong
 
 // Schema for exams
 const examSchema = new mongoose.Schema({
-  Class: String,
-  Section: String,
-  ExamName: String
+  grade: String,
+  section: String,
+  examName: { type: String, unique: true },
 });
 
-const Exam = mongoose.models.Exam || mongoose.model('Mark', examSchema);
+const Exam = mongoose.models.Exam || mongoose.model('Exam', examSchema); // Fix model name
 
 let isConnected = false;
 
@@ -25,38 +25,21 @@ async function connectToDB() {
 }
 
 exports.handler = async function (event) {
-  if (event.httpMethod !== 'POST') {
+  if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
-      body: JSON.stringify({ message: 'Only POST requests allowed' })
+      body: JSON.stringify({ success: false, message: 'Only GET requests allowed' })
     };
   }
 
   try {
     await connectToDB();
 
-    const { class: grade, section } = JSON.parse(event.body);
-
-    if (!grade || !section) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: 'Class and section are required' })
-      };
-    }
-
-    // Fetch exams for the specified class and section
-    const exams = await Mark.find({ Class: grade, Section: section }).lean();
-
-    if (exams.length === 0) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ success: false, message: 'No exams found for the specified criteria' })
-      };
-    }
+    const exams = await Exam.find({}, { _id: 0, grade: 1, section: 1, examName: 1 });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, data: exams.map(exam => ({ name: exam.ExamName })) })
+      body: JSON.stringify({ success: true, data: exams })
     };
   } catch (err) {
     console.error('Error fetching exams:', err);
