@@ -134,7 +134,7 @@
         .controls input,
         .controls select {
             background-color: var(--bg-page2);
-            color: var(--text-default);
+            color: var (--text-default);
         }
 
         .controls select,
@@ -444,7 +444,7 @@
             const section = document.getElementById("sectionSelect").value;
 
             if (!grade || !section) return; // Ensure both grade and section are selected
-            await handleClassChange();
+
             showLoading();
             try {
                 const res = await fetch("/.netlify/functions/fetchStudents", {
