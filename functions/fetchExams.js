@@ -45,7 +45,7 @@ exports.handler = async function (event) {
     }
 
     // Fetch exams for the specified class and section
-    const exams = await Exam.find({ Class: grade, Section: section }).lean();
+    const exams = await Mark.find({ Class: grade, Section: section }).lean();
 
     if (exams.length === 0) {
       return {
