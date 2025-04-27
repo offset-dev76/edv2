@@ -5,7 +5,7 @@ const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mong
 const studentSchema = new mongoose.Schema({
   id: { type: String, unique: true },
   name: String,
-  class: String,
+  grade: String,
   section: String,
   language: String,
   parentPhone: String,
@@ -41,16 +41,16 @@ exports.handler = async function(event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const { class: classCriteria } = data;
+    const { grade } = data;
 
-    if (!classCriteria) {
+    if (!grade) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ success: false, message: 'Class criteria not provided' })
+        body: JSON.stringify({ success: false, message: 'Grade criteria not provided' })
       };
     }
 
-    const students = await Student.find({ class: classCriteria });
+    const students = await Student.find({ class: grade });
 
     return {
       statusCode: 200,
