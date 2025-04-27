@@ -628,7 +628,7 @@
       showLoading();
 
       const body = {
-        studentId: document.getElementById("studentIdSelect").value,
+        studentId: document.getElementById("studentId").value,
         amount: parseFloat(document.getElementById("amountPaid").value),
         date: document.getElementById("paymentDate").value,
         mode: document.getElementById("paymentMode").value,
@@ -698,7 +698,7 @@
       const body = {
         dueAmount: parseFloat(document.getElementById("dueAmount").value),
         dueDate: document.getElementById("dueDate").value,
-        studentId: isBatchUpdate ? null : document.getElementById("studentIdDue").value,
+        id: isBatchUpdate ? null : document.getElementById("studentIdDue").value,
         class: isBatchUpdate ? document.getElementById("classSelect").value : null, // Use main class
         section: isBatchUpdate ? document.getElementById("sectionSelect").value : null, // Use main section
       };
