@@ -5,7 +5,7 @@ const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mong
 const studentSchema = new mongoose.Schema({
   studentId: { type: String, unique: true },
   name: String,
-  class: String,
+  grade: String,
   section: String,
   language: String,
   parentPhone: String,
@@ -43,7 +43,7 @@ exports.handler = async function (event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const { studentId, dueAmount, dueDate, class, section } = data;
+    const { studentId, dueAmount, dueDate, grade, section } = data;
 
     if (!dueAmount || !dueDate) {
       return {
@@ -54,7 +54,7 @@ exports.handler = async function (event) {
 
     if (studentId) {
       // Update a single student
-      const student = await Student.findOne({ id: studentId });
+      const student = await Student.findOne({ studentId: studentId });
       if (!student) {
         return {
           statusCode: 404,
@@ -66,14 +66,14 @@ exports.handler = async function (event) {
       await student.save();
     } else {
       // Bulk update for a specific class and section
-      if (!classVal) {
+      if (!grade) {
         return {
           statusCode: 400,
           body: JSON.stringify({ success: false, message: 'Class is required for bulk updates' }),
         };
       }
 
-      const filter = { class: classVal };
+      const filter = { class: grade };
       if (section) {
         filter.section = section;
       }
