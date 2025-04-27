@@ -540,17 +540,17 @@
 
       const studentData = {
         name: document.getElementById("studentName").value.trim(),
-        admissionNo: document.getElementById("admissionNo").value.trim(),
+        id: document.getElementById("admissionNo").value.trim(),
         class: document.getElementById("studentClass").value.trim(),
         section: document.getElementById("studentSection").value.trim(),
         language: document.getElementById("language").value.trim(),
         parentPhone: document.getElementById("parentPhone").value.trim(),
-        email: document.getElementById("email").value.trim(),
+        parentEmail: document.getElementById("email").value.trim(),
         group: document.getElementById("group").value.trim(),
         academicYear: document.getElementById("academicYear").value.trim(),
       };
 
-      if (!studentData.name || !studentData.admissionNo || !studentData.class || !studentData.section || !studentData.language || !studentData.parentPhone || !studentData.email) {
+      if (!studentData.name || !studentData.id || !studentData.class || !studentData.section || !studentData.language || !studentData.parentPhone || !studentData.email) {
         alert("Please fill out all required fields.");
         hideLoading(); // <--- hide spinner if form validation fails
         return;
