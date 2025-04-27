@@ -6,7 +6,7 @@ const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mong
 const markSchema = new mongoose.Schema({
   RollNo: String,
   Name: String,
-  Class: String,
+  Grade: String,
   Section: String,
   Stream: String,
   Exam: String,
@@ -46,17 +46,16 @@ exports.handler = async function (event) {
   try {
     await connectToDB();
 
-    const { grade, stream, exam } = JSON.parse(event.body);
+    const { grade, section, exam } = JSON.parse(event.body); // Replace stream with section
 
-    if (!grade || !exam) {
+    if (!grade || !section || !exam) { // Ensure all required fields are present
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: 'Grade and exam are required' })
+        body: JSON.stringify({ message: 'Grade, section, and exam are required' })
       };
     }
 
-    const query = { Class: grade, Exam: exam };
-    if (stream) query.Stream = stream;
+    const query = { Grade: grade, Section: section, Exam: exam }; // Update query to use section
 
     // Fetch batched marks documents
     const marks = await Mark.find(query).lean();
