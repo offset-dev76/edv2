@@ -144,6 +144,7 @@
             font-size: 0.95rem;
             border: 1px solid var(--border);
             border-radius: var(--radius);
+            color: var(--text-default);
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
@@ -275,6 +276,8 @@
 
         #marksTable thead {
             display: none; /* Initially hide the table head */
+            position: sticky;
+            top: 0;
         }
 
         #marksTable.show thead {
