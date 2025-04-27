@@ -835,6 +835,24 @@
                 document.getElementById("classSelect").value = examDetails.grade;
                 document.getElementById("sectionSelect").value = examDetails.section;
 
+                // Automatically select stream for grades 11 and 12
+                const streamSelect = document.getElementById("streamSelect");
+                if (examDetails.grade === "11" || examDetails.grade === "12") {
+                    streamSelect.style.display = "inline-block";
+                    if (examDetails.section === "A") {
+                        streamSelect.value = "Science";
+                    } else if (examDetails.section === "B") {
+                        streamSelect.value = "Commerce";
+                    } else if (examDetails.section === "C") {
+                        streamSelect.value = "Arts";
+                    } else {
+                        streamSelect.value = ""; // Reset if no valid section
+                    }
+                } else {
+                    streamSelect.style.display = "none";
+                    streamSelect.value = "";
+                }
+
                 // Trigger fetch for students and marks
                 await fetchStudentsForMarks();
                 await tryFetchAndFillMarks();
