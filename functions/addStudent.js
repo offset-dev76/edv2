@@ -9,9 +9,9 @@ const studentSchema = new mongoose.Schema({
   section: String,
   language: String,
   parentPhone: String,
-  parentEmail: String,
   group: String, // Optional for classes 11 and 12
-  academicYear: String
+  academicYear: String,
+  parentEmail: String, // Add email field
 });
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
@@ -41,7 +41,7 @@ exports.handler = async function(event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const requiredFields = ['id', 'name', 'class', 'section', 'language', 'parentPhone', 'parentEmail', 'academicYear'];
+    const requiredFields = ['id', 'name', 'class', 'section', 'language', 'parentPhone', 'parentEmail', 'academicYear']; // Include email and admissionNo
     const missingFields = requiredFields.filter(field => !data[field]);
 
     if (missingFields.length > 0) {
@@ -67,7 +67,17 @@ exports.handler = async function(event) {
       };
     }
 
-    const newStudent = new Student(data);
+    const newStudent = new Student({
+      id: data.id,
+      name: data.name,
+      class: data.class,
+      section: data.section,
+      language: data.language,
+      parentPhone: data.parentPhone,
+      parentEmail: data.parentEmail,
+      group: data.group,
+      academicYear: data.academicYear,
+    });
     await newStudent.save();
 
     return {
