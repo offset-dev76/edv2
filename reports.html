@@ -390,12 +390,12 @@
         }
 
         function populateClassDropdown() {
-            const classSelect = document.getElementById("classSelect");
+            const gradeSelect = document.getElementById("classSelect");
             for (let i = 1; i <= 12; i++) {
                 const option = document.createElement("option");
                 option.value = i;
                 option.textContent = i;
-                classSelect.appendChild(option);
+                gradeSelect.appendChild(option);
             }
         }
 
@@ -424,7 +424,7 @@
                 const res = await fetch("/.netlify/functions/fetchClassReport", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ grade, section, examName })
+                    body: JSON.stringify({ grade, section, exam: examName })
                 });
 
                 const result = await res.json();
