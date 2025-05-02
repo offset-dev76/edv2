@@ -26,11 +26,11 @@ exports.handler = async (event) => {
     const collection = db.collection('marks');
 
     const operations = batch.map((entry) => {
-      const { RollNo, Class, Section, Exam } = entry;
+      const { RollNo, Grade, Section, Exam } = entry;
 
       return {
         updateOne: {
-          filter: { RollNo, Class, Section, Exam },
+          filter: { RollNo, Grade, Section, Exam },
           update: { $set: entry },
           upsert: true
         }
