@@ -827,24 +827,24 @@
             examSelect.appendChild(newExamOption);
         }
 
-        document.getElementById("classSelect").addEventListener("change", filterExams);
-        document.getElementById("sectionSelect").addEventListener("change", filterExams);
+        // document.getElementById("classSelect").addEventListener("change", filterExams);
+        // document.getElementById("sectionSelect").addEventListener("change", filterExams);
 
-        function filterExams() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
-            const examSelect = document.getElementById("examSelect");
+        // function filterExams() {
+        //     const grade = document.getElementById("classSelect").value;
+        //     const section = document.getElementById("sectionSelect").value;
+        //     const examSelect = document.getElementById("examSelect");
 
-            examSelect.innerHTML = '<option value="">Select Existing Exam</option>';
-            exams
-                .filter(exam => (!grade || exam.grade === grade) && (!section || exam.section === section))
-                .forEach(exam => {
-                    const option = document.createElement("option");
-                    option.value = exam.examName;
-                    option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
-                    examSelect.appendChild(option);
-                });
-        }
+        //     examSelect.innerHTML = '<option value="">Select Existing Exam</option>';
+        //     exams
+        //         .filter(exam => (!grade || exam.grade === grade) && (!section || exam.section === section))
+        //         .forEach(exam => {
+        //             const option = document.createElement("option");
+        //             option.value = exam.examName;
+        //             option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
+        //             examSelect.appendChild(option);
+        //         });
+        // }
 
         document.getElementById("examSelect").addEventListener("change", async function () {
             const selectedExam = this.value;
