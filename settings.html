@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Settings</title>
+    <style>
+        :root {
+            --bg-page: #FAFAFA;
+            --bg-surface: #FFFFFF;
+            --primary: #9877D9;
+            --primary-light: #B99FE1;
+            --text-default: #333333;
+            --text-muted: #666666;
+            --border: #E1E1E1;
+            --radius: 0.5rem;
+            --border2: solid 1px #E1E1E1;
+            --spacing: 1rem;
+        }
+
+        [data-theme="dark"] {
+            --bg-page: #121212;
+            --bg-page2: #12121259;
+            --bg-surface: #1E1E1E;
+            --text-default: #ffffff;
+            --primary: #BB86FC;
+            --primary-light: #985EFF;
+            --text-muted: #A1A1A1;
+            --border: #333333;
+            --border2: solid 1px #333333;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            max-height: 100vh;
+            background-color: var(--bg-page);
+            color: var(--text-default);
+            font-family: "YDGothic 140 Pro", 'Poppins', sans-serif;
+            line-height: 1.5;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            padding: var(--spacing) 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: calc(var(--spacing) * 1.5);
+            letter-spacing: 1px;
+            color: var(--text-default);
+        }
+
+        .sidebar a {
+            width: 100%;
+            padding: 0.75rem var(--spacing);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: background-color 0.3s, padding-left 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: var(--primary-light);
+            color: var(--text-default);
+            padding-left: calc(var(--spacing) + 0.5rem);
+        }
+
+        .sidebar a.active {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            font-weight: 600;
+            padding-left: calc(var(--spacing) + 0.5rem);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-page);
+        }
+
+        .header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: var(--spacing);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: left;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .headline {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-default);
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls input,
+        .controls select {
+            background-color: var(--bg-page2);
+            color: var (--text-default);
+        }
+
+        .controls select,
+        .controls input,
+        .controls button {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-default);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .controls select:focus,
+        .controls input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .controls button {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background-color: var(--primary-light);
+        }
+
+        .table-container {
+            flex-grow: 1;
+            background-color: var(--bg-surface);
+            border-radius: var(--radius);
+            border: var(--border2);
+            overflow: auto;
+            height: 100%;
+            margin: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--bg-surface);
+            border-radius: var (--radius);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        th,
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            font-weight: 600;
+            cursor: default;
+        }
+
+        th.sortable:hover {
+            background-color: var(--primary-light);
+            color: var(--text-default);
+            cursor: pointer;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            border-radius: 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #FBFBFB;
+        }
+
+        [data-theme="dark"] tr:nth-child(even) {
+            background-color: #1E1E1E;
+        }
+
+        .status {
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: green;
+            font-weight: 500;
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 0.5rem solid #eee;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .dark-mode-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var (--text-default);
+            transition: color 0.3s;
+        }
+
+        .dark-mode-toggle:hover {
+            color: var(--primary);
+        }
+        #marksTable input {
+            width: 100px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        #marksTable thead {
+            display: none; /* Initially hide the table head */
+            position: sticky;
+            top: 0;
+        }
+
+        #marksTable.show thead {
+            display: table-header-group; /* Show the table head when data is fetched */
+        }
+
+        [data-theme="dark"] #marksTable input {
+            background-color: #333333; /* Dark background for inputs */
+            color: #ffffff; /* White text for better contrast */
+            border: 1px solid #555555; /* Subtle border for inputs */
+        }
+
+        [data-theme="dark"] #marksTable input:focus {
+            outline: none;
+            border-color: var(--primary-light); /* Highlight border on focus */
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>ScholarX</h2>
+        <a href="./index.html">Dashboard</a>
+        <a href="./students.html">Student Directory</a>
+        <a href="./marks.html">Marks Management</a>
+        <a href="./fees.html">Fees Management</a>
+        <a href="./reports.html">Reports & Printouts</a>
+        <a href="./settings.html" class="active">Settings</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div class="headline">
+                <h1>General Settings</h1>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h2>Stream and Section Management</h2>
+            <table id="streamSectionTable">
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Stream</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" placeholder="Enter Section"></td>
+                        <td>
+                            <select>
+                                <option value="Science">Science</option>
+                                <option value="Commerce">Commerce</option>
+                                <option value="Arts">Arts</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button onclick="deleteRow(this)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button onclick="addRow()">Add Section</button>
+        </div>
+
+        <div class="table-container">
+            <h2>Subjects Under Each Stream</h2>
+            <div id="subjectManagement">
+                <div class="stream-subject">
+                    <h3>Science</h3>
+                    <ul id="scienceSubjects">
+                        <li>
+                            <input type="text" placeholder="Enter Subject">
+                            <button onclick="deleteSubject(this)">Delete</button>
+                        </li>
+                    </ul>
+                    <button onclick="addSubject('scienceSubjects')">Add Subject</button>
+                </div>
+                <div class="stream-subject">
+                    <h3>Commerce</h3>
+                    <ul id="commerceSubjects">
+                        <li>
+                            <input type="text" placeholder="Enter Subject">
+                            <button onclick="deleteSubject(this)">Delete</button>
+                        </li>
+                    </ul>
+                    <button onclick="addSubject('commerceSubjects')">Add Subject</button>
+                </div>
+                <div class="stream-subject">
+                    <h3>Arts</h3>
+                    <ul id="artsSubjects">
+                        <li>
+                            <input type="text" placeholder="Enter Subject">
+                            <button onclick="deleteSubject(this)">Delete</button>
+                        </li>
+                    </ul>
+                    <button onclick="addSubject('artsSubjects')">Add Subject</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ...existing code from marks.html...
+
+        function addRow() {
+            const table = document.getElementById("streamSectionTable").querySelector("tbody");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><input type="text" placeholder="Enter Section"></td>
+                <td>
+                    <select>
+                        <option value="Science">Science</option>
+                        <option value="Commerce">Commerce</option>
+                        <option value="Arts">Arts</option>
+                    </select>
+                </td>
+                <td>
+                    <button onclick="deleteRow(this)">Delete</button>
+                </td>
+            `;
+            table.appendChild(row);
+        }
+
+        function deleteRow(button) {
+            const row = button.parentElement.parentElement;
+            row.remove();
+        }
+
+        function addSubject(listId) {
+            const list = document.getElementById(listId);
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <input type="text" placeholder="Enter Subject">
+                <button onclick="deleteSubject(this)">Delete</button>
+            `;
+            list.appendChild(li);
+        }
+
+        function deleteSubject(button) {
+            const li = button.parentElement;
+            li.remove();
+        }
+    </script>
+</body>
+
+</html>
