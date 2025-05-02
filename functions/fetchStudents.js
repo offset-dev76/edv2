@@ -50,7 +50,7 @@ exports.handler = async function(event) {
       };
     }
 
-    const students = await Student.find({ class: grade });
+    const students = await Student.find({ grade }); // Changed from 'class' to 'grade'
 
     return {
       statusCode: 200,
