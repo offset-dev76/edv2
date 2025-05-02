@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports & Printouts</title>
+    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <title>Reports</title>
     <style>
         :root {
             --bg-page: #FAFAFA;
@@ -112,7 +112,6 @@
             flex-wrap: wrap;
             gap: 0.5rem;
         }
-
         .headline {
             display: flex;
             flex-direction: row;
@@ -132,7 +131,14 @@
             align-items: center;
         }
 
+        .controls input,
+        .controls select {
+            background-color: var(--bg-page2);
+            color: var (--text-default);
+        }
+
         .controls select,
+        .controls input,
         .controls button {
             padding: 0.5rem 0.75rem;
             font-size: 0.95rem;
@@ -142,7 +148,8 @@
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .controls select:focus {
+        .controls select:focus,
+        .controls input:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px var(--primary-light);
@@ -192,6 +199,12 @@
             color: var(--bg-surface);
             font-weight: 600;
             cursor: default;
+        }
+
+        th.sortable:hover {
+            background-color: var(--primary-light);
+            color: var(--text-default);
+            cursor: pointer;
         }
 
         thead th {
@@ -248,14 +261,42 @@
             border: none;
             cursor: pointer;
             font-size: 1.5rem;
-            color: var(--text-default);
+            color: var (--text-default);
             transition: color 0.3s;
         }
 
         .dark-mode-toggle:hover {
             color: var(--primary);
         }
+        #marksTable input {
+            width: 100px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        #marksTable thead {
+            display: none; /* Initially hide the table head */
+            position: sticky;
+            top: 0;
+        }
+
+        #marksTable.show thead {
+            display: table-header-group; /* Show the table head when data is fetched */
+        }
+
+        [data-theme="dark"] #marksTable input {
+            background-color: #333333; /* Dark background for inputs */
+            color: #ffffff; /* White text for better contrast */
+            border: 1px solid #555555; /* Subtle border for inputs */
+        }
+
+        [data-theme="dark"] #marksTable input:focus {
+            outline: none;
+            border-color: var(--primary-light); /* Highlight border on focus */
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
     </style>
+
 </head>
 
 <body>
@@ -272,8 +313,8 @@
     <div class="main-content">
         <div class="header">
             <div class="headline">
-                <h1>Reports & Printouts</h1>
-                <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+            <h1>Reports</h1>
+            <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
             </div>
             <div class="controls">
                 <select id="classSelect">
@@ -292,30 +333,31 @@
                     <option value="12">12</option>
                 </select>
 
-                <select id="sectionSelect">
-                    <option value="">Select Section</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="G">G</option>
+                  <select id="sectionSelect">
+                      <option value="">Select Section</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                      <option value="E">E</option>
+                      <option value="F">F</option>
+                      <option value="G">G</option>
                 </select>
 
-                <select id="streamSelect" style="display: none;">
+                <select id="streamSelect" style="display: none; transition: 0.3s;">
                     <option value="">Select Stream</option>
                     <option value="Science">Science</option>
                     <option value="Commerce">Commerce</option>
                     <option value="Arts">Arts</option>
                 </select>
 
-                <select id="examSelect">
-                    <option value="">Select Exam</option>
+                <select id="examSelect" onchange="tryFetchAndFillMarks()">
+                    <option value="">Select Existing Exam</option>
                     <!-- Dynamic options will be added here -->
                 </select>
 
-                <button class="btn-print" onclick="window.print()">Print</button>
+                <button class="btn-print" onclick="printMarksTable()">Print</button>
+        
             </div>
         </div>
 
@@ -333,6 +375,12 @@
             </table>
             <div class="status" id="statusMsg"></div>
         </div>
+
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display:none;">
+        <div class="spinner"></div>
     </div>
 
     <script>
@@ -350,21 +398,30 @@
             }
         };
 
-        let studentsByClass = {};
-        let exams = [];
+
+        let studentsByClass = {}; // Will be populated dynamically
 
         document.getElementById("classSelect").addEventListener("change", handleClassChange);
         document.getElementById("sectionSelect").addEventListener("change", fetchStudentsForMarks);
         document.getElementById("streamSelect").addEventListener("change", handleStreamChange);
-        document.getElementById("examSelect").addEventListener("change", tryFetchAndFillMarks);
 
         async function handleClassChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
             const streamSelect = document.getElementById("streamSelect");
 
+            // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
                 streamSelect.style.display = "inline-block";
+                if (section === "A") {
+                    streamSelect.value = "Science";
+                } else if (section === "B") {
+                    streamSelect.value = "Commerce";
+                } else if (section === "C") {
+                    streamSelect.value = "Arts";
+                } else {
+                    streamSelect.value = ""; // Reset if no valid section
+                }
             } else {
                 streamSelect.style.display = "none";
                 streamSelect.value = "";
@@ -372,7 +429,7 @@
 
             if (grade) {
                 showLoading();
-                await fetchStudentsForMarks();
+                await fetchStudentsForMarks(); // Fetch students directly after class is selected
                 hideLoading();
             }
         }
@@ -381,6 +438,7 @@
             const grade = document.getElementById("classSelect").value;
             const streamVal = document.getElementById("streamSelect").value;
 
+            // Re-render the table to update subjects based on the selected stream
             if (grade === "11" || grade === "12") {
                 renderMarksTable();
             }
@@ -390,7 +448,7 @@
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
 
-            if (!grade || !section) return;
+            if (!grade || !section) return; // Ensure both grade and section are selected
 
             showLoading();
             try {
@@ -405,57 +463,13 @@
                 if (result.success && result.data.length > 0) {
                     studentsByClass[grade] = result.data.filter(s => s.section === section);
                     renderMarksTable();
+                    tryFetchAndFillMarks();
                 } else {
                     alert("No students found.");
                 }
             } catch (err) {
                 console.error("Error fetching students:", err);
                 alert("Error fetching student data.");
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function tryFetchAndFillMarks() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
-            const stream = document.getElementById("streamSelect").value;
-            const exam = document.getElementById("examSelect").value;
-
-            if (!grade || !section || !exam) return;
-
-            showLoading();
-            try {
-                const res = await fetch("/.netlify/functions/fetchMarks2", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ grade, section, exam })
-                });
-
-                const result = await res.json();
-
-                if (result.success && result.data?.length > 0) {
-                    const marksData = result.data;
-                    const subjectMap = getSubjectMap(grade, stream);
-
-                    const inputs = document.querySelectorAll("#marksTable tbody");
-                    inputs.innerHTML = "";
-
-                    marksData.forEach(student => {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `<td>${student.RollNo}</td><td>${student.Name}</td>`;
-
-                        Object.keys(subjectMap).forEach(subject => {
-                            const td = document.createElement("td");
-                            td.textContent = student[subjectMap[subject]] || "-";
-                            row.appendChild(td);
-                        });
-
-                        inputs.appendChild(row);
-                    });
-                }
-            } catch (err) {
-                console.error("Error fetching marks:", err);
             } finally {
                 hideLoading();
             }
@@ -489,7 +503,71 @@
                 headerRow.appendChild(th);
             });
 
+            studentsByClass[grade].forEach(student => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${student.id}</td><td>${student.name}</td>`;
+
+                subjects.forEach(subject => {
+                    const td = document.createElement("td");
+                    td.setAttribute("data-id", student.id);
+                    td.setAttribute("data-name", student.name);
+                    td.setAttribute("data-subject", subject);
+                    td.textContent = ""; // Marks will be filled dynamically
+                    row.appendChild(td);
+                });
+
+                tableBody.appendChild(row);
+            });
+
             document.getElementById("marksTable").classList.add("show");
+        }
+
+        async function tryFetchAndFillMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const examSelect = document.getElementById("examSelect").value;
+
+            if (!grade || !section || !examSelect) return;
+
+            try {
+                const res = await fetch("/.netlify/functions/fetchMarks2", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ grade, section, exam: examSelect })
+                });
+
+                const result = await res.json();
+
+                if (result.success && result.data?.length > 0) {
+                    const marksData = result.data;
+
+                    const subjectMap = getSubjectMap(grade, stream);
+
+                    const cells = document.querySelectorAll("#marksTable td[data-id]");
+
+                    cells.forEach(cell => {
+                        const id = cell.getAttribute("data-id");
+                        const subject = cell.getAttribute("data-subject");
+
+                        const doc = marksData.find(m => m.RollNo === id);
+                        if (!doc) return;
+
+                        const subKey = subjectMap[subject];
+                        const val = doc[subKey];
+
+                        if (val === 0) {
+                            cell.textContent = "AB";
+                        } else if (val === null || val === undefined) {
+                            cell.textContent = "";
+                        } else {
+                            cell.textContent = val;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Error in tryFetchAndFillMarks:", err);
+            }
         }
 
         function getSubjectMap(grade, stream) {
@@ -506,6 +584,52 @@
             return map;
         }
 
+        function printMarksTable() {
+            const table = document.getElementById("marksTable").outerHTML;
+            const newWindow = window.open("", "_blank");
+            newWindow.document.write(`
+                <html>
+                <head>
+                    <title>Marks Table</title>
+                    <style>
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        th, td {
+                            border: 1px solid #000;
+                            padding: 8px;
+                            text-align: left;
+                        }
+                        th {
+                            background-color: #f2f2f2;
+                        }
+                    </style>
+                </head>
+                <body>${table}</body>
+                </html>
+            `);
+            newWindow.document.close();
+            newWindow.print();
+        }
+
+        function toggleDarkMode() {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme); // Save theme to localStorage
+            const toggleButton = document.querySelector(".dark-mode-toggle");
+            toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await fetchExams(); // Fetch exams on page load
+            const savedTheme = localStorage.getItem("theme") || "light";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+            const toggleButton = document.querySelector(".dark-mode-toggle");
+            toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+        });
+
         async function fetchExams() {
             try {
                 const res = await fetch("/.netlify/functions/fetchExams", {
@@ -514,8 +638,8 @@
                 });
                 const result = await res.json();
                 if (result.success) {
-                    exams = result.data;
-                    populateExamDropdown();
+                    exams = result.data; // Store fetched exams
+                    populateExamDropdown(); // Populate dropdown with all exams
                 }
             } catch (err) {
                 console.error("Error fetching exams:", err);
@@ -524,7 +648,7 @@
 
         function populateExamDropdown() {
             const examSelect = document.getElementById("examSelect");
-            examSelect.innerHTML = '<option value="">Select Exam</option>';
+            examSelect.innerHTML = '<option value="">Select Existing Exam</option>'; // Reset dropdown
 
             exams.forEach(exam => {
                 const option = document.createElement("option");
@@ -532,51 +656,32 @@
                 option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
                 examSelect.appendChild(option);
             });
+
+            // Add the "Enter New Exam" option
+            const newExamOption = document.createElement("option");
+            newExamOption.value = "new";
+            newExamOption.textContent = "Enter New Exam";
+            examSelect.appendChild(newExamOption);
         }
 
-        function showLoading() {
-            document.getElementById("loadingOverlay").style.display = "flex";
+        document.getElementById("classSelect").addEventListener("change", filterExams);
+        document.getElementById("sectionSelect").addEventListener("change", filterExams);
+
+        function filterExams() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const examSelect = document.getElementById("examSelect");
+
+            examSelect.innerHTML = '<option value="">Select Existing Exam</option>';
+            exams
+                .filter(exam => (!grade || exam.grade === grade) && (!section || exam.section === section))
+                .forEach(exam => {
+                    const option = document.createElement("option");
+                    option.value = exam.examName;
+                    option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
+                    examSelect.appendChild(option);
+                });
         }
-
-        function hideLoading() {
-            document.getElementById("loadingOverlay").style.display = "none";
-        }
-
-        function toggleDarkMode() {
-            const currentTheme = document.documentElement.getAttribute("data-theme");
-            const newTheme = currentTheme === "dark" ? "light" : "dark";
-            document.documentElement.setAttribute("data-theme", newTheme);
-            localStorage.setItem("theme", newTheme);
-            const toggleButton = document.querySelector(".dark-mode-toggle");
-            toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
-        }
-
-        document.addEventListener("DOMContentLoaded", async () => {
-            await fetchExams();
-            const savedTheme = localStorage.getItem("theme") || "light";
-            document.documentElement.setAttribute("data-theme", savedTheme);
-            const toggleButton = document.querySelector(".dark-mode-toggle");
-            toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
-        });
-
-        document.getElementById("sectionSelect").addEventListener("change", function () {
-            const section = this.value;
-            const streamSelect = document.getElementById("streamSelect");
-
-            // Automatically set the stream based on the section
-            if (section === "A") {
-                streamSelect.value = "Science";
-            } else if (section === "B") {
-                streamSelect.value = "Commerce";
-            } else if (section === "C") {
-                streamSelect.value = "Arts";
-            } else {
-                streamSelect.value = ""; // Reset if no valid section
-            }
-        });
-
-        // Ensure the stream selector is always hidden
-        document.getElementById("streamSelect").style.display = "none";
     </script>
 </body>
 
