@@ -353,7 +353,6 @@
 
                 <select id="examSelect" onchange="tryFetchAndFillMarks()">
                     <option value="">Select Existing Exam</option>
-                    <!-- Dynamic options will be added here -->
                 </select>
 
                 <button class="btn-print" onclick="printMarksTable()">Print</button>
@@ -370,7 +369,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Dynamic Rows -->
                 </tbody>
             </table>
             <div class="status" id="statusMsg"></div>
@@ -520,6 +518,13 @@
             });
 
             document.getElementById("marksTable").classList.add("show");
+        }
+        function showLoading() {
+            document.getElementById("loadingOverlay").style.display = "flex";
+        }
+
+        function hideLoading() {
+            document.getElementById("loadingOverlay").style.display = "none";
         }
 
         async function tryFetchAndFillMarks() {
@@ -682,6 +687,54 @@
                     examSelect.appendChild(option);
                 });
         }
+
+        document.getElementById("examSelect").addEventListener("change", async function () {
+            const selectedExam = this.value;
+            if (!selectedExam) return;
+
+            // Find the selected exam details
+            const examDetails = exams.find(exam => exam.examName === selectedExam);
+            if (examDetails) {
+                // Populate grade and section
+                document.getElementById("classSelect").value = examDetails.grade;
+                document.getElementById("sectionSelect").value = examDetails.section;
+
+                // Automatically select stream for grades 11 and 12
+                const streamSelect = document.getElementById("streamSelect");
+                if (examDetails.grade === "11" || examDetails.grade === "12") {
+                    streamSelect.style.display = "inline-block";
+                    if (examDetails.section === "A") {
+                        streamSelect.value = "Science";
+                    } else if (examDetails.section === "B") {
+                        streamSelect.value = "Commerce";
+                    } else if (examDetails.section === "C") {
+                        streamSelect.value = "Arts";
+                    } else {
+                        streamSelect.value = ""; // Reset if no valid section
+                    }
+                } else {
+                    streamSelect.style.display = "none";
+                    streamSelect.value = "";
+                }
+
+                // Trigger fetch for students and marks
+                await fetchStudentsForMarks();
+                await tryFetchAndFillMarks();
+            }
+        });
+
+        function handleExamSelection() {
+            const examSelect = document.getElementById("examSelect");
+            const examNameInput = document.getElementById("examName");
+
+            if (examSelect.value === "new") {
+                examNameInput.style.display = "inline-block"; // Show input box for new exam name
+            } else {
+                examNameInput.style.display = "none"; // Hide input box
+                examNameInput.value = ""; // Clear the input box
+            }
+        }
+
     </script>
 </body>
 
