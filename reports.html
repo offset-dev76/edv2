@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -234,11 +235,17 @@
         #loadingOverlay {
             position: fixed;
             inset: 0;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            display: none;
             z-index: 999;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #loadingOverlay.show {
+            display: block;
+            opacity: 1;
         }
 
         .spinner {
@@ -377,9 +384,7 @@
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" style="display:none;">
-        <div class="spinner"></div>
-    </div>
+    <div id="loadingOverlay"></div>
 
     <script>
         const subjectsByClass = {
@@ -520,11 +525,20 @@
             document.getElementById("marksTable").classList.add("show");
         }
         function showLoading() {
-            document.getElementById("loadingOverlay").style.display = "flex";
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            loadingOverlay.style.backgroundImage = currentTheme === "dark" 
+                ? "url('loading2.png')" 
+                : "url('loading.png')";
+            loadingOverlay.classList.add("show");
         }
 
         function hideLoading() {
-            document.getElementById("loadingOverlay").style.display = "none";
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            loadingOverlay.classList.remove("show");
+            setTimeout(() => {
+                loadingOverlay.style.display = "none";
+            }, 500); // Wait for fade-out transition to complete
         }
 
         async function tryFetchAndFillMarks() {
