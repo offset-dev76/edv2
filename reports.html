@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports Management</title>
+    <title>Reports & Printouts</title>
     <style>
         :root {
             --bg-page: #FAFAFA;
@@ -83,7 +83,7 @@
 
         .sidebar a:hover {
             background-color: var(--primary-light);
-            color: var (--text-default);
+            color: var(--text-default);
             padding-left: calc(var(--spacing) + 0.5rem);
         }
 
@@ -132,24 +132,17 @@
             align-items: center;
         }
 
-        .controls input,
-        .controls select {
-            background-color: var(--bg-page2);
-            color: var(--text-default);
-        }
-
         .controls select,
-        .controls input,
         .controls button {
             padding: 0.5rem 0.75rem;
             font-size: 0.95rem;
             border: 1px solid var(--border);
             border-radius: var(--radius);
+            color: var(--text-default);
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .controls select:focus,
-        .controls input:focus {
+        .controls select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px var(--primary-light);
@@ -199,12 +192,6 @@
             color: var(--bg-surface);
             font-weight: 600;
             cursor: default;
-        }
-
-        th.sortable:hover {
-            background-color: var(--primary-light);
-            color: var(--text-default);
-            cursor: pointer;
         }
 
         thead th {
@@ -285,63 +272,239 @@
     <div class="main-content">
         <div class="header">
             <div class="headline">
-                <h1>Reports Management</h1>
+                <h1>Reports & Printouts</h1>
                 <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
             </div>
             <div class="controls">
                 <select id="classSelect">
                     <option value="">Select Grade</option>
-                    <!-- Options dynamically populated -->
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
                 </select>
 
                 <select id="sectionSelect">
                     <option value="">Select Section</option>
-                    <!-- Options dynamically populated -->
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="G">G</option>
+                </select>
+
+                <select id="streamSelect" style="display: none;">
+                    <option value="">Select Stream</option>
+                    <option value="Science">Science</option>
+                    <option value="Commerce">Commerce</option>
+                    <option value="Arts">Arts</option>
                 </select>
 
                 <select id="examSelect">
                     <option value="">Select Exam</option>
-                    <!-- Options dynamically populated -->
+                    <!-- Dynamic options will be added here -->
                 </select>
 
-                <button class="btn-preview" onclick="fetchClassReport()">Preview Report</button>
-                <button class="btn-print" onclick="printClassPDF()">Print Class PDF</button>
-                <button class="btn-print" onclick="printStudentPDF()">Print Individual Report</button>
+                <button class="btn-print" onclick="window.print()">Print</button>
             </div>
         </div>
 
         <div class="table-container">
-            <table id="reportTable">
+            <table id="marksTable">
                 <thead>
-                    <tr id="reportHeader">
-                        <th>Roll No</th>
+                    <tr id="marksHeader">
+                        <th>Student ID</th>
                         <th>Student Name</th>
-                        <!-- Subject headers dynamically populated -->
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Dynamic rows -->
+                    <!-- Dynamic Rows -->
                 </tbody>
             </table>
+            <div class="status" id="statusMsg"></div>
         </div>
     </div>
 
-    <div id="loadingOverlay" style="display:none;">
-        <div class="spinner"></div>
-    </div>
-
     <script>
-        let exams = []; // Store all fetched exams
+        const subjectsByClass = {
+            "10": ["Maths", "Science", "Social", "English"],
+            "11": {
+                Science: ["Physics", "Chemistry", "Maths", "Computer"],
+                Commerce: ["Accountancy", "Business Studies", "Economics", "Maths"],
+                Arts: ["History", "Political Science", "Sociology", "English"]
+            },
+            "12": {
+                Science: ["Physics", "Chemistry", "Maths", "Biology"],
+                Commerce: ["Accountancy", "Business Studies", "Economics", "Informatics Practices"],
+                Arts: ["History", "Geography", "Psychology", "English"]
+            }
+        };
 
-        document.addEventListener("DOMContentLoaded", async () => {
-            await fetchExams(); // Fetch exams on page load
-            populateClassDropdown(); // Populate class dropdown
-            populateSectionDropdown(); // Populate section dropdown
-            const savedTheme = localStorage.getItem("theme") || "light";
-            document.documentElement.setAttribute("data-theme", savedTheme);
-            const toggleButton = document.querySelector(".dark-mode-toggle");
-            toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
-        });
+        let studentsByClass = {};
+        let exams = [];
+
+        document.getElementById("classSelect").addEventListener("change", handleClassChange);
+        document.getElementById("sectionSelect").addEventListener("change", fetchStudentsForMarks);
+        document.getElementById("streamSelect").addEventListener("change", handleStreamChange);
+        document.getElementById("examSelect").addEventListener("change", tryFetchAndFillMarks);
+
+        async function handleClassChange() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const streamSelect = document.getElementById("streamSelect");
+
+            if (grade === "11" || grade === "12") {
+                streamSelect.style.display = "inline-block";
+            } else {
+                streamSelect.style.display = "none";
+                streamSelect.value = "";
+            }
+
+            if (grade) {
+                showLoading();
+                await fetchStudentsForMarks();
+                hideLoading();
+            }
+        }
+
+        async function handleStreamChange() {
+            const grade = document.getElementById("classSelect").value;
+            const streamVal = document.getElementById("streamSelect").value;
+
+            if (grade === "11" || grade === "12") {
+                renderMarksTable();
+            }
+        }
+
+        async function fetchStudentsForMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+
+            if (!grade || !section) return;
+
+            showLoading();
+            try {
+                const res = await fetch("/.netlify/functions/fetchStudents", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ grade, section })
+                });
+
+                const result = await res.json();
+
+                if (result.success && result.data.length > 0) {
+                    studentsByClass[grade] = result.data.filter(s => s.section === section);
+                    renderMarksTable();
+                } else {
+                    alert("No students found.");
+                }
+            } catch (err) {
+                console.error("Error fetching students:", err);
+                alert("Error fetching student data.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function tryFetchAndFillMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const exam = document.getElementById("examSelect").value;
+
+            if (!grade || !section || !exam) return;
+
+            showLoading();
+            try {
+                const res = await fetch("/.netlify/functions/fetchMarks2", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ grade, section, exam })
+                });
+
+                const result = await res.json();
+
+                if (result.success && result.data?.length > 0) {
+                    const marksData = result.data;
+                    const subjectMap = getSubjectMap(grade, stream);
+
+                    const inputs = document.querySelectorAll("#marksTable tbody");
+                    inputs.innerHTML = "";
+
+                    marksData.forEach(student => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `<td>${student.RollNo}</td><td>${student.Name}</td>`;
+
+                        Object.keys(subjectMap).forEach(subject => {
+                            const td = document.createElement("td");
+                            td.textContent = student[subjectMap[subject]] || "-";
+                            row.appendChild(td);
+                        });
+
+                        inputs.appendChild(row);
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching marks:", err);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderMarksTable() {
+            const grade = document.getElementById("classSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const headerRow = document.getElementById("marksHeader");
+            const tableBody = document.querySelector("#marksTable tbody");
+
+            headerRow.innerHTML = "<th>Student ID</th><th>Student Name</th>";
+            tableBody.innerHTML = "";
+
+            if (!grade || !studentsByClass[grade]) {
+                document.getElementById("marksTable").classList.remove("show");
+                return;
+            }
+
+            let subjects = [];
+
+            if (grade <= 10) {
+                subjects = subjectsByClass[grade] || [];
+            } else {
+                subjects = subjectsByClass[grade]?.[stream] || [];
+            }
+
+            subjects.forEach(sub => {
+                const th = document.createElement("th");
+                th.textContent = sub;
+                headerRow.appendChild(th);
+            });
+
+            document.getElementById("marksTable").classList.add("show");
+        }
+
+        function getSubjectMap(grade, stream) {
+            let subjects = [];
+            if (+grade <= 10) {
+                subjects = subjectsByClass[grade] || [];
+            } else {
+                subjects = subjectsByClass[grade]?.[stream] || [];
+            }
+            const map = {};
+            subjects.forEach((subj, idx) => {
+                map[subj] = `Sub${idx + 1}`;
+            });
+            return map;
+        }
 
         async function fetchExams() {
             try {
@@ -351,8 +514,8 @@
                 });
                 const result = await res.json();
                 if (result.success) {
-                    exams = result.data; // Store fetched exams
-                    populateExamDropdown(); // Populate dropdown with all exams
+                    exams = result.data;
+                    populateExamDropdown();
                 }
             } catch (err) {
                 console.error("Error fetching exams:", err);
@@ -362,160 +525,13 @@
         function populateExamDropdown() {
             const examSelect = document.getElementById("examSelect");
             examSelect.innerHTML = '<option value="">Select Exam</option>';
+
             exams.forEach(exam => {
                 const option = document.createElement("option");
                 option.value = exam.examName;
                 option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
                 examSelect.appendChild(option);
             });
-        }
-
-        document.getElementById("classSelect").addEventListener("change", filterExams);
-        document.getElementById("sectionSelect").addEventListener("change", filterExams);
-
-        function filterExams() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
-            const examSelect = document.getElementById("examSelect");
-
-            examSelect.innerHTML = '<option value="">Select Exam</option>';
-            exams
-                .filter(exam => (!grade || exam.grade === grade) && (!section || exam.section === section))
-                .forEach(exam => {
-                    const option = document.createElement("option");
-                    option.value = exam.examName;
-                    option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
-                    examSelect.appendChild(option);
-                });
-        }
-
-        function populateClassDropdown() {
-            const gradeSelect = document.getElementById("classSelect");
-            for (let i = 1; i <= 12; i++) {
-                const option = document.createElement("option");
-                option.value = i;
-                option.textContent = i;
-                gradeSelect.appendChild(option);
-            }
-        }
-
-        function populateSectionDropdown() {
-            const sectionSelect = document.getElementById("sectionSelect");
-            ["A", "B", "C", "D", "E", "F", "G"].forEach(section => {
-                const option = document.createElement("option");
-                option.value = section;
-                option.textContent = section;
-                sectionSelect.appendChild(option);
-            });
-        }
-
-        async function fetchClassReport() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
-            const examName = document.getElementById("examSelect").value;
-
-            console.log("Fetching report with:", { grade, section, examName });
-
-            if (!grade || !section || !examName) {
-                console.log("Validation failed: Missing grade, section, or exam.");
-                alert("Please select grade, section, and exam.");
-                return;
-            }
-
-            showLoading();
-            console.log("Loading overlay displayed.");
-
-            try {
-                console.log("Sending request to fetchClassReport API...");
-                const res = await fetch("/.netlify/functions/fetchClassReport", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ grade, section, exam: examName })
-                });
-
-                console.log("Response received from API.");
-                const result = await res.json();
-                console.log("Parsed response:", result);
-
-                if (result.success) {
-                    console.log("Report data fetched successfully. Rendering report...");
-                    renderClassReport(result.data);
-                } else {
-                    console.log("No data found for the given criteria.");
-                    alert("No data found.");
-                }
-            } catch (err) {
-                console.error("Error fetching class report:", err);
-                alert("Error fetching class report.");
-            } finally {
-                console.log("Hiding loading overlay.");
-                hideLoading();
-            }
-        }
-
-        function renderClassReport(data) {
-            console.log("Rendering report table...");
-            const headerRow = document.getElementById("reportHeader");
-            const tableBody = document.querySelector("#reportTable tbody");
-
-            headerRow.innerHTML = "<th>Roll No</th><th>Student Name</th>";
-            tableBody.innerHTML = "";
-
-            const subjects = Object.keys(data[0]).filter(key => key.startsWith("Sub"));
-            console.log("Subjects identified:", subjects);
-
-            subjects.forEach(sub => {
-                const th = document.createElement("th");
-                th.textContent = sub;
-                headerRow.appendChild(th);
-            });
-
-            data.forEach(student => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${student.RollNo}</td>
-                    <td>${student.Name}</td>
-                    ${subjects.map(sub => `<td>${student[sub] ?? "-"}</td>`).join("")}
-                `;
-                tableBody.appendChild(row);
-            });
-
-            console.log("Report table rendered successfully.");
-        }
-
-        function printClassPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF("landscape");
-            doc.text("Class Report", 14, 16);
-            doc.autoTable({ html: "#reportTable", startY: 20 });
-            doc.save("class-report.pdf");
-        }
-
-        function printStudentPDF() {
-            const { jsPDF } = window.jspdf;
-            const selectedRow = document.querySelector("#reportTable tbody tr.selected");
-            if (!selectedRow) {
-                alert("Please select a student row.");
-                return;
-            }
-
-            const studentData = Array.from(selectedRow.children).map(td => td.textContent);
-            const doc = new jsPDF();
-            doc.text("Student Report", 14, 16);
-            doc.text(`Roll No: ${studentData[0]}`, 14, 26);
-            doc.text(`Name: ${studentData[1]}`, 14, 36);
-
-            const subjects = Array.from(document.querySelectorAll("#reportHeader th")).slice(2);
-            const marks = studentData.slice(2);
-
-            const tableData = subjects.map((sub, i) => [sub.textContent, marks[i]]);
-            doc.autoTable({
-                head: [["Subject", "Marks"]],
-                body: tableData,
-                startY: 46
-            });
-
-            doc.save(`student-report-${studentData[0]}.pdf`);
         }
 
         function showLoading() {
@@ -534,6 +550,33 @@
             const toggleButton = document.querySelector(".dark-mode-toggle");
             toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
         }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await fetchExams();
+            const savedTheme = localStorage.getItem("theme") || "light";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+            const toggleButton = document.querySelector(".dark-mode-toggle");
+            toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+        });
+
+        document.getElementById("sectionSelect").addEventListener("change", function () {
+            const section = this.value;
+            const streamSelect = document.getElementById("streamSelect");
+
+            // Automatically set the stream based on the section
+            if (section === "A") {
+                streamSelect.value = "Science";
+            } else if (section === "B") {
+                streamSelect.value = "Commerce";
+            } else if (section === "C") {
+                streamSelect.value = "Arts";
+            } else {
+                streamSelect.value = ""; // Reset if no valid section
+            }
+        });
+
+        // Ensure the stream selector is always hidden
+        document.getElementById("streamSelect").style.display = "none";
     </script>
 </body>
 
