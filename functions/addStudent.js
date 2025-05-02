@@ -5,7 +5,7 @@ const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mong
 const studentSchema = new mongoose.Schema({
   id: { type: String, unique: true },
   name: String,
-  class: String,
+  grade: String,
   section: String,
   language: String,
   parentPhone: String,
@@ -70,7 +70,7 @@ exports.handler = async function(event) {
     const newStudent = new Student({
       id: data.id,
       name: data.name,
-      class: data.class,
+      grade: data.class,
       section: data.section,
       language: data.language,
       parentPhone: data.parentPhone,
