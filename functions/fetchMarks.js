@@ -2,13 +2,22 @@ const mongoose = require('mongoose');
 
 const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
+// Updated schema for batched marks
 const markSchema = new mongoose.Schema({
-  student: String,
-  name: String,
-  grade: String,
-  exam: String,
-  subject: String,
-  marks: Number
+  RollNo: String,
+  Name: String,
+  Grade: String,
+  Section: String,
+  Stream: String,
+  Exam: String,
+  Sub1: Number,
+  Sub2: Number,
+  Sub3: Number,
+  Sub4: Number,
+  Sub5: Number,
+  Sub6: Number,
+  Sub7: Number,
+  Sub8: Number
 });
 
 const Mark = mongoose.models.Mark || mongoose.model('Mark', markSchema);
@@ -26,7 +35,7 @@ async function connectToDB() {
   }
 }
 
-exports.handler = async function(event) {
+exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -36,21 +45,26 @@ exports.handler = async function(event) {
 
   try {
     await connectToDB();
-    const { grade, exam } = JSON.parse(event.body);
 
-    if (!grade || !exam) {
+    const { grade, section, exam } = JSON.parse(event.body); // Replace stream with section
+
+    if (!grade || !section || !exam) { // Ensure all required fields are present
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: 'Grade and exam are required' })
+        body: JSON.stringify({ message: 'Grade, section, and exam are required' })
       };
     }
 
-    // Fetch all marks for the given grade and exam
-    const marks = await Mark.find({ grade, exam }).lean();
+    const query = { Grade: grade, Section: section, Exam: exam }; // Update query to use section
+
+    // Fetch batched marks documents
+    const marks = await Mark.find(query).lean();
+
+    const averageMarks = marks.reduce((sum, mark) => sum + (mark.Sub1 + mark.Sub2 + mark.Sub3) / 3, 0) / marks.length;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, data: marks })
+      body: JSON.stringify({ success: true, data: averageMarks })
     };
   } catch (err) {
     console.error('Error fetching marks:', err);
