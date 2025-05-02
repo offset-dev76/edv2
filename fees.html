@@ -497,7 +497,7 @@
       const res = await fetch('/.netlify/functions/fetchStudents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ class: grade })
+        body: JSON.stringify({ grade }) // Changed from 'class' to 'grade'
       });
 
       const result = await res.json();
