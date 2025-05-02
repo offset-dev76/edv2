@@ -12,9 +12,15 @@ exports.handler = async (event) => {
   ids.forEach(id => grouped[id] = []);
   payments.forEach(p => grouped[p.studentId].push(p));
 
+  const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
+  const pendingFees = ids.length * 1000 - totalPayments; // Example calculation
+
   await client.close();
   return {
     statusCode: 200,
-    body: JSON.stringify(grouped),
+    body: JSON.stringify({
+      success: true,
+      data: { totalPayments, pendingFees }
+    }),
   };
 };
