@@ -77,7 +77,7 @@
 
     .sidebar a:hover {
       background-color: var(--primary-light);
-      color: var(--text-default);
+      color: var (--text-default);
       padding-left: calc(var(--spacing) + 0.5rem);
     }
 
@@ -291,17 +291,21 @@
 
     async function fetchData() {
       const endpoints = [
-        { id: "totalStudents", url: "/.netlify/functions/fetchStudents" },
-        { id: "averageMarks", url: "/.netlify/functions/fetchMarks" },
-        { id: "totalPayments", url: "/.netlify/functions/getPaymentsBatch" },
-        { id: "pendingFees", url: "/.netlify/functions/getPaymentsBatch" }
+        { id: "totalStudents", url: "/.netlify/functions/fetchStudents", body: { grade: "all" } },
+        { id: "averageMarks", url: "/.netlify/functions/fetchMarks", body: { grade: "10", section: "A", exam: "Midterm" } },
+        { id: "totalPayments", url: "/.netlify/functions/getPaymentsBatch", body: { ids: ["student1", "student2"] } },
+        { id: "pendingFees", url: "/.netlify/functions/getPaymentsBatch", body: { ids: ["student1", "student2"] } }
       ];
 
-      for (const { id, url } of endpoints) {
+      for (const { id, url, body } of endpoints) {
         try {
-          const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" } });
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
           const data = await res.json();
-          document.getElementById(id).textContent = data.success ? data.data : "Error";
+          document.getElementById(id).textContent = data.success ? data.data.length || "N/A" : "Error";
         } catch (err) {
           console.error(`Error fetching ${id}:`, err);
           document.getElementById(id).textContent = "Error";
