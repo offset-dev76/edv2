@@ -4,12 +4,12 @@ const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mong
 
 // Schema for exams
 const examSchema = new mongoose.Schema({
-  grade: String,
-  section: String,
-  examName: { type: String, unique: true },
+  grade: { type: String, index: true }, // Add index for efficient querying
+  section: { type: String, index: true }, // Add index for efficient querying
+  examName: { type: String, unique: true, index: true }, // Add unique index
 });
 
-const Exam = mongoose.models.Exam || mongoose.model('Exam', examSchema); // Fix model name
+const Exam = mongoose.models.Exam || mongoose.model('Exam', examSchema);
 
 let isConnected = false;
 
@@ -35,7 +35,8 @@ exports.handler = async function (event) {
   try {
     await connectToDB();
 
-    const exams = await Exam.find({}, { _id: 0, grade: 1, section: 1, examName: 1 });
+    // Use lean() for faster read operations and project only required fields
+    const exams = await Exam.find({}, { grade: 1, section: 1, examName: 1, _id: 0 }).lean();
 
     return {
       statusCode: 200,
