@@ -172,8 +172,8 @@
             background-color: var(--bg-surface);
             border-radius: var(--radius);
             border: var(--border2);
-            overflow: auto;
-            height: 100%;
+            overflow: auto; /* Ensure scrolling within the container */
+            height: calc(100vh - 200px); /* Adjust height to fit the viewport */
             margin: 15px;
         }
 
@@ -208,11 +208,11 @@
         }
 
         thead th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            background-color: var(--primary);
-            color: var(--bg-surface);
+            position: sticky; /* Makes the table headers sticky */
+            top: 0; /* Keeps the header at the top */
+            z-index: 2; /* Ensures the header stays above other elements */
+            background-color: var(--primary); /* Retains the header background color */
+            color: var(--bg-surface); /* Retains the header text color */
             border-radius: 0;
         }
         tbody {
@@ -315,6 +315,10 @@
             outline: none;
             border-color: var(--primary-light); /* Highlight border on focus */
             box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        [data-theme="dark"] tbody {
+            color: var(--text-default); /* Ensure table body text is readable in dark mode */
         }
     </style>
 
