@@ -239,6 +239,23 @@
             align-items: center;
             justify-content: center;
             z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #loadingOverlay img {
+            width: 100px;
+            height: 100px;
+        }
+
+        #loadingOverlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        [data-theme="dark"] #loadingOverlay {
+            background: rgba(0, 0, 0, 0.8);
         }
 
         .spinner {
@@ -382,8 +399,8 @@
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" style="display:none;">
-        <div class="spinner"></div>
+    <div id="loadingOverlay">
+        <img id="loadingImage" src="loading.png" alt="Loading">
     </div>
 
     <script>
@@ -604,26 +621,22 @@
                         Section: section,
                         Stream: (grade === "11" || grade === "12") ? stream : "",
                         Exam: examName,
-                        subjects: {} // Store only non-null subjects
+                        Sub1: null, Sub2: null, Sub3: null, Sub4: null,
+                        Sub5: null, Sub6: null, Sub7: null, Sub8: null
                     };
                 }
 
-                if (marks !== null) {
-                    const subjectMap = getSubjectMap(grade, stream);
-                    const subKey = subjectMap[subject];
-                    if (subKey) {
-                        studentMap[id].subjects[subKey] = marks;
-                    }
+                const subjectMap = getSubjectMap(grade, stream);
+                const subKey = subjectMap[subject];
+                if (subKey) {
+                    studentMap[id][subKey] = marks;
                 }
             });
 
-            // Filter out students with no subjects filled
-            const batch = Object.values(studentMap).filter(student => Object.keys(student.subjects).length > 0);
-
-            if (batch.length === 0) {
-                alert("No marks to save.");
-                return;
-            }
+            // Filter out students with no marks entered for any subject
+            const batch = Object.values(studentMap).filter(student => {
+                return Object.keys(student).some(key => key.startsWith("Sub") && student[key] !== null);
+            });
 
             try {
                 showLoading();
@@ -696,11 +709,17 @@
         });
 
         function showLoading() {
-            document.getElementById("loadingOverlay").style.display = "flex";
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            const loadingImage = document.getElementById("loadingImage");
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+
+            loadingImage.src = currentTheme === "dark" ? "loading2.png" : "loading.png";
+            loadingOverlay.classList.add("show");
         }
 
         function hideLoading() {
-            document.getElementById("loadingOverlay").style.display = "none";
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            loadingOverlay.classList.remove("show");
         }
 
         async function tryFetchAndFillMarks() {
@@ -827,24 +846,24 @@
             examSelect.appendChild(newExamOption);
         }
 
-        // document.getElementById("classSelect").addEventListener("change", filterExams);
-        // document.getElementById("sectionSelect").addEventListener("change", filterExams);
+        document.getElementById("classSelect").addEventListener("change", filterExams);
+        document.getElementById("sectionSelect").addEventListener("change", filterExams);
 
-        // function filterExams() {
-        //     const grade = document.getElementById("classSelect").value;
-        //     const section = document.getElementById("sectionSelect").value;
-        //     const examSelect = document.getElementById("examSelect");
+        function filterExams() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const examSelect = document.getElementById("examSelect");
 
-        //     examSelect.innerHTML = '<option value="">Select Existing Exam</option>';
-        //     exams
-        //         .filter(exam => (!grade || exam.grade === grade) && (!section || exam.section === section))
-        //         .forEach(exam => {
-        //             const option = document.createElement("option");
-        //             option.value = exam.examName;
-        //             option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
-        //             examSelect.appendChild(option);
-        //         });
-        // }
+            examSelect.innerHTML = '<option value="">Select Existing Exam</option>';
+            exams
+                .filter(exam => (!grade || exam.grade === grade) && (!section || exam.section === section))
+                .forEach(exam => {
+                    const option = document.createElement("option");
+                    option.value = exam.examName;
+                    option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
+                    examSelect.appendChild(option);
+                });
+        }
 
         document.getElementById("examSelect").addEventListener("change", async function () {
             const selectedExam = this.value;
