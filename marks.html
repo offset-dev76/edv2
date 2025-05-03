@@ -48,7 +48,7 @@
             min-height: 100vh;
             max-height: 100vh;
             background-color: var(--bg-page);
-            color: var(--text-default);
+            color: var (--text-default);
             font-family: "YDGothic 140 Pro", 'Poppins', sans-serif;
             line-height: 1.5;
         }
@@ -215,6 +215,9 @@
             color: var(--bg-surface);
             border-radius: 0;
         }
+        tbody {
+            color: var (--text-default);
+        }
 
         tr:nth-child(even) {
             background-color: #FBFBFB;
@@ -239,6 +242,24 @@
             align-items: center;
             justify-content: center;
             z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #loadingOverlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #loadingOverlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        [data-theme="dark"] #loadingOverlay {
+            background: rgba(0, 0, 0, 0.8);
         }
 
         .spinner {
@@ -317,6 +338,12 @@
             <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
             </div>
             <div class="controls">
+                <select id="examSelect" onchange="handleExamSelection()">
+                    <option value="">Select Existing Exam</option>
+                    <!-- Dynamic options will be added here -->
+                    <option value="new">Enter New Exam</option>
+                </select>
+
                 <select id="classSelect">
                     <option value="">Select Grade</option>
                     <option value="1">1</option>
@@ -344,17 +371,11 @@
                       <option value="G">G</option>
                 </select>
 
-                <select id="streamSelect" style="display: none; transition: 0.3s;">
+                <select id="streamSelect" style="display: none;">
                     <option value="">Select Stream</option>
                     <option value="Science">Science</option>
                     <option value="Commerce">Commerce</option>
                     <option value="Arts">Arts</option>
-                </select>
-
-                <select id="examSelect" onchange="handleExamSelection()">
-                    <option value="">Select Existing Exam</option>
-                    <!-- Dynamic options will be added here -->
-                    <option value="new">Enter New Exam</option>
                 </select>
 
                 <input type="text" id="examName" placeholder="Enter New Exam Name" style="display: none;">
@@ -382,8 +403,8 @@
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" style="display:none;">
-        <div class="spinner"></div>
+    <div id="loadingOverlay">
+        <img id="loadingImage" src="loading.png" alt="Loading">
     </div>
 
     <script>
@@ -411,23 +432,11 @@
         async function handleClassChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
-            const streamSelect = document.getElementById("streamSelect");
 
             // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
-                streamSelect.style.display = "inline-block";
-                if (section === "A") {
-                    streamSelect.value = "Science";
-                } else if (section === "B") {
-                    streamSelect.value = "Commerce";
-                } else if (section === "C") {
-                    streamSelect.value = "Arts";
-                } else {
-                    streamSelect.value = ""; // Reset if no valid section
-                }
-            } else {
-                streamSelect.style.display = "none";
-                streamSelect.value = "";
+                const stream = getStreamBySection(section);
+                document.getElementById("streamSelect").value = stream;
             }
 
             if (grade) {
@@ -506,7 +515,10 @@
                 headerRow.appendChild(th);
             });
 
-            studentsByClass[grade].forEach(student => {
+            // Sort students by ascending order of student ID
+            const sortedStudents = [...studentsByClass[grade]].sort((a, b) => a.id.localeCompare(b.id));
+
+            sortedStudents.forEach(student => {
                 const row = document.createElement("tr");
                 row.innerHTML = `<td>${student.id}</td><td>${student.name}</td>`;
 
@@ -616,7 +628,10 @@
                 }
             });
 
-            const batch = Object.values(studentMap);
+            // Filter out students with no marks entered for any subject
+            const batch = Object.values(studentMap).filter(student => {
+                return Object.keys(student).some(key => key.startsWith("Sub") && student[key] !== null);
+            });
 
             try {
                 showLoading();
@@ -689,11 +704,17 @@
         });
 
         function showLoading() {
-            document.getElementById("loadingOverlay").style.display = "flex";
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            const loadingImage = document.getElementById("loadingImage");
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+
+            loadingImage.src = currentTheme === "dark" ? "loading2.png" : "loading.png";
+            loadingOverlay.classList.add("show");
         }
 
         function hideLoading() {
-            document.getElementById("loadingOverlay").style.display = "none";
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            loadingOverlay.classList.remove("show");
         }
 
         async function tryFetchAndFillMarks() {
@@ -784,6 +805,9 @@
             document.documentElement.setAttribute("data-theme", savedTheme);
             const toggleButton = document.querySelector(".dark-mode-toggle");
             toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+
+            const streamSelect = document.getElementById("streamSelect");
+            streamSelect.style.display = "none"; // Always hide the stream selector
         });
 
         async function fetchExams() {
@@ -893,6 +917,32 @@
             localStorage.setItem("theme", newTheme); // Save theme to localStorage
             const toggleButton = document.querySelector(".dark-mode-toggle");
             toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
+        }
+
+        document.getElementById("sectionSelect").addEventListener("change", async () => {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+
+            // Automatically select stream for grades 11 and 12 based on section
+            if (grade === "11" || grade === "12") {
+                const stream = getStreamBySection(section);
+                document.getElementById("streamSelect").value = stream;
+            }
+
+            await fetchStudentsForMarks();
+        });
+
+        function getStreamBySection(section) {
+            switch (section) {
+                case "A":
+                    return "Science";
+                case "B":
+                    return "Commerce";
+                case "C":
+                    return "Arts";
+                default:
+                    return "";
+            }
         }
     </script>
 </body>
