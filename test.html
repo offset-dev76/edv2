@@ -245,8 +245,9 @@
         }
 
         #loadingOverlay img {
-            width: 100px;
-            height: 100px;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         #loadingOverlay.show {
@@ -334,6 +335,12 @@
             <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
             </div>
             <div class="controls">
+                <select id="examSelect" onchange="handleExamSelection()">
+                    <option value="">Select Existing Exam</option>
+                    <!-- Dynamic options will be added here -->
+                    <option value="new">Enter New Exam</option>
+                </select>
+
                 <select id="classSelect">
                     <option value="">Select Grade</option>
                     <option value="1">1</option>
@@ -361,17 +368,11 @@
                       <option value="G">G</option>
                 </select>
 
-                <select id="streamSelect" style="display: none; transition: 0.3s;">
+                <select id="streamSelect" style="display: none;">
                     <option value="">Select Stream</option>
                     <option value="Science">Science</option>
                     <option value="Commerce">Commerce</option>
                     <option value="Arts">Arts</option>
-                </select>
-
-                <select id="examSelect" onchange="handleExamSelection()">
-                    <option value="">Select Existing Exam</option>
-                    <!-- Dynamic options will be added here -->
-                    <option value="new">Enter New Exam</option>
                 </select>
 
                 <input type="text" id="examName" placeholder="Enter New Exam Name" style="display: none;">
@@ -428,23 +429,11 @@
         async function handleClassChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
-            const streamSelect = document.getElementById("streamSelect");
 
             // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
-                streamSelect.style.display = "inline-block";
-                if (section === "A") {
-                    streamSelect.value = "Science";
-                } else if (section === "B") {
-                    streamSelect.value = "Commerce";
-                } else if (section === "C") {
-                    streamSelect.value = "Arts";
-                } else {
-                    streamSelect.value = ""; // Reset if no valid section
-                }
-            } else {
-                streamSelect.style.display = "none";
-                streamSelect.value = "";
+                const stream = getStreamBySection(section);
+                document.getElementById("streamSelect").value = stream;
             }
 
             if (grade) {
@@ -810,6 +799,9 @@
             document.documentElement.setAttribute("data-theme", savedTheme);
             const toggleButton = document.querySelector(".dark-mode-toggle");
             toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+
+            const streamSelect = document.getElementById("streamSelect");
+            streamSelect.style.display = "none"; // Always hide the stream selector
         });
 
         async function fetchExams() {
@@ -919,6 +911,32 @@
             localStorage.setItem("theme", newTheme); // Save theme to localStorage
             const toggleButton = document.querySelector(".dark-mode-toggle");
             toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
+        }
+
+        document.getElementById("sectionSelect").addEventListener("change", async () => {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+
+            // Automatically select stream for grades 11 and 12 based on section
+            if (grade === "11" || grade === "12") {
+                const stream = getStreamBySection(section);
+                document.getElementById("streamSelect").value = stream;
+            }
+
+            await fetchStudentsForMarks();
+        });
+
+        function getStreamBySection(section) {
+            switch (section) {
+                case "A":
+                    return "Science";
+                case "B":
+                    return "Commerce";
+                case "C":
+                    return "Arts";
+                default:
+                    return "";
+            }
         }
     </script>
 </body>
