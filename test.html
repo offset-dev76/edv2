@@ -48,7 +48,7 @@
             min-height: 100vh;
             max-height: 100vh;
             background-color: var(--bg-page);
-            color: var(--text-default);
+            color: var (--text-default);
             font-family: "YDGothic 140 Pro", 'Poppins', sans-serif;
             line-height: 1.5;
         }
@@ -512,7 +512,10 @@
                 headerRow.appendChild(th);
             });
 
-            studentsByClass[grade].forEach(student => {
+            // Sort students by ascending order of student ID
+            const sortedStudents = [...studentsByClass[grade]].sort((a, b) => a.id.localeCompare(b.id));
+
+            sortedStudents.forEach(student => {
                 const row = document.createElement("tr");
                 row.innerHTML = `<td>${student.id}</td><td>${student.name}</td>`;
 
