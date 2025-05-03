@@ -837,7 +837,7 @@
             exams.forEach(exam => {
                 const option = document.createElement("option");
                 option.value = exam.examName;
-                option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
+                option.textContent = `${exam.examName}`;
                 examSelect.appendChild(option);
             });
 
