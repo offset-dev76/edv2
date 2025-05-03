@@ -243,24 +243,32 @@
             transition: opacity 0.5s ease-in-out;
         }
 
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #loadingOverlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         #loadingOverlay.show {
-            display: block;
             opacity: 1;
+            visibility: visible;
         }
 
-        .spinner {
-            width: 3rem;
-            height: 3rem;
-            border: 0.5rem solid #eee;
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+        [data-theme="dark"] #loadingOverlay {
+            background: rgba(0, 0, 0, 0.8);
         }
 
         .dark-mode-toggle {
@@ -384,7 +392,9 @@
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay"></div>
+    <div id="loadingOverlay">
+        <img id="loadingImage" src="loading.png" alt="Loading">
+    </div>
 
     <script>
         const subjectsByClass = {
@@ -524,21 +534,18 @@
 
             document.getElementById("marksTable").classList.add("show");
         }
-        function showLoading() {
+ function showLoading() {
             const loadingOverlay = document.getElementById("loadingOverlay");
+            const loadingImage = document.getElementById("loadingImage");
             const currentTheme = document.documentElement.getAttribute("data-theme");
-            loadingOverlay.style.backgroundImage = currentTheme === "dark" 
-                ? "url('loading2.png')" 
-                : "url('loading.png')";
+
+            loadingImage.src = currentTheme === "dark" ? "loading2.png" : "loading.png";
             loadingOverlay.classList.add("show");
         }
 
         function hideLoading() {
             const loadingOverlay = document.getElementById("loadingOverlay");
             loadingOverlay.classList.remove("show");
-            setTimeout(() => {
-                loadingOverlay.style.display = "none";
-            }, 500); // Wait for fade-out transition to complete
         }
 
         async function tryFetchAndFillMarks() {
