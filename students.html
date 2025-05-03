@@ -131,7 +131,11 @@
       align-items: center;
     }
 
-    .controls input, .controls select, .modal-content input, .modal-content select, .modal-form input,
+    .controls input,
+    .controls select,
+    .modal-content input,
+    .modal-content select,
+    .modal-form input,
     .modal-form select {
       background-color: var(--bg-page2);
       color: var(--text-default);
@@ -304,42 +308,42 @@
       margin-top: 1rem;
     }
 
-   #loadingOverlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
 
-        #loadingOverlay img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    #loadingOverlay img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-        #loadingOverlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
+    #loadingOverlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
 
-        [data-theme="dark"] #loadingOverlay {
-            background: rgba(0, 0, 0, 0.8);
-        }
+    [data-theme="dark"] #loadingOverlay {
+      background: rgba(0, 0, 0, 0.8);
+    }
 
-        .spinner {
-            width: 3rem;
-            height: 3rem;
-            border: 0.5rem solid #eee;
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+    .spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 0.5rem solid #eee;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
 
     .dark-mode-toggle {
       background: none;
@@ -369,6 +373,33 @@
       color: var(--text-muted);
       margin-top: 0.5rem;
       display: block;
+    }
+
+    .action-button {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .action-button.edit {
+      background-color: var(--primary);
+      color: var(--bg-surface);
+    }
+
+    .action-button.edit:hover {
+      background-color: var(--primary-light);
+    }
+
+    .action-button.delete {
+      background-color: red;
+      color: var(--bg-surface);
+    }
+
+    .action-button.delete:hover {
+      background-color: darkred;
     }
   </style>
 
@@ -567,9 +598,9 @@
   </div>
 
   <!-- Loading Overlay -->
-      <div id="loadingOverlay">
-        <img id="loadingImage" src="loading.png" alt="Loading">
-    </div>
+  <div id="loadingOverlay">
+    <img id="loadingImage" src="loading.png" alt="Loading">
+  </div>
 
 
 
@@ -590,7 +621,7 @@
       const studentData = {
         name: document.getElementById("studentName").value.trim(),
         id: document.getElementById("admissionNo").value.trim(),
-        class: document.getElementById("studentClass").value.trim(),
+        grade: document.getElementById("studentClass").value.trim(),
         section: document.getElementById("studentSection").value.trim(),
         language: document.getElementById("language").value.trim(),
         parentPhone: document.getElementById("parentPhone").value.trim(),
@@ -673,8 +704,8 @@
               <td style="display: ${isSeniorGrade ? "" : "none"};">${student.stream || ""}</td>
               <td>${student.phone}</td>
               <td>
-                <button onclick="openEditModal(${student.id})">Edit</button>
-                <button onclick="openDeleteModal(${student.id})">Delete</button>
+                <button class="action-button edit" onclick="openEditModal(${student.id})">Edit</button>
+                <button class="action-button delete" onclick="openDeleteModal(${student.id})">Delete</button>
               </td>
             `;
             tbody.appendChild(row);
@@ -710,27 +741,27 @@
           <td>${student.stream}</td>
           <td>${student.phone}</td>
           <td>
-            <button onclick="openEditModal(${student.id})">Edit</button>
-            <button onclick="openDeleteModal(${student.id})">Delete</button>
+            <button class="action-button edit" onclick="openEditModal(${student.id})">Edit</button>
+            <button class="action-button delete" onclick="openDeleteModal(${student.id})">Delete</button>
           </td>
         `;
         tbody.appendChild(row);
       });
     }
 
-function showLoading() {
-            const loadingOverlay = document.getElementById("loadingOverlay");
-            const loadingImage = document.getElementById("loadingImage");
-            const currentTheme = document.documentElement.getAttribute("data-theme");
+    function showLoading() {
+      const loadingOverlay = document.getElementById("loadingOverlay");
+      const loadingImage = document.getElementById("loadingImage");
+      const currentTheme = document.documentElement.getAttribute("data-theme");
 
-            loadingImage.src = currentTheme === "dark" ? "loading2.png" : "loading.png";
-            loadingOverlay.classList.add("show");
-        }
+      loadingImage.src = currentTheme === "dark" ? "loading2.png" : "loading.png";
+      loadingOverlay.classList.add("show");
+    }
 
-        function hideLoading() {
-            const loadingOverlay = document.getElementById("loadingOverlay");
-            loadingOverlay.classList.remove("show");
-        }
+    function hideLoading() {
+      const loadingOverlay = document.getElementById("loadingOverlay");
+      loadingOverlay.classList.remove("show");
+    }
 
     // Initialize theme from localStorage
     document.addEventListener("DOMContentLoaded", () => {
@@ -781,15 +812,15 @@ function showLoading() {
       if (!student) return;
 
       currentEditStudentId = studentId;
-      document.getElementById("studentName").value = student.name;
-      document.getElementById("admissionNo").value = student.id;
-      document.getElementById("studentClass").value = student.grade;
-      document.getElementById("studentSection").value = student.section;
-      document.getElementById("language").value = student.language;
-      document.getElementById("parentPhone").value = student.phone;
-      document.getElementById("email").value = student.parentEmail;
-      document.getElementById("group").value = student.stream || "";
-      document.getElementById("academicYear").value = student.academicYear;
+      document.getElementById("editStudentModal").querySelector("#studentName").value = student.name;
+      document.getElementById("editStudentModal").querySelector("#admissionNo").value = student.id;
+      document.getElementById("editStudentModal").querySelector("#studentClass").value = student.grade;
+      document.getElementById("editStudentModal").querySelector("#studentSection").value = student.section;
+      document.getElementById("editStudentModal").querySelector("#language").value = student.language;
+      document.getElementById("editStudentModal").querySelector("#parentPhone").value = student.phone;
+      document.getElementById("editStudentModal").querySelector("#email").value = student.parentEmail;
+      document.getElementById("editStudentModal").querySelector("#group").value = student.stream || "";
+      document.getElementById("editStudentModal").querySelector("#academicYear").value = student.academicYear;
 
       toggleGroupField();
       document.getElementById("editStudentModal").style.display = "flex";
@@ -806,7 +837,7 @@ function showLoading() {
       const updatedStudentData = {
         id: currentEditStudentId,
         name: document.getElementById("studentName").value.trim(),
-        class: document.getElementById("studentClass").value.trim(),
+        grade: document.getElementById("studentClass").value.trim(),
         section: document.getElementById("studentSection").value.trim(),
         language: document.getElementById("language").value.trim(),
         parentPhone: document.getElementById("parentPhone").value.trim(),
