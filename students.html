@@ -704,7 +704,8 @@
               <td style="display: ${isSeniorGrade ? "" : "none"};">${student.stream || ""}</td>
               <td>${student.phone}</td>
               <td>
-                <button class="action-button edit" onclick="openEditModal(${student.id})">Edit</button>
+                <button class="action-button edit" onclick="openEditModal(${student.id})">Edit</button></td>
+              <td>
                 <button class="action-button delete" onclick="openDeleteModal(${student.id})">Delete</button>
               </td>
             `;
@@ -741,7 +742,8 @@
           <td>${student.stream}</td>
           <td>${student.phone}</td>
           <td>
-            <button class="action-button edit" onclick="openEditModal(${student.id})">Edit</button>
+            <button class="action-button edit" onclick="openEditModal(${student.id})">Edit</button></td>
+          <td>
             <button class="action-button delete" onclick="openDeleteModal(${student.id})">Delete</button>
           </td>
         `;
