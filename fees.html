@@ -742,6 +742,7 @@
       const body = {
         dueAmount: parseFloat(document.getElementById("dueAmount").value),
         dueDate: document.getElementById("dueDate").value,
+        name: document.getElementById("studentNameSelectDue").value,
         note: document.getElementById("dueNote").value || null,
         studentId: isBatchUpdate ? null : document.getElementById("studentIdDue").value,
         grade: isBatchUpdate ? document.getElementById("classSelect").value : null,
