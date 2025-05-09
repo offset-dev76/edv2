@@ -421,17 +421,13 @@
 
         document.getElementById("classSelect").addEventListener("change", handleClassChange);
         document.getElementById("sectionSelect").addEventListener("change", fetchStudentsForMarks);
-        document.getElementById("streamSelect").addEventListener("change", handleStreamChange);
 
         async function handleClassChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
 
-            // Automatically select stream for grades 11 and 12 based on section
-            if (grade === "11" || grade === "12") {
-                const stream = getStreamBySection(section);
-                document.getElementById("streamSelect").value = stream;
-            }
+            // Automatically set stream for grades 11 and 12 based on section
+            const stream = getStreamBySection(grade, section);
 
             if (grade) {
                 showLoading();
@@ -440,14 +436,20 @@
             }
         }
 
-        async function handleStreamChange() {
-            const grade = document.getElementById("classSelect").value;
-            const streamVal = document.getElementById("streamSelect").value;
-
-            // Re-render the table to update subjects based on the selected stream
+        function getStreamBySection(grade, section) {
             if (grade === "11" || grade === "12") {
-                renderMarksTable();
+                switch (section) {
+                    case "A":
+                        return "Science";
+                    case "B":
+                        return "Commerce";
+                    case "C":
+                        return "Arts";
+                    default:
+                        return "";
+                }
             }
+            return ""; // No stream for grades below 11
         }
 
         async function fetchStudentsForMarks() {
@@ -483,7 +485,7 @@
 
         function renderMarksTable() {
             const grade = document.getElementById("classSelect").value;
-            const stream = document.getElementById("streamSelect").value;
+            const stream = getStreamBySection(grade, document.getElementById("sectionSelect").value);
             const headerRow = document.getElementById("marksHeader");
             const tableBody = document.querySelector("#marksTable tbody");
 
@@ -562,7 +564,7 @@
         async function saveMarks() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
-            const stream = document.getElementById("streamSelect").value;
+            const stream = getStreamBySection(grade, section); // Set stream directly based on logic
             const examSelect = document.getElementById("examSelect").value;
             const examNameInput = document.getElementById("examName").value.trim();
             const examName = examSelect === "new" ? examNameInput : examSelect; // Use new exam name if "Enter New Exam" is selected
@@ -579,7 +581,7 @@
             }
 
             if ((grade === "11" || grade === "12") && !stream) {
-                alert("Please select a stream.");
+                alert("Invalid stream selection.");
                 return;
             }
 
@@ -719,7 +721,7 @@
         async function tryFetchAndFillMarks() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
-            const stream = document.getElementById("streamSelect").value;
+            const stream = getStreamBySection(grade, section);
             const examSelect = document.getElementById("examSelect").value;
             const examNameInput = document.getElementById("examName").value.trim();
 
