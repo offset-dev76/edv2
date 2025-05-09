@@ -480,6 +480,8 @@
 
         <input type="date" id="dueDate" required>
 
+        <input type="text" id="dueNote" placeholder="Note (optional)">
+
         <button type="submit">Submit</button>
       </form>
       <p id="dueMessage"></p>
@@ -571,7 +573,9 @@
       <td>${student.stream || '-'}</td>
       <td>${student.phone}</td>
       <td>₹${totalPaid}</td>
-      <td style="color: ${isOverdue ? 'red' : 'inherit'};">₹${dueAmountDisplay}</td>
+      <td style="color: ${isOverdue ? 'red' : 'inherit'};">
+        <a href="#" onclick="viewDueDetails('${student.id}')">₹${dueAmountDisplay}</a>
+      </td>
       <td style="color: ${isOverdue ? 'red' : 'inherit'};">${dueDateDisplay}</td>
       </tr>`;
       }
@@ -706,6 +710,29 @@
       document.getElementById("studentIdDue").value = name === "all" ? '' : (student ? student.id : '');
     }
 
+    function viewDueDetails(studentId) {
+      const student = studentsList.find(s => s.id === studentId);
+      if (!student) return;
+
+      const modalContent = `
+        <h3>Due Details</h3>
+        <p><strong>Due Amount:</strong> ₹${student.dueAmount || '-'}</p>
+        <p><strong>Due Date:</strong> ${student.dueDate ? new Date(student.dueDate).toLocaleDateString() : '-'}</p>
+        <p><strong>Note:</strong> ${student.note || 'No note provided'}</p>
+      `;
+
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.display = 'block';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+          ${modalContent}
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
     document.getElementById("addDueForm").addEventListener("submit", async function (e) {
       e.preventDefault();
       showLoading();
@@ -715,9 +742,10 @@
       const body = {
         dueAmount: parseFloat(document.getElementById("dueAmount").value),
         dueDate: document.getElementById("dueDate").value,
+        note: document.getElementById("dueNote").value || null,
         studentId: isBatchUpdate ? null : document.getElementById("studentIdDue").value,
-        grade: isBatchUpdate ? document.getElementById("classSelect").value : null, // Use main class
-        section: isBatchUpdate ? document.getElementById("sectionSelect").value : null, // Use main section
+        grade: isBatchUpdate ? document.getElementById("classSelect").value : null,
+        section: isBatchUpdate ? document.getElementById("sectionSelect").value : null,
       };
 
       const res = await fetch("/.netlify/functions/addDue", {
