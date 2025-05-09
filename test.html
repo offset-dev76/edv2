@@ -342,12 +342,6 @@
             <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
             </div>
             <div class="controls">
-                <select id="examSelect" onchange="handleExamSelection()">
-                    <option value="">Select Existing Exam</option>
-                    <!-- Dynamic options will be added here -->
-                    <option value="new">Enter New Exam</option>
-                </select>
-
                 <select id="classSelect">
                     <option value="">Select Grade</option>
                     <option value="1">1</option>
@@ -364,28 +358,25 @@
                     <option value="12">12</option>
                 </select>
 
-                  <select id="sectionSelect">
-                      <option value="">Select Section</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
-                      <option value="E">E</option>
-                      <option value="F">F</option>
-                      <option value="G">G</option>
+                <select id="sectionSelect">
+                    <option value="">Select Section</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="G">G</option>
                 </select>
 
-                <select id="streamSelect" style="display: none;">
-                    <option value="">Select Stream</option>
-                    <option value="Science">Science</option>
-                    <option value="Commerce">Commerce</option>
-                    <option value="Arts">Arts</option>
+                <select id="examSelect" onchange="handleExamSelection()" disabled>
+                    <option value="">Select Existing Exam</option>
+                    <option value="new">Enter New Exam</option>
                 </select>
 
                 <input type="text" id="examName" placeholder="Enter New Exam Name" style="display: none;">
                 <button class="btn-save" onclick="saveMarks()">Save</button>
                 <button class="btn-print" onclick="window.print()">Print</button>
-        
             </div>
         </div>
 
