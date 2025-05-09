@@ -14,6 +14,7 @@ const studentSchema = new mongoose.Schema({
   academicYear: String,
   dueAmount: Number,
   dueDate: Date,
+  note: String, // Added note field
 });
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
@@ -43,7 +44,7 @@ exports.handler = async function (event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const { studentId, dueAmount, dueDate, grade, section } = data;
+    const { studentId, dueAmount, dueDate, grade, section, note } = data;
 
     if (!dueAmount || !dueDate) {
       return {
@@ -63,6 +64,7 @@ exports.handler = async function (event) {
       }
       student.dueAmount = dueAmount;
       student.dueDate = new Date(dueDate);
+      student.note = note || null; // Update note
       await student.save();
     } else {
       // Bulk update for a specific class and section
@@ -78,7 +80,7 @@ exports.handler = async function (event) {
         filter.section = section;
       }
 
-      await Student.updateMany(filter, { dueAmount, dueDate: new Date(dueDate) });
+      await Student.updateMany(filter, { dueAmount, dueDate: new Date(dueDate), note: note || null });
     }
 
     return {
