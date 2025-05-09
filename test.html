@@ -207,7 +207,7 @@
             cursor: pointer;
         }
 
-        thead th {
+        .table-headerM {
             position: sticky; /* Makes the table headers sticky */
             top: 0; /* Keeps the header at the top */
             z-index: 2; /* Ensures the header stays above other elements */
@@ -320,35 +320,6 @@
         [data-theme="dark"] tbody {
             color: var(--text-default); /* Ensure table body text is readable in dark mode */
         }
-
-        .table-header {
-            display: grid; /* Use grid layout for proper alignment */
-            grid-template-columns: 0.5fr 1.5fr repeat(auto-fit, 1fr); /* Adjust column widths */
-            background-color: var(--primary);
-            color: var(--bg-surface);
-            font-weight: 600;
-            padding: 0.75rem 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        }
-
-        .table-header div {
-            text-align: left;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-        #marksHeaderRow {
-            display: flex; /* Use grid layout for proper alignment */
-            flex-direction: row;
-            background-color: var(--primary);
-            color: var(--bg-surface);
-            font-weight: 600;
-            padding: 0.75rem 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        } 
     </style>
 
 </head>
@@ -419,11 +390,11 @@
         </div>
 
         <div class="table-container">
-            <!-- Separate header element -->
-            <div id="tableHeader" class="table-header">
-                <div id="marksHeaderRow">
-                    <!-- Dynamic header cells will be added here -->
-                </div>
+            <div class="table-headerM" style="position: sticky;">
+                <tr id="marksHeader">
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                </tr>
             </div>
             <table id="marksTable">
                 <tbody>
@@ -559,11 +530,11 @@
         function renderMarksTable() {
             const grade = document.getElementById("classSelect").value;
             const stream = document.getElementById("streamSelect").value;
-            const headerRow = document.getElementById("marksHeaderRow");
+            const headerRow = document.getElementById("marksHeader");
             const tableBody = document.querySelector("#marksTable tbody");
     
-            headerRow.innerHTML = ""; // Clear the separate header
-            tableBody.innerHTML = ""; // Clear the table body
+            headerRow.innerHTML = "<th>Student ID</th><th>Student Name</th>";
+            tableBody.innerHTML = "";
     
             if (!grade || !studentsByClass[grade]) {
                 document.getElementById("marksTable").classList.remove("show");
@@ -578,19 +549,10 @@
                 subjects = subjectsByClass[grade]?.[stream] || [];
             }
     
-            // Create header cells for the separate header
-            const idHeader = document.createElement("div");
-            idHeader.textContent = "Student ID";
-            headerRow.appendChild(idHeader);
-    
-            const nameHeader = document.createElement("div");
-            nameHeader.textContent = "Student Name";
-            headerRow.appendChild(nameHeader);
-    
             subjects.forEach(sub => {
-                const subHeader = document.createElement("div");
-                subHeader.textContent = sub;
-                headerRow.appendChild(subHeader);
+                const th = document.createElement("th");
+                th.textContent = sub;
+                headerRow.appendChild(th);
             });
     
             // Sort students by ascending order of student ID
