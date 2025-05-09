@@ -704,9 +704,8 @@
               <td style="display: ${isSeniorGrade ? "" : "none"};">${student.stream || ""}</td>
               <td>${student.phone}</td>
               <td>
-                <button class="action-button edit" onclick="openEditModal(${student.id})">Edit</button></td>
-              <td>
-                <button class="action-button delete" onclick="openDeleteModal(${student.id})">Delete</button>
+                <button class="action-button edit" onclick="openEditModal('${student.id}')">Edit</button>
+                <button class="action-button delete" onclick="openDeleteModal('${student.id}')">Delete</button>
               </td>
             `;
             tbody.appendChild(row);
@@ -742,9 +741,8 @@
           <td>${student.stream}</td>
           <td>${student.phone}</td>
           <td>
-            <button class="action-button edit" onclick="openEditModal(${student.id})">Edit</button></td>
-          <td>
-            <button class="action-button delete" onclick="openDeleteModal(${student.id})">Delete</button>
+            <button class="action-button edit" onclick="openEditModal('${student.id}')">Edit</button>
+            <button class="action-button delete" onclick="openDeleteModal('${student.id}')">Delete</button>
           </td>
         `;
         tbody.appendChild(row);
@@ -811,21 +809,26 @@
 
     function openEditModal(studentId) {
       const student = studentDataGlobal.find(s => s.id === studentId);
-      if (!student) return;
+      if (!student) {
+        console.error(`Student with ID ${studentId} not found.`);
+        return;
+      }
 
       currentEditStudentId = studentId;
-      document.getElementById("editStudentModal").querySelector("#studentName").value = student.name;
-      document.getElementById("editStudentModal").querySelector("#admissionNo").value = student.id;
-      document.getElementById("editStudentModal").querySelector("#studentClass").value = student.grade;
-      document.getElementById("editStudentModal").querySelector("#studentSection").value = student.section;
-      document.getElementById("editStudentModal").querySelector("#language").value = student.language;
-      document.getElementById("editStudentModal").querySelector("#parentPhone").value = student.phone;
-      document.getElementById("editStudentModal").querySelector("#email").value = student.parentEmail;
-      document.getElementById("editStudentModal").querySelector("#group").value = student.stream || "";
-      document.getElementById("editStudentModal").querySelector("#academicYear").value = student.academicYear;
+      const modal = document.getElementById("editStudentModal");
+
+      modal.querySelector("#studentName").value = student.name;
+      modal.querySelector("#admissionNo").value = student.id;
+      modal.querySelector("#studentClass").value = student.grade;
+      modal.querySelector("#studentSection").value = student.section;
+      modal.querySelector("#language").value = student.language;
+      modal.querySelector("#parentPhone").value = student.phone;
+      modal.querySelector("#email").value = student.parentEmail;
+      modal.querySelector("#group").value = student.stream || "";
+      modal.querySelector("#academicYear").value = student.academicYear;
 
       toggleGroupField();
-      document.getElementById("editStudentModal").style.display = "flex";
+      modal.style.display = "flex";
     }
 
     function closeEditModal() {
