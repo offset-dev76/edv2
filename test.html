@@ -854,7 +854,6 @@
             }
 
             if (grade && section) {
-                await fetchExamsForClassAndSection(grade, section); // Fetch exams for selected class and section
                 document.getElementById("examSelect").disabled = false; // Enable exam dropdown
             } else {
                 document.getElementById("examSelect").disabled = true; // Disable exam dropdown
@@ -868,7 +867,6 @@
             const section = document.getElementById("sectionSelect").value;
 
             if (grade && section) {
-                await fetchExamsForClassAndSection(grade, section); // Fetch exams for selected class and section
                 document.getElementById("examSelect").disabled = false; // Enable exam dropdown
             } else {
                 document.getElementById("examSelect").disabled = true; // Disable exam dropdown
@@ -877,22 +875,6 @@
             await fetchStudentsForMarks();
         });
 
-        async function fetchExamsForClassAndSection(grade, section) {
-            try {
-                const res = await fetch("/.netlify/functions/fetchExams", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ grade, section })
-                });
-                const result = await res.json();
-                if (result.success) {
-                    exams = result.data; // Store fetched exams
-                    populateExamDropdown(); // Populate dropdown with exams for the selected class and section
-                }
-            } catch (err) {
-                console.error("Error fetching exams:", err);
-            }
-        }
 
         function handleExamSelection() {
             const examSelect = document.getElementById("examSelect");
