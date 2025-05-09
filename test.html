@@ -322,7 +322,8 @@
         }
 
         .table-header {
-            display: flex;
+            display: grid; /* Use grid layout for proper alignment */
+            grid-template-columns: 0.5fr 1.5fr repeat(auto-fit, 1fr); /* Adjust column widths */
             background-color: var(--primary);
             color: var(--bg-surface);
             font-weight: 600;
@@ -333,18 +334,9 @@
         }
 
         .table-header div {
-            flex: 1;
             text-align: left;
             padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--border);
-        }
-
-        .table-header div:first-child {
-            flex: 0.5; /* Adjust width for Student ID */
-        }
-
-        .table-header div:nth-child(2) {
-            flex: 1.5; /* Adjust width for Student Name */
         }
     </style>
 
