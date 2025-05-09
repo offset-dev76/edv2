@@ -41,7 +41,7 @@ exports.handler = async function(event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const requiredFields = ['id', 'name', 'class', 'section', 'language', 'parentPhone', 'parentEmail', 'academicYear']; // Include email and admissionNo
+    const requiredFields = ['id', 'name', 'grade', 'section', 'language', 'parentPhone', 'parentEmail', 'academicYear'];
     const missingFields = requiredFields.filter(field => !data[field]);
 
     if (missingFields.length > 0) {
@@ -52,7 +52,7 @@ exports.handler = async function(event) {
     }
 
     // Validate group for classes 11 and 12
-    if ((data.class === '11' || data.class === '12') && !data.group) {
+    if ((data.grade === '11' || data.grade === '12') && !data.group) {
       return {
         statusCode: 400,
         body: JSON.stringify({ success: false, message: 'Group is required for classes 11 and 12' })
@@ -70,7 +70,7 @@ exports.handler = async function(event) {
     const newStudent = new Student({
       id: data.id,
       name: data.name,
-      grade: data.class,
+      grade: data.grade,
       section: data.section,
       language: data.language,
       parentPhone: data.parentPhone,
