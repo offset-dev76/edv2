@@ -807,9 +807,6 @@
             const toggleButton = document.querySelector(".dark-mode-toggle");
             toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
 
-            const streamSelect = document.getElementById("streamSelect");
-            streamSelect.style.display = "none"; // Always hide the stream selector
-
             // Disable exam dropdown initially
             document.getElementById("examSelect").disabled = true;
         });
@@ -855,7 +852,6 @@
             // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
                 const stream = getStreamBySection(section);
-                document.getElementById("streamSelect").value = stream;
             }
 
             if (grade && section) {
@@ -981,7 +977,6 @@
             // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
                 const stream = getStreamBySection(section);
-                document.getElementById("streamSelect").value = stream;
             }
 
             await fetchStudentsForMarks();
