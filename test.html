@@ -320,6 +320,32 @@
         [data-theme="dark"] tbody {
             color: var(--text-default); /* Ensure table body text is readable in dark mode */
         }
+
+        .table-header {
+            display: flex;
+            background-color: var(--primary);
+            color: var(--bg-surface);
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .table-header div {
+            flex: 1;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-header div:first-child {
+            flex: 0.5; /* Adjust width for Student ID */
+        }
+
+        .table-header div:nth-child(2) {
+            flex: 1.5; /* Adjust width for Student Name */
+        }
     </style>
 
 </head>
@@ -390,13 +416,13 @@
         </div>
 
         <div class="table-container">
+            <!-- Separate header element -->
+            <div id="tableHeader" class="table-header">
+                <div id="marksHeaderRow">
+                    <!-- Dynamic header cells will be added here -->
+                </div>
+            </div>
             <table id="marksTable">
-            <thead style="position: sticky;">
-                <tr id="marksHeader">
-                    <th>Student ID</th>
-                    <th>Student Name</th>
-                </tr>
-            </thead>
                 <tbody>
                     <!-- Dynamic Rows -->
                 </tbody>
@@ -530,11 +556,11 @@
         function renderMarksTable() {
             const grade = document.getElementById("classSelect").value;
             const stream = document.getElementById("streamSelect").value;
-            const headerRow = document.getElementById("marksHeader");
+            const headerRow = document.getElementById("marksHeaderRow");
             const tableBody = document.querySelector("#marksTable tbody");
     
-            headerRow.innerHTML = "<th>Student ID</th><th>Student Name</th>";
-            tableBody.innerHTML = "";
+            headerRow.innerHTML = ""; // Clear the separate header
+            tableBody.innerHTML = ""; // Clear the table body
     
             if (!grade || !studentsByClass[grade]) {
                 document.getElementById("marksTable").classList.remove("show");
@@ -549,10 +575,19 @@
                 subjects = subjectsByClass[grade]?.[stream] || [];
             }
     
+            // Create header cells for the separate header
+            const idHeader = document.createElement("div");
+            idHeader.textContent = "Student ID";
+            headerRow.appendChild(idHeader);
+    
+            const nameHeader = document.createElement("div");
+            nameHeader.textContent = "Student Name";
+            headerRow.appendChild(nameHeader);
+    
             subjects.forEach(sub => {
-                const th = document.createElement("th");
-                th.textContent = sub;
-                headerRow.appendChild(th);
+                const subHeader = document.createElement("div");
+                subHeader.textContent = sub;
+                headerRow.appendChild(subHeader);
             });
     
             // Sort students by ascending order of student ID
