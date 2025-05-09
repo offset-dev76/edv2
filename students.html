@@ -697,7 +697,7 @@
         academicYear: document.getElementById("academicYear").value.trim(),
       };
 
-      if (!studentData.name || !studentData.id || !studentData.class || !studentData.section || !studentData.language || !studentData.parentPhone || !studentData.parentEmail) {
+      if (!studentData.name || !studentData.id || !studentData.grade || !studentData.section || !studentData.language || !studentData.parentPhone || !studentData.parentEmail) {
         alert("Please fill out all required fields.");
         hideLoading(); // <--- hide spinner if form validation fails
         return;
@@ -925,20 +925,20 @@
     const requiredFields = ['id', 'name', 'grade', 'section', 'language', 'parentPhone', 'parentEmail', 'academicYear'];
     const missingFields = requiredFields.filter(field => !updatedStudentData[field]);
 
-    if (missingFields.length > 0) {
-        console.error("Missing fields:", missingFields);
-        document.getElementById("message").textContent = "Missing fields: " + missingFields.join(', ');
-        hideLoading();
-        return;
-    }
+    // if (missingFields.length > 0) {
+    //     console.error("Missing fields:", missingFields);
+    //     document.getElementById("message").textContent = "Missing fields: " + missingFields.join(', ');
+    //     hideLoading();
+    //     return;
+    // }
 
-    // Validate group for grades 11 and 12
-    if ((updatedStudentData.grade === '11' || updatedStudentData.grade === '12') && !updatedStudentData.group) {
-        console.error("Validation error: Group is required for grades 11 and 12");
-        document.getElementById("message").textContent = "Group is required for grades 11 and 12";
-        hideLoading();
-        return;
-    }
+    // // Validate group for grades 11 and 12
+    // if ((updatedStudentData.grade === '11' || updatedStudentData.grade === '12') && !updatedStudentData.group) {
+    //     console.error("Validation error: Group is required for grades 11 and 12");
+    //     document.getElementById("message").textContent = "Group is required for grades 11 and 12";
+    //     hideLoading();
+    //     return;
+    // }
 
     try {
         const res = await fetch("/.netlify/functions/addStudent", {
