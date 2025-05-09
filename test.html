@@ -342,12 +342,6 @@
             <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
             </div>
             <div class="controls">
-                <select id="examSelect" onchange="handleExamSelection()">
-                    <option value="">Select Existing Exam</option>
-                    <!-- Dynamic options will be added here -->
-                    <option value="new">Enter New Exam</option>
-                </select>
-
                 <select id="classSelect">
                     <option value="">Select Grade</option>
                     <option value="1">1</option>
@@ -373,6 +367,12 @@
                       <option value="E">E</option>
                       <option value="F">F</option>
                       <option value="G">G</option>
+                </select>
+
+                <select id="examSelect" onchange="handleExamSelection()">
+                    <option value="">Select Existing Exam</option>
+                    <!-- Dynamic options will be added here -->
+                    <option value="new">Enter New Exam</option>
                 </select>
 
                 <select id="streamSelect" style="display: none;">
@@ -841,13 +841,14 @@
         async function fetchExamsForClassSection(grade, section) {
             try {
                 const res = await fetch("/.netlify/functions/fetchExams", {
-                    method: "POST",
+                    method: "POST", // Changed to POST
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ grade, section })
+                    body: JSON.stringify({ grade, section }) // Added request body
                 });
                 const result = await res.json();
                 if (result.success) {
                     exams = result.data; // Store fetched exams
+                    console.log("Fetched exams:", exams); // Added console log for fetched exams
                     populateExamDropdown(); // Populate dropdown with exams for the selected class and section
                     document.getElementById("examSelect").disabled = false; // Enable exam dropdown
                 }
