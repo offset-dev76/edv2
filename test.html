@@ -582,6 +582,11 @@
                 return;
             }
 
+            if (examSelect === "new" && !examNameInput) {
+                alert("Please enter a new exam name.");
+                return;
+            }
+
             if ((grade === "11" || grade === "12") && !stream) {
                 alert("Please select a stream.");
                 return;
@@ -811,6 +816,9 @@
 
             const streamSelect = document.getElementById("streamSelect");
             streamSelect.style.display = "none"; // Always hide the stream selector
+
+            // Disable exam dropdown initially
+            document.getElementById("examSelect").disabled = true;
         });
 
         async function fetchExams() {
@@ -845,6 +853,69 @@
             newExamOption.value = "new";
             newExamOption.textContent = "Enter New Exam";
             examSelect.appendChild(newExamOption);
+        }
+
+        document.getElementById("classSelect").addEventListener("change", async () => {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+
+            // Automatically select stream for grades 11 and 12 based on section
+            if (grade === "11" || grade === "12") {
+                const stream = getStreamBySection(section);
+                document.getElementById("streamSelect").value = stream;
+            }
+
+            if (grade && section) {
+                await fetchExamsForClassAndSection(grade, section); // Fetch exams for selected class and section
+                document.getElementById("examSelect").disabled = false; // Enable exam dropdown
+            } else {
+                document.getElementById("examSelect").disabled = true; // Disable exam dropdown
+            }
+
+            await fetchStudentsForMarks();
+        });
+
+        document.getElementById("sectionSelect").addEventListener("change", async () => {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+
+            if (grade && section) {
+                await fetchExamsForClassAndSection(grade, section); // Fetch exams for selected class and section
+                document.getElementById("examSelect").disabled = false; // Enable exam dropdown
+            } else {
+                document.getElementById("examSelect").disabled = true; // Disable exam dropdown
+            }
+
+            await fetchStudentsForMarks();
+        });
+
+        async function fetchExamsForClassAndSection(grade, section) {
+            try {
+                const res = await fetch("/.netlify/functions/fetchExams", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ grade, section })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    exams = result.data; // Store fetched exams
+                    populateExamDropdown(); // Populate dropdown with exams for the selected class and section
+                }
+            } catch (err) {
+                console.error("Error fetching exams:", err);
+            }
+        }
+
+        function handleExamSelection() {
+            const examSelect = document.getElementById("examSelect");
+            const examNameInput = document.getElementById("examName");
+
+            if (examSelect.value === "new") {
+                examNameInput.style.display = "inline-block"; // Show input box for new exam name
+            } else {
+                examNameInput.style.display = "none"; // Hide input box
+                examNameInput.value = ""; // Clear the input box
+            }
         }
 
         document.getElementById("classSelect").addEventListener("change", filterExams);
@@ -900,18 +971,6 @@
                 await tryFetchAndFillMarks();
             }
         });
-
-        function handleExamSelection() {
-            const examSelect = document.getElementById("examSelect");
-            const examNameInput = document.getElementById("examName");
-
-            if (examSelect.value === "new") {
-                examNameInput.style.display = "inline-block"; // Show input box for new exam name
-            } else {
-                examNameInput.style.display = "none"; // Hide input box
-                examNameInput.value = ""; // Clear the input box
-            }
-        }
 
         function toggleDarkMode() {
             const currentTheme = document.documentElement.getAttribute("data-theme");
