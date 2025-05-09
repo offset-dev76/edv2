@@ -25,18 +25,30 @@ async function connectToDB() {
 }
 
 exports.handler = async function (event) {
-  if (event.httpMethod !== 'GET') {
+  if (event.httpMethod !== 'POST') { // Changed from GET to POST
     return {
       statusCode: 405,
-      body: JSON.stringify({ success: false, message: 'Only GET requests allowed' })
+      body: JSON.stringify({ success: false, message: 'Only POST requests allowed' }) // Updated message
     };
   }
 
   try {
     await connectToDB();
 
+    const data = JSON.parse(event.body); // Parse the request body
+    const { grade, section } = data;
+
+    if (!grade || !section) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ success: false, message: 'Grade and section are required' })
+      };
+    }
+
     // Use lean() for faster read operations and project only required fields
-    const exams = await Exam.find({}, { grade: 1, section: 1, examName: 1, _id: 0 }).lean();
+    const exams = await Exam.find({ grade, section }, { grade: 1, section: 1, examName: 1, _id: 0 }).lean();
+
+    console.log("Fetched exams:", exams); // Added console log for fetched exams
 
     return {
       statusCode: 200,
