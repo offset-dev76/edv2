@@ -902,43 +902,66 @@
       document.getElementById("editStudentModal").style.display = "none";
     }
 
-    document.getElementById("editStudentForm").addEventListener("submit", async function (event) {
-      event.preventDefault();
-      showLoading();
+   document.getElementById("editStudentForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    showLoading();
 
-      const updatedStudentData = {
+    const updatedStudentData = {
         id: currentEditStudentId,
         name: document.getElementById("studentName").value.trim(),
-        grade: document.getElementById("studentClass").value.trim(),
+        grade: document.getElementById("studentClass").value.trim(), // Changed from class to grade
         section: document.getElementById("studentSection").value.trim(),
         language: document.getElementById("language").value.trim(),
         parentPhone: document.getElementById("parentPhone").value.trim(),
         parentEmail: document.getElementById("email").value.trim(),
         group: document.getElementById("group").value.trim(),
         academicYear: document.getElementById("academicYear").value.trim(),
-      };
+    };
 
-      try {
+    // Log the data being sent
+    console.log("Data being sent:", updatedStudentData);
+
+    // Validate required fields
+    const requiredFields = ['id', 'name', 'grade', 'section', 'language', 'parentPhone', 'parentEmail', 'academicYear'];
+    const missingFields = requiredFields.filter(field => !updatedStudentData[field]);
+
+    if (missingFields.length > 0) {
+        console.error("Missing fields:", missingFields);
+        document.getElementById("message").textContent = "Missing fields: " + missingFields.join(', ');
+        hideLoading();
+        return;
+    }
+
+    // Validate group for grades 11 and 12
+    if ((updatedStudentData.grade === '11' || updatedStudentData.grade === '12') && !updatedStudentData.group) {
+        console.error("Validation error: Group is required for grades 11 and 12");
+        document.getElementById("message").textContent = "Group is required for grades 11 and 12";
+        hideLoading();
+        return;
+    }
+
+    try {
         const res = await fetch("/.netlify/functions/addStudent", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedStudentData),
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedStudentData),
         });
 
         const result = await res.json();
         document.getElementById("message").textContent = result.message;
 
         if (result.success) {
-          closeEditModal();
-          await fetchStudents();
+            closeEditModal();
+            await fetchStudents();
         }
-      } catch (err) {
+    } catch (err) {
         console.error("Error updating student:", err);
         document.getElementById("message").textContent = "Error updating student.";
-      }
+    }
 
-      hideLoading();
-    });
+    hideLoading();
+});
+
 
     let currentDeleteStudentId = null;
 
