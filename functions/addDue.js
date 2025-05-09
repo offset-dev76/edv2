@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 const studentSchema = new mongoose.Schema({
-  studentId: { type: String, unique: true },
+  id: { type: String, unique: true },
   name: String,
   grade: String,
   section: String,
@@ -55,7 +55,7 @@ exports.handler = async function (event) {
 
     if (studentId) {
       // Update a single student
-      const student = await Student.findOne({ studentId: studentId });
+      const student = await Student.findOne({ id: studentId });
       if (!student) {
         return {
           statusCode: 404,
