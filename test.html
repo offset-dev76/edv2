@@ -446,7 +446,7 @@
                     case "C":
                         return "Arts";
                     default:
-                        return "";
+                        return ""; // Return an empty string if no valid section is selected
                 }
             }
             return ""; // No stream for grades below 11
@@ -455,6 +455,7 @@
         async function fetchStudentsForMarks() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
+            const stream = getStreamBySection(grade, section); // Get the stream based on grade and section
 
             if (!grade || !section) return; // Ensure both grade and section are selected
 
@@ -470,7 +471,7 @@
 
                 if (result.success && result.data.length > 0) {
                     studentsByClass[grade] = result.data.filter(s => s.section === section);
-                    renderMarksTable();
+                    renderMarksTable(grade, stream); // Pass the stream to renderMarksTable
                     tryFetchAndFillMarks();
                 } else {
                     alert("No students found.");
@@ -483,9 +484,7 @@
             }
         }
 
-        function renderMarksTable() {
-            const grade = document.getElementById("classSelect").value;
-            const stream = getStreamBySection(grade, document.getElementById("sectionSelect").value);
+        function renderMarksTable(grade, stream) {
             const headerRow = document.getElementById("marksHeader");
             const tableBody = document.querySelector("#marksTable tbody");
 
@@ -936,24 +935,6 @@
                 // Populate grade and section
                 document.getElementById("classSelect").value = examDetails.grade;
                 document.getElementById("sectionSelect").value = examDetails.section;
-
-                // Automatically select stream for grades 11 and 12
-                const streamSelect = document.getElementById("streamSelect");
-                if (examDetails.grade === "11" || examDetails.grade === "12") {
-                    streamSelect.style.display = "inline-block";
-                    if (examDetails.section === "A") {
-                        streamSelect.value = "Science";
-                    } else if (examDetails.section === "B") {
-                        streamSelect.value = "Commerce";
-                    } else if (examDetails.section === "C") {
-                        streamSelect.value = "Arts";
-                    } else {
-                        streamSelect.value = ""; // Reset if no valid section
-                    }
-                } else {
-                    streamSelect.style.display = "none";
-                    streamSelect.value = "";
-                }
 
                 // Trigger fetch for students and marks
                 await fetchStudentsForMarks();
