@@ -21,13 +21,36 @@ exports.handler = async function (event, context) {
         await client.connect();
         const db = client.db(dbName);
         const payments = db.collection("payments");
+        const students = db.collection("students");
 
+        // Fetch the student's current due amount
+        const student = await students.findOne({ studentId: data.studentId });
+        if (!student) {
+            return {
+                statusCode: 404,
+                body: JSON.stringify({ success: false, message: "Student not found" }),
+            };
+        }
+
+        // Calculate the new due amount
+        const currentDue = student.dueAmount || 0;
+        const paymentAmount = parseFloat(data.amount);
+        const newDue = Math.max(0, currentDue - paymentAmount); // Ensure due does not go below 0
+
+        // Add the payment record
         await payments.insertOne({
             studentId: data.studentId,
-            amount: parseFloat(data.amount),
+            amount: paymentAmount,
             date: new Date(data.date),
             mode: data.mode,
+            reference: data.reference || null,
         });
+
+        // Update the student's due amount
+        await students.updateOne(
+            { studentId: data.studentId },
+            { $set: { dueAmount: newDue } }
+        );
 
         return {
             statusCode: 200,
