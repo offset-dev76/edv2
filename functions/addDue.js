@@ -3,18 +3,17 @@ const mongoose = require('mongoose');
 const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 const studentSchema = new mongoose.Schema({
-  id: { type: String, unique: true },
+  studentId: { type: String, unique: true },
   name: String,
   grade: String,
   section: String,
-  language: String,
-  parentPhone: String,
-  parentEmail: String,
-  group: String,
-  academicYear: String,
-  dueAmount: Number,
-  dueDate: Date,
-  note: String, // Added note field
+  dues: [
+    {
+      dueAmount: Number,
+      dueDate: Date,
+      note: String,
+    },
+  ],
 });
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
@@ -44,44 +43,26 @@ exports.handler = async function (event) {
     await connectToDB();
 
     const data = JSON.parse(event.body);
-    const { studentId, dueAmount, dueDate, grade, section, note } = data;
+    const { studentId, dueAmount, dueDate, note } = data;
 
-    if (!dueAmount || !dueDate) {
+    if (!dueAmount || !dueDate || !note) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ success: false, message: 'Due amount and due date are required' }),
+        body: JSON.stringify({ success: false, message: 'Due amount, due date, and note are required' }),
       };
     }
 
-    if (studentId) {
-      // Update a single student
-      const student = await Student.findOne({ id: studentId });
-      if (!student) {
-        return {
-          statusCode: 404,
-          body: JSON.stringify({ success: false, message: 'Student not found' }),
-        };
-      }
-      student.dueAmount = dueAmount;
-      student.dueDate = new Date(dueDate);
-      student.note = note || null; // Update note
-      await student.save();
-    } else {
-      // Bulk update for a specific class and section
-      if (!grade) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({ success: false, message: 'Class is required for bulk updates' }),
-        };
-      }
-
-      const filter = { class: grade };
-      if (section) {
-        filter.section = section;
-      }
-
-      await Student.updateMany(filter, { dueAmount, dueDate: new Date(dueDate), note: note || null });
+    const student = await Student.findOne({ studentId });
+    if (!student) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ success: false, message: 'Student not found' }),
+      };
     }
+
+    // Add the new due to the dues array
+    student.dues.push({ dueAmount, dueDate: new Date(dueDate), note });
+    await student.save();
 
     return {
       statusCode: 200,
