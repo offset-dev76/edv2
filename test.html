@@ -519,7 +519,7 @@
     const res = await fetch('/.netlify/functions/fetchStudents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ grade }) // Changed from 'class' to 'grade'
+      body: JSON.stringify({ grade }),
     });
 
     const result = await res.json();
@@ -538,26 +538,19 @@
     // Populate dropdown for Add Payment modal
     const dropdownPayment = document.getElementById("studentNameSelect");
     dropdownPayment.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
-      filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+      filtered.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 
     // Populate dropdown for Add Due modal
     const dropdownDue = document.getElementById("studentNameSelectDue");
     dropdownDue.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
-      '<option value="all">All Students</option>' + // Added All Students option
-      filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+      '<option value="all">All Students</option>' +
+      filtered.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 
-    // Fetch dues for all students and create a reference table
-    const studentIds = filtered.map(s => s.id);
-    const duesRes = await fetch('/.netlify/functions/fetchDues', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: studentIds }),
+    // Create a reference table for dues directly from the student data
+    duesReference = {};
+    filtered.forEach(student => {
+      duesReference[student.id] = student.dues || [];
     });
-
-    const duesResult = await duesRes.json();
-    if (duesResult.success) {
-      duesReference = duesResult.data; // Store dues in the reference table
-    }
 
     let tableHTML = `<table><thead><tr>
       <th>ID</th><th>Name</th><th>Class</th><th>Section</th>
