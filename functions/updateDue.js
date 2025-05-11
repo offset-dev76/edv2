@@ -4,7 +4,13 @@ const uri = "mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mong
 
 const studentSchema = new mongoose.Schema({
   studentId: { type: String, unique: true },
-  dueAmount: Number,
+  dues: [
+    {
+      dueAmount: Number,
+      dueDate: Date,
+      note: String,
+    },
+  ],
 });
 
 const Student = mongoose.models.Student || mongoose.model("Student", studentSchema);
@@ -33,12 +39,12 @@ exports.handler = async function (event) {
   try {
     await connectToDB();
 
-    const { studentId, dueAmount } = JSON.parse(event.body);
+    const { studentId, payments } = JSON.parse(event.body);
 
-    if (!studentId || dueAmount === undefined) {
+    if (!studentId || !payments || !Array.isArray(payments)) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ success: false, message: "Student ID and due amount are required" }),
+        body: JSON.stringify({ success: false, message: "Student ID and payments are required" }),
       };
     }
 
@@ -50,15 +56,21 @@ exports.handler = async function (event) {
       };
     }
 
-    student.dueAmount = dueAmount;
+    // Deduct payments from the specified dues
+    payments.forEach(({ dueIndex, amount }) => {
+      if (student.dues[dueIndex]) {
+        student.dues[dueIndex].dueAmount = Math.max(0, student.dues[dueIndex].dueAmount - amount);
+      }
+    });
+
     await student.save();
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, message: "Due amount updated successfully" }),
+      body: JSON.stringify({ success: true, message: "Dues updated successfully" }),
     };
   } catch (err) {
-    console.error("Error updating due amount:", err);
+    console.error("Error updating dues:", err);
     return {
       statusCode: 500,
       body: JSON.stringify({ success: false, message: "Server error" }),
