@@ -52,7 +52,8 @@ exports.handler = async function (event) {
       };
     }
 
-    const student = await Student.findOne({ studentId });
+    // Use `id` instead of `studentId` to query the database
+    const student = await Student.findOne({ id: studentId });
     if (!student) {
       return {
         statusCode: 404,
