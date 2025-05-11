@@ -426,12 +426,19 @@
       <h3>Add Payment</h3>
       <br>
       <form id="paymentForm">
-        <select id="studentNameSelect" required onchange="populateStudentId()">
+        <select id="studentNameSelect" required onchange="populateStudentIdAndDues()">
           <option value="" disabled selected>Select Student Name</option>
           <!-- Options will be dynamically populated -->
         </select>
 
         <input type="text" id="studentId" placeholder="Student ID" disabled>
+
+        <div id="dueSelectionContainer">
+          <label>Select Dues:</label>
+          <div id="dueCheckboxes">
+            <!-- Checkboxes for dues will be dynamically populated -->
+          </div>
+        </div>
 
         <input type="number" id="amountPaid" placeholder="Amount Paid" required>
 
@@ -649,24 +656,28 @@
       e.preventDefault();
       showLoading();
 
+      const selectedDues = Array.from(document.querySelectorAll("#dueCheckboxes input:checked")).map(cb => parseInt(cb.value));
       const body = {
         studentId: document.getElementById("studentId").value,
         amount: parseFloat(document.getElementById("amountPaid").value),
         date: document.getElementById("paymentDate").value,
         mode: document.getElementById("paymentMode").value,
-        reference: document.getElementById("referenceNumber").value || null
+        reference: document.getElementById("referenceNumber").value || null,
+        selectedDues, // Send selected dues indices
       };
 
       const res = await fetch("/.netlify/functions/addPayment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
 
       const result = await res.json();
       if (result.success) {
         closeAddPaymentModal();
         await loadStudents();
+      } else {
+        document.getElementById("message").textContent = result.message || "Failed to record payment.";
       }
       hideLoading();
     });
@@ -692,6 +703,34 @@
       const name = document.getElementById("studentNameSelect").value;
       const student = studentsList.find(s => s.name === name);
       document.getElementById("studentId").value = student ? student.id : '';
+    }
+
+    function populateStudentIdAndDues() {
+      const name = document.getElementById("studentNameSelect").value;
+      const student = studentsList.find(s => s.name === name);
+      document.getElementById("studentId").value = student ? student.id : '';
+
+      const dueCheckboxes = document.getElementById("dueCheckboxes");
+      dueCheckboxes.innerHTML = ''; // Clear existing checkboxes
+
+      if (student && student.dues && student.dues.length) {
+        student.dues.forEach((due, index) => {
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.id = `due${index}`;
+          checkbox.value = index;
+
+          const label = document.createElement("label");
+          label.htmlFor = `due${index}`;
+          label.textContent = `Due${index + 1} (${due.note || "No Note"}) - ₹${due.dueAmount}`;
+
+          const container = document.createElement("div");
+          container.appendChild(checkbox);
+          container.appendChild(label);
+
+          dueCheckboxes.appendChild(container);
+        });
+      }
     }
 
     function openAddDueModal() {
