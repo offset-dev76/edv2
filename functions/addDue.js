@@ -59,7 +59,7 @@ exports.handler = async function (event) {
 
     if (studentId) {
       // Update a single student
-      const student = await Student.findOne({ studentId: studentId });
+      const student = await Student.findOne({ id: studentId }); // Changed from studentId to id
       if (!student) {
         return {
           statusCode: 404,
