@@ -447,6 +447,8 @@
           <option value="Other">Other</option>
         </select>
 
+        <div id="dueCheckboxes"></div> <!-- Added for due checkboxes -->
+
         <button type="submit">Submit</button>
       </form>
       <p id="message"></p>
@@ -490,6 +492,7 @@
 
   <script>
     let studentsList = [];
+    let duesReference = {}; // Reference table to link students and their dues
 
  function showLoading() {
             const loadingOverlay = document.getElementById("loadingOverlay");
@@ -505,86 +508,163 @@
             loadingOverlay.classList.remove("show");
         }
 
-    async function loadStudents() {
-      const grade = document.getElementById('classSelect').value;
-      const sectionVal = document.getElementById('sectionSelect').value;
+  async function loadStudents() {
+    const grade = document.getElementById('classSelect').value;
+    const sectionVal = document.getElementById('sectionSelect').value;
 
-      if (!grade) return alert("Please select a class.");
+    if (!grade) return alert("Please select a class.");
 
-      showLoading();
+    showLoading();
 
-      const res = await fetch('/.netlify/functions/fetchStudents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ grade }) // Changed from 'class' to 'grade'
-      });
+    const res = await fetch('/.netlify/functions/fetchStudents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ grade }) // Changed from 'class' to 'grade'
+    });
 
-      const result = await res.json();
-      if (!result.success) {
-        document.getElementById("studentsTable").innerHTML = `<p class="no-data">Failed to load students.</p>`;
-        hideLoading();
-        return;
-      }
-
-      let filtered = sectionVal
-        ? result.data.filter(s => s.section === sectionVal)
-        : result.data;
-
-      studentsList = filtered;
-
-      // Populate dropdown for Add Payment modal
-      const dropdownPayment = document.getElementById("studentNameSelect");
-      dropdownPayment.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
-        filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-
-      // Populate dropdown for Add Due modal
-      const dropdownDue = document.getElementById("studentNameSelectDue");
-      dropdownDue.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
-        '<option value="all">All Students</option>' + // Added All Students option
-        filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-
-      // Prepare student ID array
-      const studentIds = filtered.map(s => s.id);
-      const paymentsRes = await fetch('/.netlify/functions/getPaymentsBatch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: studentIds })
-      });
-
-      const paymentsData = await paymentsRes.json(); // { [id]: [payments] }
-
-      let tableHTML = `<table><thead><tr>
-    <th>ID</th><th>Name</th><th>Class</th><th>Section</th>
-    <th>Stream</th><th>Phone</th><th>Total Paid</th><th>Fees Due</th><th>Due Date</th></tr></thead><tbody>`;
-
-      for (const student of filtered) {
-        const payments = paymentsData[student.id] || [];
-        const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-        const dueDate = student.dueDate ? new Date(student.dueDate) : null;
-        const isOverdue = dueDate && dueDate < new Date();
-        const dueDateDisplay = dueDate ? dueDate.toLocaleDateString() : '-';
-        const dueAmountDisplay = student.dueAmount || '-';
-
-        tableHTML += `<tr>
-      <td>${student.id}</td>
-      <td><a href="#" onclick="viewHistory('${student.id}')">${student.name}</a></td>
-      <td>${student.grade}</td>
-      <td>${student.section}</td>
-      <td>${student.stream || '-'}</td>
-      <td>${student.phone}</td>
-      <td>₹${totalPaid}</td>
-      <td style="color: ${isOverdue ? 'red' : 'inherit'};">
-        <a href="#" onclick="viewDueDetails('${student.id}')">₹${dueAmountDisplay}</a>
-      </td>
-      <td style="color: ${isOverdue ? 'red' : 'inherit'};">${dueDateDisplay}</td>
-      </tr>`;
-      }
-
-      tableHTML += `</tbody></table>`;
-      document.getElementById("studentsTable").innerHTML = tableHTML;
+    const result = await res.json();
+    if (!result.success) {
+      document.getElementById("studentsTable").innerHTML = `<p class="no-data">Failed to load students.</p>`;
       hideLoading();
+      return;
     }
 
+    let filtered = sectionVal
+      ? result.data.filter(s => s.section === sectionVal)
+      : result.data;
+
+    studentsList = filtered;
+
+    // Populate dropdown for Add Payment modal
+    const dropdownPayment = document.getElementById("studentNameSelect");
+    dropdownPayment.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
+      filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+
+    // Populate dropdown for Add Due modal
+    const dropdownDue = document.getElementById("studentNameSelectDue");
+    dropdownDue.innerHTML = '<option value="" disabled selected>Select Student Name</option>' +
+      '<option value="all">All Students</option>' + // Added All Students option
+      filtered.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+
+    // Fetch dues for all students and create a reference table
+    const studentIds = filtered.map(s => s.id);
+    const duesRes = await fetch('/.netlify/functions/fetchDues', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: studentIds }),
+    });
+
+    const duesResult = await duesRes.json();
+    if (duesResult.success) {
+      duesReference = duesResult.data; // Store dues in the reference table
+    }
+
+    let tableHTML = `<table><thead><tr>
+      <th>ID</th><th>Name</th><th>Class</th><th>Section</th>
+      <th>Stream</th><th>Phone</th><th>Total Due</th></tr></thead><tbody>`;
+
+    for (const student of filtered) {
+      const totalDue = duesReference[student.id]?.reduce((sum, due) => sum + due.dueAmount, 0) || 0;
+
+      tableHTML += `<tr>
+        <td>${student.id}</td>
+        <td>${student.name}</td>
+        <td>${student.grade}</td>
+        <td>${student.section}</td>
+        <td>${student.stream || '-'}</td>
+        <td>${student.phone}</td>
+        <td><a href="#" onclick="viewDues('${student.id}')">₹${totalDue}</a></td>
+      </tr>`;
+    }
+
+    tableHTML += `</tbody></table>`;
+    document.getElementById("studentsTable").innerHTML = tableHTML;
+    hideLoading();
+  }
+
+  function viewDues(studentId) {
+    const student = studentsList.find(s => s.id === studentId);
+    if (!student) return;
+
+    const modalContent = student.dues
+      .map(
+        (due, index) =>
+          `<p><strong>Due ${index + 1}:</strong> ₹${due.dueAmount}, ${new Date(due.dueDate).toLocaleDateString()}, ${due.note}</p>`
+      )
+      .join("");
+
+    const modal = document.createElement("div");
+    modal.className = "modal";
+    modal.style.display = "block";
+    modal.innerHTML = `
+      <div class="modal-content">
+        <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+        <h3>Dues Details</h3>
+        ${modalContent}
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  document.getElementById("paymentForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    showLoading();
+
+    const studentId = document.getElementById("studentId").value;
+    const paymentAmount = parseFloat(document.getElementById("amountPaid").value);
+
+    // Ensure the payment amount is valid
+    if (!paymentAmount || paymentAmount <= 0) {
+      alert("Please enter a valid payment amount.");
+      hideLoading();
+      return;
+    }
+
+    const selectedDues = Array.from(document.querySelectorAll("#dueCheckboxes input:checked")).map((checkbox) => ({
+      dueIndex: parseInt(checkbox.value),
+      amount: paymentAmount,
+    }));
+
+    // Ensure at least one due is selected
+    if (selectedDues.length === 0) {
+      alert("Please select at least one due to apply the payment.");
+      hideLoading();
+      return;
+    }
+
+    const payload = { studentId, payments: selectedDues };
+
+    console.log("Sending payload to updateDue:", payload); // Log the payload for debugging
+
+    const res = await fetch("/.netlify/functions/updateDue", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      closeAddPaymentModal();
+      await loadStudents();
+    } else {
+      document.getElementById("message").textContent = result.message || "Failed to update dues.";
+    }
+    hideLoading();
+  });
+
+  function populateDuesDropdown(studentId) {
+    const student = studentsList.find(s => s.id === studentId);
+    if (!student) return;
+
+    const dueCheckboxes = student.dues
+      .map(
+        (due, index) =>
+          `<label><input type="checkbox" value="${index}"> Due ${index + 1} (${due.note}): ₹${due.dueAmount}</label>`
+      )
+      .join("");
+
+    document.getElementById("dueCheckboxes").innerHTML = dueCheckboxes;
+  }
 
     function populateName() {
       const id = document.getElementById("studentIdSelect").value;
@@ -732,6 +812,7 @@
       const name = document.getElementById("studentNameSelect").value;
       const student = studentsList.find(s => s.name === name);
       document.getElementById("studentId").value = student ? student.id : '';
+      populateDuesDropdown(student.id); // Populate dues dropdown when student is selected
     }
 
     function openAddDueModal() {
