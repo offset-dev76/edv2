@@ -436,13 +436,11 @@
 
             if (grade && section) {
                 showLoading();
-                await Promise.all([
-                    fetchStudentsForMarks(),
-                    fetchExamsForClassSection(grade, section)
-                ]);
+                await fetchExamsForClassSection(grade, section);
                 hideLoading();
             }
         }
+
         async function handleSectionChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
@@ -454,10 +452,7 @@
 
             if (grade && section) {
                 showLoading();
-                await Promise.all([
-                    fetchStudentsForMarks(),
-                    fetchExamsForClassSection(grade, section)
-                ]);
+                await fetchExamsForClassSection(grade, section);
                 hideLoading();
             }
         }
@@ -472,13 +467,9 @@
             }
         }
 
-        async function fetchStudentsForMarks() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
+        async function fetchStudentsForMarks(grade, section) {
+            if (!grade || !section) return;
 
-            if (!grade || !section) return; // Ensure both grade and section are selected
-
-            showLoading();
             try {
                 const res = await fetch("/.netlify/functions/fetchStudents", {
                     method: "POST",
@@ -497,8 +488,6 @@
             } catch (err) {
                 console.error("Error fetching students:", err);
                 alert("Error fetching student data.");
-            } finally {
-                hideLoading();
             }
         }
 
@@ -562,15 +551,9 @@
             loadingOverlay.classList.remove("show");
         }
 
-        async function tryFetchAndFillMarks() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
-            const stream = document.getElementById("streamSelect").value;
-            const examSelect = document.getElementById("examSelect").value;
-
+        async function tryFetchAndFillMarks(grade, section, examSelect) {
             if (!grade || !section || !examSelect) return;
 
-            showLoading();
             try {
                 const res = await fetch("/.netlify/functions/fetchMarks2", {
                     method: "POST",
@@ -582,15 +565,13 @@
 
                 if (result.success && result.data?.length > 0) {
                     const marksData = result.data;
-
+                    const stream = document.getElementById("streamSelect").value;
                     const subjectMap = getSubjectMap(grade, stream);
 
                     const cells = document.querySelectorAll("#marksTable td[data-id]");
-
                     cells.forEach(cell => {
                         const id = cell.getAttribute("data-id");
                         const subject = cell.getAttribute("data-subject");
-
                         const doc = marksData.find(m => m.RollNo === id);
                         if (!doc) return;
 
@@ -602,8 +583,6 @@
                 }
             } catch (err) {
                 console.error("Error in tryFetchAndFillMarks:", err);
-            } finally {
-                hideLoading();
             }
         }
 
