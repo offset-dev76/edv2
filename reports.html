@@ -373,7 +373,7 @@
                     <option value="Arts">Arts</option>
                 </select>
 
-                <select id="examSelect" onchange="tryFetchAndFillMarks()">
+                <select id="examSelect">
                     <option value="">Select Existing Exam</option>
                 </select>
 
@@ -421,27 +421,8 @@
 
         let studentsByClass = {}; // Will be populated dynamically
 
-        document.getElementById("classSelect").addEventListener("change", handleClassChange);
         document.getElementById("sectionSelect").addEventListener("change", handleSectionChange);
         document.getElementById("streamSelect").addEventListener("change", handleStreamChange);
-
-        async function handleClassChange() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
-
-            // Automatically select stream for grades 11 and 12 based on section
-            if (grade === "11" || grade === "12") {
-                const stream = getStreamBySection(section);
-                document.getElementById("streamSelect").value = stream;
-            }
-
-            if (grade && section) {
-                showLoading();
-                await fetchStudentsForMarks(); // Fetch students directly after class and section are selected
-                await fetchExamsForClassSection(grade, section); // Fetch exams for the selected class and section
-                hideLoading();
-            }
-        }
         async function handleSectionChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
@@ -454,8 +435,8 @@
 
             if (grade && section) {
                 showLoading();
-                await fetchStudentsForMarks(); // Fetch students directly after class and section are selected
                 await fetchExamsForClassSection(grade, section); // Fetch exams for the selected class and section
+                await fetchStudentsForMarks(); // Fetch students directly after class and section are selected
                 hideLoading();
             }
         }
@@ -489,7 +470,7 @@
                 if (result.success && result.data.length > 0) {
                     studentsByClass[grade] = result.data.filter(s => s.section === section);
                     renderMarksTable();
-                    tryFetchAndFillMarks();
+                    // tryFetchAndFillMarks();
                 } else {
                     alert("No students found.");
                 }
@@ -807,9 +788,6 @@
                     streamSelect.style.display = "none";
                     streamSelect.value = "";
                 }
-
-                // Trigger fetch for students and marks
-                await fetchStudentsForMarks();
                 await tryFetchAndFillMarks();
             }
         });
