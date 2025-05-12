@@ -414,34 +414,41 @@
         let studentsByClass = {}; // Will be populated dynamically
 
         document.getElementById("classSelect").addEventListener("change", handleClassChange);
-        document.getElementById("sectionSelect").addEventListener("change", fetchStudentsForMarks);
+        document.getElementById("sectionSelect").addEventListener("change", handleSectionChange);
         document.getElementById("streamSelect").addEventListener("change", handleStreamChange);
+        document.getElementById("examSelect").addEventListener("change", handleExamSelection);
 
         async function handleClassChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
-            const streamSelect = document.getElementById("streamSelect");
-
+    
             // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
-                streamSelect.style.display = "inline-block";
-                if (section === "A") {
-                    streamSelect.value = "Science";
-                } else if (section === "B") {
-                    streamSelect.value = "Commerce";
-                } else if (section === "C") {
-                    streamSelect.value = "Arts";
-                } else {
-                    streamSelect.value = ""; // Reset if no valid section
-                }
-            } else {
-                streamSelect.style.display = "none";
-                streamSelect.value = "";
+                const stream = getStreamBySection(section);
+                document.getElementById("streamSelect").value = stream;
             }
-
-            if (grade) {
+    
+            if (grade && section) {
                 showLoading();
-                await fetchStudentsForMarks(); // Fetch students directly after class is selected
+                await fetchStudentsForMarks(); // Fetch students directly after class and section are selected
+                await fetchExamsForClassSection(grade, section); // Fetch exams for the selected class and section
+                hideLoading();
+            }
+        }
+        async function handleSectionChange() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+    
+            // Automatically select stream for grades 11 and 12 based on section
+            if (grade === "11" || grade === "12") {
+                const stream = getStreamBySection(section);
+                document.getElementById("streamSelect").value = stream;
+            }
+    
+            if (grade && section) {
+                showLoading();
+                await fetchStudentsForMarks(); // Fetch students directly after class and section are selected
+                await fetchExamsForClassSection(grade, section); // Fetch exams for the selected class and section
                 hideLoading();
             }
         }
@@ -662,21 +669,19 @@
             await fetchExamsForClassSection(); // Fetch exams on page load
         });
 
-        async function fetchExamsForClassSection() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
-
+        async function fetchExamsForClassSection(grade, section) {
             try {
                 const res = await fetch("/.netlify/functions/fetchExams", {
-                    method: "POST",
+                    method: "POST", // Changed to POST
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ grade, section })
+                    body: JSON.stringify({ grade, section }) // Added request body
                 });
                 const result = await res.json();
                 if (result.success) {
-                    exams = result.data;
-                    populateExamDropdown();
-                    document.getElementById("examSelect").disabled = false;
+                    exams = result.data; // Store fetched exams
+                    console.log("Fetched exams:", exams); // Added console log for fetched exams
+                    populateExamDropdown(); // Populate dropdown with exams for the selected class and section
+                    document.getElementById("examSelect").disabled = false; // Enable exam dropdown
                 }
             } catch (err) {
                 console.error("Error fetching exams:", err);
