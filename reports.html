@@ -615,6 +615,12 @@
             });
             return map;
         }
+        function getSubjectsForGradeStream(grade, stream) {
+            if (grade === "11" || grade === "12") {
+                return subjectsByClass[grade]?.[stream] || [];
+            }
+            return subjectsByClass[grade] || [];
+        }
 
         function printMarksTable() {
             const table = document.getElementById("marksTable").outerHTML;
@@ -669,6 +675,7 @@
             await fetchExamsForClassSection(); // Fetch exams on page load
         });
 
+    
         async function fetchExamsForClassSection(grade, section) {
             try {
                 const res = await fetch("/.netlify/functions/fetchExams", {
@@ -795,6 +802,19 @@
                 await tryFetchAndFillMarks();
             }
         });
+
+        function getStreamBySection(section) {
+            switch (section) {
+                case "A":
+                    return "Science";
+                case "B":
+                    return "Commerce";
+                case "C":
+                    return "Arts";
+                default:
+                    return "";
+            }
+        }
 
         function handleExamSelection() {
             const examSelect = document.getElementById("examSelect");
