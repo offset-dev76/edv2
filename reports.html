@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -646,6 +645,54 @@
             localStorage.setItem("theme", newTheme); // Save theme to localStorage
             const toggleButton = document.querySelector(".dark-mode-toggle");
             toggleButton.textContent = newTheme === "dark" ? "☀️" : "🌙";
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const savedTheme = localStorage.getItem("theme") || "light";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+            const toggleButton = document.querySelector(".dark-mode-toggle");
+            toggleButton.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+
+            const streamSelect = document.getElementById("streamSelect");
+            streamSelect.style.display = "none"; // Always hide the stream selector
+
+            // Disable exam dropdown initially
+            document.getElementById("examSelect").disabled = true;
+
+            await fetchExamsForClassSection(); // Fetch exams on page load
+        });
+
+        async function fetchExamsForClassSection() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+
+            try {
+                const res = await fetch("/.netlify/functions/fetchExams", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ grade, section })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    exams = result.data;
+                    populateExamDropdown();
+                    document.getElementById("examSelect").disabled = false;
+                }
+            } catch (err) {
+                console.error("Error fetching exams:", err);
+            }
+        }
+
+        function populateExamDropdown() {
+            const examSelect = document.getElementById("examSelect");
+            examSelect.innerHTML = '<option value="">Select Existing Exam</option>';
+
+            exams.forEach(exam => {
+                const option = document.createElement("option");
+                option.value = exam.examName;
+                option.textContent = `${exam.examName}`;
+                examSelect.appendChild(option);
+            });
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
