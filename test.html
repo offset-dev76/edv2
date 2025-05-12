@@ -421,30 +421,13 @@
 
         let studentsByClass = {}; // Will be populated dynamically
 
-        document.getElementById("classSelect").addEventListener("change", handleClassChange);
         document.getElementById("sectionSelect").addEventListener("change", handleSectionChange);
         document.getElementById("streamSelect").addEventListener("change", handleStreamChange);
-
-        async function handleClassChange() {
-            const grade = document.getElementById("classSelect").value;
-            const section = document.getElementById("sectionSelect").value;
-
-            if (grade === "11" || grade === "12") {
-                const stream = getStreamBySection(section);
-                document.getElementById("streamSelect").value = stream;
-            }
-
-            if (grade && section) {
-                showLoading();
-                await fetchExamsForClassSection(grade, section);
-                hideLoading();
-            }
-        }
-
         async function handleSectionChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
 
+            // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
                 const stream = getStreamBySection(section);
                 document.getElementById("streamSelect").value = stream;
@@ -452,7 +435,8 @@
 
             if (grade && section) {
                 showLoading();
-                await fetchExamsForClassSection(grade, section);
+                await fetchExamsForClassSection(grade, section); // Fetch exams for the selected class and section
+                await fetchStudentsForMarks(); // Fetch students directly after class and section are selected
                 hideLoading();
             }
         }
@@ -467,9 +451,13 @@
             }
         }
 
-        async function fetchStudentsForMarks(grade, section) {
-            if (!grade || !section) return;
+        async function fetchStudentsForMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
 
+            if (!grade || !section) return; // Ensure both grade and section are selected
+
+            showLoading();
             try {
                 const res = await fetch("/.netlify/functions/fetchStudents", {
                     method: "POST",
@@ -482,12 +470,15 @@
                 if (result.success && result.data.length > 0) {
                     studentsByClass[grade] = result.data.filter(s => s.section === section);
                     renderMarksTable();
+                    tryFetchAndFillMarks();
                 } else {
                     alert("No students found.");
                 }
             } catch (err) {
                 console.error("Error fetching students:", err);
                 alert("Error fetching student data.");
+            } finally {
+                hideLoading();
             }
         }
 
@@ -551,7 +542,12 @@
             loadingOverlay.classList.remove("show");
         }
 
-        async function tryFetchAndFillMarks(grade, section, examSelect) {
+        async function tryFetchAndFillMarks() {
+            const grade = document.getElementById("classSelect").value;
+            const section = document.getElementById("sectionSelect").value;
+            const stream = document.getElementById("streamSelect").value;
+            const examSelect = document.getElementById("examSelect").value;
+
             if (!grade || !section || !examSelect) return;
 
             try {
@@ -565,20 +561,28 @@
 
                 if (result.success && result.data?.length > 0) {
                     const marksData = result.data;
-                    const stream = document.getElementById("streamSelect").value;
+
                     const subjectMap = getSubjectMap(grade, stream);
 
                     const cells = document.querySelectorAll("#marksTable td[data-id]");
+
                     cells.forEach(cell => {
                         const id = cell.getAttribute("data-id");
                         const subject = cell.getAttribute("data-subject");
+
                         const doc = marksData.find(m => m.RollNo === id);
                         if (!doc) return;
 
                         const subKey = subjectMap[subject];
                         const val = doc[subKey];
 
-                        cell.textContent = val === 0 ? "AB" : val ?? "";
+                        if (val === 0) {
+                            cell.textContent = "AB";
+                        } else if (val === null || val === undefined) {
+                            cell.textContent = "";
+                        } else {
+                            cell.textContent = val;
+                        }
                     });
                 }
             } catch (err) {
@@ -786,12 +790,8 @@
                 }
 
                 // Trigger fetch for students and marks
-                showLoading();
-                await Promise.all([
-                    fetchStudentsForMarks(),
-                    tryFetchAndFillMarks()
-                ]);
-                hideLoading();
+                await fetchStudentsForMarks();
+                await tryFetchAndFillMarks();
             }
         });
 
