@@ -112,6 +112,7 @@
             flex-wrap: wrap;
             gap: 0.5rem;
         }
+
         .headline {
             display: flex;
             flex-direction: row;
@@ -282,6 +283,7 @@
         .dark-mode-toggle:hover {
             color: var(--primary);
         }
+
         #marksTable input {
             width: 100px;
             padding: 5px;
@@ -289,24 +291,30 @@
         }
 
         #marksTable thead {
-            display: none; /* Initially hide the table head */
+            display: none;
+            /* Initially hide the table head */
             position: sticky;
             top: 0;
         }
 
         #marksTable.show thead {
-            display: table-header-group; /* Show the table head when data is fetched */
+            display: table-header-group;
+            /* Show the table head when data is fetched */
         }
 
         [data-theme="dark"] #marksTable input {
-            background-color: #333333; /* Dark background for inputs */
-            color: #ffffff; /* White text for better contrast */
-            border: 1px solid #555555; /* Subtle border for inputs */
+            background-color: #333333;
+            /* Dark background for inputs */
+            color: #ffffff;
+            /* White text for better contrast */
+            border: 1px solid #555555;
+            /* Subtle border for inputs */
         }
 
         [data-theme="dark"] #marksTable input:focus {
             outline: none;
-            border-color: var(--primary-light); /* Highlight border on focus */
+            border-color: var(--primary-light);
+            /* Highlight border on focus */
             box-shadow: 0 0 0 2px var(--primary-light);
         }
     </style>
@@ -327,8 +335,8 @@
     <div class="main-content">
         <div class="header">
             <div class="headline">
-            <h1>Reports</h1>
-            <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+                <h1>Reports</h1>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
             </div>
             <div class="controls">
                 <select id="classSelect">
@@ -347,15 +355,15 @@
                     <option value="12">12</option>
                 </select>
 
-                  <select id="sectionSelect">
-                      <option value="">Select Section</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
-                      <option value="E">E</option>
-                      <option value="F">F</option>
-                      <option value="G">G</option>
+                <select id="sectionSelect">
+                    <option value="">Select Section</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="G">G</option>
                 </select>
 
                 <select id="streamSelect" style="display: none; transition: 0.3s;">
@@ -370,7 +378,7 @@
                 </select>
 
                 <button class="btn-print" onclick="printMarksTable()">Print</button>
-        
+
             </div>
         </div>
 
@@ -421,13 +429,13 @@
         async function handleClassChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
-    
+
             // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
                 const stream = getStreamBySection(section);
                 document.getElementById("streamSelect").value = stream;
             }
-    
+
             if (grade && section) {
                 showLoading();
                 await fetchStudentsForMarks(); // Fetch students directly after class and section are selected
@@ -438,13 +446,13 @@
         async function handleSectionChange() {
             const grade = document.getElementById("classSelect").value;
             const section = document.getElementById("sectionSelect").value;
-    
+
             // Automatically select stream for grades 11 and 12 based on section
             if (grade === "11" || grade === "12") {
                 const stream = getStreamBySection(section);
                 document.getElementById("streamSelect").value = stream;
             }
-    
+
             if (grade && section) {
                 showLoading();
                 await fetchStudentsForMarks(); // Fetch students directly after class and section are selected
@@ -540,7 +548,7 @@
 
             document.getElementById("marksTable").classList.add("show");
         }
- function showLoading() {
+        function showLoading() {
             const loadingOverlay = document.getElementById("loadingOverlay");
             const loadingImage = document.getElementById("loadingImage");
             const currentTheme = document.documentElement.getAttribute("data-theme");
@@ -624,8 +632,17 @@
 
         function printMarksTable() {
             const table = document.getElementById("marksTable").outerHTML;
-            const newWindow = window.open("", "_blank");
-            newWindow.document.write(`
+
+            // Create a hidden iframe
+            const iframe = document.createElement("iframe");
+            iframe.style.position = "absolute";
+            iframe.style.top = "-10000px";
+            document.body.appendChild(iframe);
+
+            // Write the new layout into the iframe
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(`
                 <html>
                 <head>
                     <title>Marks Table</title>
@@ -647,8 +664,14 @@
                 <body>${table}</body>
                 </html>
             `);
-            newWindow.document.close();
-            newWindow.print();
+            iframeDoc.close();
+
+            // Trigger the print dialog from the iframe
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+
+            // Remove the iframe after printing
+            setTimeout(() => document.body.removeChild(iframe), 1000);
         }
 
         function toggleDarkMode() {
@@ -680,7 +703,7 @@
             }
         });
 
-    
+
         async function fetchExamsForClassSection(grade, section) {
             try {
                 const res = await fetch("/.netlify/functions/fetchExams", {
@@ -703,13 +726,13 @@
         function populateExamDropdown() {
             const examSelect = document.getElementById("examSelect");
             examSelect.innerHTML = '<option value="">Select Existing Exam</option>'; // Reset dropdown
-    
+
             // Add the "Enter New Exam" option at the top
             const newExamOption = document.createElement("option");
             newExamOption.value = "new";
             newExamOption.textContent = "Enter New Exam";
             examSelect.appendChild(newExamOption);
-    
+
             exams.forEach(exam => {
                 const option = document.createElement("option");
                 option.value = exam.examName;
@@ -734,16 +757,12 @@
                 option.textContent = `${exam.examName} (Grade: ${exam.grade}, Section: ${exam.section})`;
                 examSelect.appendChild(option);
             });
-
-            // Add the "Enter New Exam" option
-            const newExamOption = document.createElement("option");
-            newExamOption.value = "new";
-            newExamOption.textContent = "Enter New Exam";
-            examSelect.appendChild(newExamOption);
         }
 
         document.getElementById("classSelect").addEventListener("change", filterExams);
         document.getElementById("sectionSelect").addEventListener("change", filterExams);
+
+        let exams = []; // Declare exams as a global variable
 
         function filterExams() {
             const grade = document.getElementById("classSelect").value;
@@ -806,18 +825,6 @@
                     return "Arts";
                 default:
                     return "";
-            }
-        }
-
-        function handleExamSelection() {
-            const examSelect = document.getElementById("examSelect");
-            const examNameInput = document.getElementById("examName");
-
-            if (examSelect.value === "new") {
-                examNameInput.style.display = "inline-block"; // Show input box for new exam name
-            } else {
-                examNameInput.style.display = "none"; // Hide input box
-                examNameInput.value = ""; // Clear the input box
             }
         }
 
