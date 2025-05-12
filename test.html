@@ -373,7 +373,7 @@
                     <option value="Arts">Arts</option>
                 </select>
 
-                <select id="examSelect" onchange="tryFetchAndFillMarks()">
+                <select id="examSelect">
                     <option value="">Select Existing Exam</option>
                 </select>
 
@@ -470,7 +470,7 @@
                 if (result.success && result.data.length > 0) {
                     studentsByClass[grade] = result.data.filter(s => s.section === section);
                     renderMarksTable();
-                    tryFetchAndFillMarks();
+                    // tryFetchAndFillMarks();
                 } else {
                     alert("No students found.");
                 }
@@ -788,9 +788,6 @@
                     streamSelect.style.display = "none";
                     streamSelect.value = "";
                 }
-
-                // Trigger fetch for students and marks
-                await fetchStudentsForMarks();
                 await tryFetchAndFillMarks();
             }
         });
