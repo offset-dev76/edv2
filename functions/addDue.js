@@ -77,7 +77,7 @@ exports.handler = async function (event) {
         };
       }
 
-      const filter = { class: grade };
+      const filter = { grade };
       if (section) {
         filter.section = section;
       }
