@@ -34,7 +34,7 @@ const paymentSchema = new mongoose.Schema({
   date: Date,
   mode: String,
   reference: String,
-  appliedToDues: [Number],
+  appliedToDues: [String], // changed to String for notes
 });
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
@@ -50,10 +50,18 @@ exports.handler = async function (event) {
 
   try {
     const data = JSON.parse(event.body);
-    const { studentId, amount, date, mode, reference, selectedDues } = data;
+    const { studentId, amount, date, mode, reference, payments } = data;
 
-    // Validate input early
-    if (!studentId || !amount || !date || !mode || !Array.isArray(selectedDues) || selectedDues.length === 0) {
+    // payments: array of { note: string, amountPaid: number }
+    if (
+      !studentId ||
+      !amount ||
+      !date ||
+      !mode ||
+      !Array.isArray(payments) ||
+      payments.length === 0 ||
+      !payments.every(p => p.note && typeof p.amountPaid === 'number' && p.amountPaid > 0)
+    ) {
       return {
         statusCode: 400,
         body: JSON.stringify({ success: false, message: 'Missing or invalid required fields' }),
@@ -62,41 +70,35 @@ exports.handler = async function (event) {
 
     await connectToDB();
 
-    // Fetch only dues array for specified student (lean query)
-    const student = await Student.findOne({ id: studentId }, { dues: 1 }).lean();
-    if (!student) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ success: false, message: 'Student not found' }),
-      };
-    }
+    // Prepare parallel update operations for each due's payment
+    const updateOps = payments.map(({ note, amountPaid }) =>
+      Student.updateOne(
+        { id: studentId },
+        { $inc: { "dues.$[elem].dueAmount": -amountPaid } },
+        { arrayFilters: [{ "elem.note": note }] }
+      )
+    );
 
-    let remainingAmount = parseFloat(amount);
-    // Calculate new dues array
-    const updatedDues = student.dues.map((due, idx) => {
-      if (remainingAmount > 0 && selectedDues.includes(idx)) {
-        if (remainingAmount >= due.dueAmount) {
-          remainingAmount -= due.dueAmount;
-          return null; // Clear this due
-        } else {
-          return { ...due, dueAmount: due.dueAmount - remainingAmount };
-        }
-      }
-      return due;
-    }).filter(due => due !== null);
+    // Also push an update to remove dues with dueAmount <= 0
+    updateOps.push(
+      Student.updateOne(
+        { id: studentId },
+        { $pull: { dues: { dueAmount: { $lte: 0 } } } }
+      )
+    );
 
-    // Execute updates in parallel for speed
-    await Promise.all([
-      Student.updateOne({ id: studentId }, { $set: { dues: updatedDues } }),
-      Payment.create({
-        studentId,
-        amount: parseFloat(amount),
-        date: new Date(date),
-        mode,
-        reference: reference || null,
-        appliedToDues: selectedDues,
-      }),
-    ]);
+    // Create payment record
+    const paymentCreate = Payment.create({
+      studentId,
+      amount: parseFloat(amount),
+      date: new Date(date),
+      mode,
+      reference: reference || null,
+      appliedToDues: payments.map(p => p.note),
+    });
+
+    // Run all DB ops concurrently
+    await Promise.all([...updateOps, paymentCreate]);
 
     return {
       statusCode: 200,
