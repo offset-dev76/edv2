@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 const studentSchema = new mongoose.Schema({
-  studentId: { type: String, unique: true },
+  id: { type: String, unique: true },
   name: String,
   grade: String,
   section: String,
@@ -18,8 +18,9 @@ const studentSchema = new mongoose.Schema({
       dueDate: Date,
       note: String,
     }
-  ], // Changed to array of dues
+  ],
 });
+
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
 
