@@ -21,7 +21,6 @@ const studentSchema = new mongoose.Schema({
   ],
 });
 
-
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
 
 let isConnected = false;
@@ -58,23 +57,25 @@ exports.handler = async function (event) {
       };
     }
 
+    const dueObject = { dueAmount, dueDate: new Date(dueDate), note: note || null };
+
     if (studentId) {
-      // Update a single student
-      const student = await Student.findOne({ id: studentId }); // Changed from studentId to id
+      // ✅ Fix 1: Correct field name
+      const student = await Student.findOne({ id: studentId });
       if (!student) {
         return {
           statusCode: 404,
           body: JSON.stringify({ success: false, message: 'Student not found' }),
         };
       }
-      student.dues.push({ dueAmount, dueDate: new Date(dueDate), note: note || null }); // Append new due
+      student.dues.push(dueObject);
       await student.save();
     } else {
-      // Bulk update for a specific class and section
+      // ✅ Fix 2: Bulk update
       if (!grade) {
         return {
           statusCode: 400,
-          body: JSON.stringify({ success: false, message: 'Class is required for bulk updates' }),
+          body: JSON.stringify({ success: false, message: 'Grade is required for bulk updates' }),
         };
       }
 
@@ -84,10 +85,20 @@ exports.handler = async function (event) {
       }
 
       const students = await Student.find(filter);
-      for (const student of students) {
-        student.dues.push({ dueAmount, dueDate: new Date(dueDate), note: note || null }); // Append new due
-        await student.save();
+      if (!students.length) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ success: false, message: 'No students found for the given filter' }),
+        };
       }
+
+      // ✅ Fix 3: Use Promise.all for parallel saving
+      await Promise.all(
+        students.map(async (student) => {
+          student.dues.push(dueObject);
+          return student.save();
+        })
+      );
     }
 
     return {
