@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
+// Schema definition
 const studentSchema = new mongoose.Schema({
   id: { type: String, unique: true },
   name: String,
@@ -17,23 +18,24 @@ const studentSchema = new mongoose.Schema({
       dueAmount: Number,
       dueDate: Date,
       note: String,
-    }
+    },
   ],
 });
 
+// Model caching
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
 
-let isConnected = false;
+// ✅ Persistent DB connection cache
+let cachedDb = null;
 
 async function connectToDB() {
-  if (!isConnected) {
-    await mongoose.connect(uri, {
-      dbName: 'schoolDB',
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    isConnected = true;
-  }
+  if (cachedDb) return cachedDb;
+  cachedDb = await mongoose.connect(uri, {
+    dbName: 'schoolDB',
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  return cachedDb;
 }
 
 exports.handler = async function (event) {
@@ -60,7 +62,7 @@ exports.handler = async function (event) {
     const dueObject = { dueAmount, dueDate: new Date(dueDate), note: note || null };
 
     if (studentId) {
-      // ✅ Fix 1: Correct field name
+      // ✅ Update one student
       const student = await Student.findOne({ id: studentId });
       if (!student) {
         return {
@@ -71,7 +73,7 @@ exports.handler = async function (event) {
       student.dues.push(dueObject);
       await student.save();
     } else {
-      // ✅ Fix 2: Bulk update
+      // ✅ Bulk update using $push
       if (!grade) {
         return {
           statusCode: 400,
@@ -80,25 +82,18 @@ exports.handler = async function (event) {
       }
 
       const filter = { grade };
-      if (section) {
-        filter.section = section;
-      }
+      if (section) filter.section = section;
 
-      const students = await Student.find(filter);
-      if (!students.length) {
+      const result = await Student.updateMany(filter, {
+        $push: { dues: dueObject },
+      });
+
+      if (result.matchedCount === 0) {
         return {
           statusCode: 404,
           body: JSON.stringify({ success: false, message: 'No students found for the given filter' }),
         };
       }
-
-      // ✅ Fix 3: Use Promise.all for parallel saving
-      await Promise.all(
-        students.map(async (student) => {
-          student.dues.push(dueObject);
-          return student.save();
-        })
-      );
     }
 
     return {
@@ -106,7 +101,7 @@ exports.handler = async function (event) {
       body: JSON.stringify({ success: true, message: 'Due added successfully' }),
     };
   } catch (err) {
-    console.error("Error adding due:", err);
+    console.error('Error adding due:', err);
     return {
       statusCode: 500,
       body: JSON.stringify({ success: false, message: 'Server error' }),
