@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-
-const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const connectToDB = require('./utils/db'); // Adjust the path based on your project structure
 
 // Schema definition
 const studentSchema = new mongoose.Schema({
@@ -24,18 +23,6 @@ const studentSchema = new mongoose.Schema({
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
 
-let isConnected = false;
-async function connectToDB() {
-  if (!isConnected) {
-    await mongoose.connect(uri, {
-      dbName: 'schoolDB',
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    isConnected = true;
-  }
-}
-
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
     return {
@@ -48,7 +35,7 @@ exports.handler = async function (event) {
     const data = JSON.parse(event.body);
     const { studentId, dueAmount, dueDate, grade, section, note } = data;
 
-    // 🛑 Early exit for missing data
+    // 🔍 Validate required fields
     if (!dueAmount || !dueDate) {
       return {
         statusCode: 400,
@@ -65,7 +52,7 @@ exports.handler = async function (event) {
     };
 
     if (studentId) {
-      // ⚡ Use updateOne instead of find+save for single update
+      // 📌 Add due to a specific student
       const result = await Student.updateOne(
         { id: studentId },
         { $push: { dues: dueObject } }
@@ -78,7 +65,7 @@ exports.handler = async function (event) {
         };
       }
     } else {
-      // ⚡ Bulk add dues using updateMany
+      // 📌 Bulk add dues to students by grade/section
       if (!grade) {
         return {
           statusCode: 400,
