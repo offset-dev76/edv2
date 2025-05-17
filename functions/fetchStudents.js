@@ -1,21 +1,7 @@
 const mongoose = require('mongoose');
+const connectToDB = require('./utils/db'); // adjust path as needed
 
-const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-
-let isConnected = false;
-
-async function connectToDB() {
-  if (!isConnected) {
-    await mongoose.connect(uri, {
-      dbName: 'schoolDB',
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    isConnected = true;
-  }
-}
-
-// Schema definition (reused if already compiled)
+// Schema definition
 const studentSchema = new mongoose.Schema({
   id: { type: String, unique: true },
   name: String,
@@ -53,7 +39,7 @@ exports.handler = async function(event) {
     const filter = { grade };
     if (section) filter.section = section;
 
-    const students = await Student.find(filter).lean(); // faster than full Mongoose docs
+    const students = await Student.find(filter).lean(); // faster for read-only
 
     return {
       statusCode: 200,
