@@ -8,9 +8,9 @@ exports.handler = async function (event, context) {
         return { statusCode: 405, body: "Method Not Allowed" };
     }
 
-    const studentId = event.queryStringParameters.id;
+    const id = event.queryStringParameters.id;
 
-    if (!studentId) {
+    if (!id) {
         return {
             statusCode: 400,
             body: JSON.stringify({ success: false, message: "Student ID is required" }),
@@ -23,7 +23,7 @@ exports.handler = async function (event, context) {
         const payments = db.collection("payments");
 
         const results = await payments
-            .find({ studentId })
+            .find({ id })
             .sort({ date: -1 })
             .toArray();
 
