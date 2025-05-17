@@ -2,16 +2,16 @@ const mongoose = require('mongoose');
 
 const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
-let cachedDb = null;
-
+let isConnected = false;
 async function connectToDB() {
-  if (cachedDb) return cachedDb;
-  cachedDb = await mongoose.connect(uri, {
-    dbName: 'schoolDB',
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  return cachedDb;
+  if (!isConnected) {
+    await mongoose.connect(uri, {
+      dbName: 'schoolDB',
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    isConnected = true;
+  }
 }
 
 const studentSchema = new mongoose.Schema({
@@ -44,24 +44,26 @@ exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      body: 'Method Not Allowed',
+      body: JSON.stringify({ success: false, message: 'Method Not Allowed' }),
     };
   }
 
   try {
-    await connectToDB();
-
     const data = JSON.parse(event.body);
     const { studentId, amount, date, mode, reference, selectedDues } = data;
 
-    if (!studentId || !amount || !date || !mode || !selectedDues || !Array.isArray(selectedDues)) {
+    // Validate input early
+    if (!studentId || !amount || !date || !mode || !Array.isArray(selectedDues) || selectedDues.length === 0) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ success: false, message: 'Missing required fields' }),
+        body: JSON.stringify({ success: false, message: 'Missing or invalid required fields' }),
       };
     }
 
-    const student = await Student.findOne({ id: studentId });
+    await connectToDB();
+
+    // Fetch only dues array for specified student (lean query)
+    const student = await Student.findOne({ id: studentId }, { dues: 1 }).lean();
     if (!student) {
       return {
         statusCode: 404,
@@ -70,20 +72,20 @@ exports.handler = async function (event) {
     }
 
     let remainingAmount = parseFloat(amount);
-    const updatedDues = student.dues.map((due, index) => {
-      if (remainingAmount > 0 && selectedDues.includes(index)) {
+    // Calculate new dues array
+    const updatedDues = student.dues.map((due, idx) => {
+      if (remainingAmount > 0 && selectedDues.includes(idx)) {
         if (remainingAmount >= due.dueAmount) {
           remainingAmount -= due.dueAmount;
-          return null; // Remove due
+          return null; // Clear this due
         } else {
-          due.dueAmount -= remainingAmount;
-          remainingAmount = 0;
+          return { ...due, dueAmount: due.dueAmount - remainingAmount };
         }
       }
       return due;
-    }).filter(Boolean); // Remove nulls
+    }).filter(due => due !== null);
 
-    // Run updates in parallel
+    // Execute updates in parallel for speed
     await Promise.all([
       Student.updateOne({ id: studentId }, { $set: { dues: updatedDues } }),
       Payment.create({
@@ -93,7 +95,7 @@ exports.handler = async function (event) {
         mode,
         reference: reference || null,
         appliedToDues: selectedDues,
-      })
+      }),
     ]);
 
     return {
