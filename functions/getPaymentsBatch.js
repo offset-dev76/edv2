@@ -1,29 +1,17 @@
 const mongoose = require('mongoose');
+const connectToDB = require('./utils/db'); // Adjust path if needed
 
-const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-
-let cachedDb = null;
-
-async function connectToDB() {
-  if (cachedDb) return cachedDb;
-  cachedDb = await mongoose.connect(uri, {
-    dbName: 'schoolDB',
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  return cachedDb;
-}
-
-// Payment Schema
+// Define schema
 const paymentSchema = new mongoose.Schema({
   studentId: String,
   amount: Number,
   date: Date,
   mode: String,
   reference: String,
-  appliedToDues: [Number],
+  appliedToDues: [String], // use String if you're using 'note' as identifier
 });
 
+// Register model if not already
 const Payment = mongoose.models.Payment || mongoose.model('Payment', paymentSchema);
 
 exports.handler = async function (event) {
@@ -38,6 +26,7 @@ exports.handler = async function (event) {
     await connectToDB();
 
     const { ids } = JSON.parse(event.body);
+
     if (!Array.isArray(ids) || ids.length === 0) {
       return {
         statusCode: 400,
@@ -47,21 +36,21 @@ exports.handler = async function (event) {
 
     const payments = await Payment.find({ studentId: { $in: ids } }).lean();
 
-    const grouped = ids.reduce((acc, id) => {
+    // Group payments by studentId
+    const paymentsByStudent = ids.reduce((acc, id) => {
       acc[id] = [];
       return acc;
     }, {});
 
     for (const payment of payments) {
-      if (grouped[payment.studentId]) {
-        grouped[payment.studentId].push(payment);
-      } else {
-        grouped[payment.studentId] = [payment]; // In case payment exists for an ID not in the `ids` list
+      if (!paymentsByStudent[payment.studentId]) {
+        paymentsByStudent[payment.studentId] = [];
       }
+      paymentsByStudent[payment.studentId].push(payment);
     }
 
     const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
-    const pendingFees = ids.length * 1000 - totalPayments; // Adjust as per real fee structure
+    const pendingFees = ids.length * 1000 - totalPayments; // Simplified fee logic, adjust accordingly
 
     return {
       statusCode: 200,
@@ -70,7 +59,7 @@ exports.handler = async function (event) {
         data: {
           totalPayments,
           pendingFees,
-          paymentsByStudent: grouped
+          paymentsByStudent
         }
       }),
     };
