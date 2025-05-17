@@ -1,43 +1,50 @@
-const { MongoClient } = require("mongodb");
+const mongoose = require('mongoose');
+const connectToDB = require('./utils/db'); // Adjust path if needed
 
-const client = new MongoClient('mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
-const dbName = 'schoolDB';
+// Payment Schema
+const paymentSchema = new mongoose.Schema({
+  studentId: String,
+  amount: Number,
+  date: Date,
+  mode: String,
+  reference: String,
+  appliedToDues: [String],
+});
 
-exports.handler = async function (event, context) {
-    if (event.httpMethod !== "GET") {
-        return { statusCode: 405, body: "Method Not Allowed" };
-    }
+// Avoid recompilation of model
+const Payment = mongoose.models.Payment || mongoose.model('Payment', paymentSchema);
 
-    const id = event.queryStringParameters.id;
+exports.handler = async function (event) {
+  if (event.httpMethod !== 'GET') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ success: false, message: 'Method Not Allowed' }),
+    };
+  }
 
-    if (!id) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ success: false, message: "Student ID is required" }),
-        };
-    }
+  const id = event.queryStringParameters?.id;
 
-    try {
-        await client.connect();
-        const db = client.db(dbName);
-        const payments = db.collection("payments");
+  if (!id) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ success: false, message: 'Student ID is required' }),
+    };
+  }
 
-        const results = await payments
-            .find({ id })
-            .sort({ date: -1 })
-            .toArray();
+  try {
+    await connectToDB();
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify(results),
-        };
-    } catch (error) {
-        console.error("Get Payments Error:", error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ success: false, message: "Internal Server Error" }),
-        };
-    } finally {
-        await client.close();
-    }
+    const payments = await Payment.find({ studentId: id }).sort({ date: -1 }).lean();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true, data: payments }),
+    };
+  } catch (err) {
+    console.error("getPayments Error:", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, message: 'Internal Server Error' }),
+    };
+  }
 };
