@@ -1,18 +1,5 @@
 const mongoose = require('mongoose');
-
-const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-
-let isConnected = false;
-async function connectToDB() {
-  if (!isConnected) {
-    await mongoose.connect(uri, {
-      dbName: 'schoolDB',
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    isConnected = true;
-  }
-}
+const connectToDB = require('./utils/db'); // adjust path as needed
 
 const studentSchema = new mongoose.Schema({
   id: { type: String, unique: true },
@@ -34,7 +21,7 @@ const paymentSchema = new mongoose.Schema({
   date: Date,
   mode: String,
   reference: String,
-  appliedToDues: [String], // changed to String for notes
+  appliedToDues: [String],
 });
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
@@ -52,7 +39,6 @@ exports.handler = async function (event) {
     const data = JSON.parse(event.body);
     const { studentId, amount, date, mode, reference, payments } = data;
 
-    // payments: array of { note: string, amountPaid: number }
     if (
       !studentId ||
       !amount ||
@@ -70,7 +56,6 @@ exports.handler = async function (event) {
 
     await connectToDB();
 
-    // Prepare parallel update operations for each due's payment
     const updateOps = payments.map(({ note, amountPaid }) =>
       Student.updateOne(
         { id: studentId },
@@ -79,7 +64,6 @@ exports.handler = async function (event) {
       )
     );
 
-    // Also push an update to remove dues with dueAmount <= 0
     updateOps.push(
       Student.updateOne(
         { id: studentId },
@@ -87,7 +71,6 @@ exports.handler = async function (event) {
       )
     );
 
-    // Create payment record
     const paymentCreate = Payment.create({
       studentId,
       amount: parseFloat(amount),
@@ -97,7 +80,6 @@ exports.handler = async function (event) {
       appliedToDues: payments.map(p => p.note),
     });
 
-    // Run all DB ops concurrently
     await Promise.all([...updateOps, paymentCreate]);
 
     return {
