@@ -3,7 +3,7 @@ const connectToDB = require('./utils/db'); // Adjust path if needed
 
 // Payment Schema
 const paymentSchema = new mongoose.Schema({
-  studentId: String,
+  id: String,
   amount: Number,
   date: Date,
   mode: String,
@@ -34,7 +34,7 @@ exports.handler = async function (event) {
   try {
     await connectToDB();
 
-    const payments = await Payment.find({ studentId: id }).sort({ date: -1 }).lean();
+    const payments = await Payment.find({ id }).sort({ date: -1 }).lean();
 
     return {
       statusCode: 200,
