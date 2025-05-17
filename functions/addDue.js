@@ -22,20 +22,18 @@ const studentSchema = new mongoose.Schema({
   ],
 });
 
-// Model caching
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
 
-// ✅ Persistent DB connection cache
-let cachedDb = null;
-
+let isConnected = false;
 async function connectToDB() {
-  if (cachedDb) return cachedDb;
-  cachedDb = await mongoose.connect(uri, {
-    dbName: 'schoolDB',
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  return cachedDb;
+  if (!isConnected) {
+    await mongoose.connect(uri, {
+      dbName: 'schoolDB',
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    isConnected = true;
+  }
 }
 
 exports.handler = async function (event) {
@@ -47,11 +45,10 @@ exports.handler = async function (event) {
   }
 
   try {
-    await connectToDB();
-
     const data = JSON.parse(event.body);
     const { studentId, dueAmount, dueDate, grade, section, note } = data;
 
+    // 🛑 Early exit for missing data
     if (!dueAmount || !dueDate) {
       return {
         statusCode: 400,
@@ -59,21 +56,29 @@ exports.handler = async function (event) {
       };
     }
 
-    const dueObject = { dueAmount, dueDate: new Date(dueDate), note: note || null };
+    await connectToDB();
+
+    const dueObject = {
+      dueAmount,
+      dueDate: new Date(dueDate),
+      note: note || null,
+    };
 
     if (studentId) {
-      // ✅ Update one student
-      const student = await Student.findOne({ id: studentId });
-      if (!student) {
+      // ⚡ Use updateOne instead of find+save for single update
+      const result = await Student.updateOne(
+        { id: studentId },
+        { $push: { dues: dueObject } }
+      );
+
+      if (result.matchedCount === 0) {
         return {
           statusCode: 404,
           body: JSON.stringify({ success: false, message: 'Student not found' }),
         };
       }
-      student.dues.push(dueObject);
-      await student.save();
     } else {
-      // ✅ Bulk update using $push
+      // ⚡ Bulk add dues using updateMany
       if (!grade) {
         return {
           statusCode: 400,
