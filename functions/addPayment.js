@@ -1,12 +1,11 @@
-const mongoose = require('mongoose');
-const connectToDB = require('./utils/db'); // Adjust path as needed
+// netlify/functions/addPayment.js
 
-// Student Schema
+const mongoose = require('mongoose');
+const connectToDB = require('./utils/db'); // shared persistent connection
+
+// Student schema (with embedded dues)
 const studentSchema = new mongoose.Schema({
   id: { type: String, unique: true },
-  name: String,
-  grade: String,
-  section: String,
   dues: [
     {
       dueAmount: Number,
@@ -16,14 +15,14 @@ const studentSchema = new mongoose.Schema({
   ],
 });
 
-// Payment Schema
+// Payment schema
 const paymentSchema = new mongoose.Schema({
   studentId: String,
   amount: Number,
   date: Date,
   mode: String,
   reference: String,
-  appliedToDues: [Number], // storing indexes of dues paid
+  appliedToDues: [Number], // indices from frontend
 });
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
@@ -31,90 +30,66 @@ const Payment = mongoose.models.Payment || mongoose.model('Payment', paymentSche
 
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ success: false, message: 'Method Not Allowed' }),
-    };
+    return { statusCode: 405, body: JSON.stringify({ success: false, message: 'Only POST allowed' }) };
   }
 
-  try {
-    const { studentId, amount, date, mode, reference, selectedDues } = JSON.parse(event.body);
+  const { studentId, amount, date, mode, reference, selectedDues } = JSON.parse(event.body);
+  if (!studentId || !amount || !date || !mode || !Array.isArray(selectedDues)) {
+    return { statusCode: 400, body: JSON.stringify({ success: false, message: 'Invalid input' }) };
+  }
 
-    if (
-      !studentId ||
-      typeof amount !== 'number' && typeof amount !== 'string' ||
-      !date ||
-      !mode ||
-      !Array.isArray(selectedDues)
-    ) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ success: false, message: 'Missing or invalid required fields' }),
-      };
-    }
+  await connectToDB();
 
-    await connectToDB();
+  // STEP 1: Get the dues array once
+  const { dues } = await Student.findOne({ id: studentId }, { dues: 1 }).lean() || {};
+  if (!dues) {
+    return { statusCode: 404, body: JSON.stringify({ success: false, message: 'Student not found' }) };
+  }
 
-    // Fetch only dues array (minimal data) to calculate payments
-    const student = await Student.findOne({ id: studentId }, { dues: 1 }).lean();
-    if (!student) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ success: false, message: 'Student not found' }),
-      };
-    }
+  let remaining = parseFloat(amount);
+  const bulkOps = [];
 
-    let remaining = parseFloat(amount);
-    const ops = [];
+  // STEP 2: Build one $inc per selected due index
+  for (const idx of selectedDues) {
+    if (remaining <= 0) break;
+    const d = dues[idx];
+    if (!d) continue;
+    const payAmt = Math.min(d.dueAmount, remaining);
+    remaining -= payAmt;
 
-    // Build one updateOne per selected due, subtracting pay amount
-    for (const idx of selectedDues) {
-      if (remaining <= 0) break;
-      const due = student.dues[idx];
-      if (!due) continue;
-      const payAmt = Math.min(due.dueAmount, remaining);
-      remaining -= payAmt;
-
-      ops.push({
-        updateOne: {
-          filter: { id: studentId },
-          update:  { $inc: { [`dues.${idx}.dueAmount`]: -payAmt } }
-        }
-      });
-    }
-
-    // Finally, remove any dues that have become zero or negative
-    ops.push({
+    bulkOps.push({
       updateOne: {
         filter: { id: studentId },
-        update:  { $pull: { dues: { dueAmount: { $lte: 0 } } } }
+        update: { $inc: { [`dues.${idx}.dueAmount`]: -payAmt } }
       }
     });
-
-    // Execute all due updates in one bulkWrite
-    if (ops.length > 0) {
-      await Student.bulkWrite(ops);
-    }
-
-    // Create the payment record
-    await Payment.create({
-      studentId,
-      amount: parseFloat(amount),
-      date: new Date(date),
-      mode,
-      reference: reference || null,
-      appliedToDues: selectedDues,
-    });
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ success: true, message: 'Payment recorded successfully' }),
-    };
-  } catch (err) {
-    console.error('Add Payment Error:', err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ success: false, message: 'Internal Server Error' }),
-    };
   }
+
+  // STEP 3: Pull out any dues now ≤ 0
+  bulkOps.push({
+    updateOne: {
+      filter: { id: studentId },
+      update: { $pull: { dues: { dueAmount: { $lte: 0 } } } }
+    }
+  });
+
+  // STEP 4: Execute batch update if needed
+  if (bulkOps.length) {
+    await Student.bulkWrite(bulkOps);
+  }
+
+  // STEP 5: Record the payment
+  await Payment.create({
+    studentId,
+    amount: parseFloat(amount),
+    date: new Date(date),
+    mode,
+    reference: reference || null,
+    appliedToDues: selectedDues,
+  });
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ success: true, message: 'Payment recorded successfully' }),
+  };
 };
