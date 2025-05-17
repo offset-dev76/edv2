@@ -2,20 +2,6 @@ const mongoose = require('mongoose');
 
 const uri = 'mongodb+srv://adityajayaram2468:Adityajrm1124@cluster0.gkmgrrc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
-const studentSchema = new mongoose.Schema({
-  id: { type: String, unique: true },
-  name: String,
-  grade: String,
-  section: String,
-  language: String,
-  parentPhone: String,
-  parentEmail: String,
-  group: String, // Optional for classes 11 and 12
-  academicYear: String
-});
-
-const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
-
 let isConnected = false;
 
 async function connectToDB() {
@@ -29,6 +15,21 @@ async function connectToDB() {
   }
 }
 
+// Schema definition (reused if already compiled)
+const studentSchema = new mongoose.Schema({
+  id: { type: String, unique: true },
+  name: String,
+  grade: String,
+  section: String,
+  language: String,
+  parentPhone: String,
+  parentEmail: String,
+  group: String,
+  academicYear: String
+});
+
+const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
+
 exports.handler = async function(event) {
   if (event.httpMethod !== 'POST') {
     return {
@@ -40,17 +41,19 @@ exports.handler = async function(event) {
   try {
     await connectToDB();
 
-    const data = JSON.parse(event.body);
-    const { grade } = data;
+    const { grade, section } = JSON.parse(event.body);
 
     if (!grade) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ success: false, message: 'Grade criteria not provided' })
+        body: JSON.stringify({ success: false, message: 'Grade is required' })
       };
     }
 
-    const students = await Student.find({ grade }); // Changed from 'class' to 'grade'
+    const filter = { grade };
+    if (section) filter.section = section;
+
+    const students = await Student.find(filter).lean(); // faster than full Mongoose docs
 
     return {
       statusCode: 200,
