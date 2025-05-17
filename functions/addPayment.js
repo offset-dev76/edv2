@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-const connectToDB = require('./utils/db'); // adjust path as needed
+const connectToDB = require('./utils/db'); // adjust if needed
 
+// Student Schema
 const studentSchema = new mongoose.Schema({
   id: { type: String, unique: true },
   name: String,
@@ -15,13 +16,14 @@ const studentSchema = new mongoose.Schema({
   ],
 });
 
+// Payment Schema
 const paymentSchema = new mongoose.Schema({
   studentId: String,
   amount: Number,
   date: Date,
   mode: String,
   reference: String,
-  appliedToDues: [String],
+  appliedToDues: [Number], // storing indexes of dues paid
 });
 
 const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
@@ -37,17 +39,9 @@ exports.handler = async function (event) {
 
   try {
     const data = JSON.parse(event.body);
-    const { studentId, amount, date, mode, reference, payments } = data;
+    const { studentId, amount, date, mode, reference, selectedDues } = data;
 
-    if (
-      !studentId ||
-      !amount ||
-      !date ||
-      !mode ||
-      !Array.isArray(payments) ||
-      payments.length === 0 ||
-      !payments.every(p => p.note && typeof p.amountPaid === 'number' && p.amountPaid > 0)
-    ) {
+    if (!studentId || !amount || !date || !mode || !Array.isArray(selectedDues)) {
       return {
         statusCode: 400,
         body: JSON.stringify({ success: false, message: 'Missing or invalid required fields' }),
@@ -56,31 +50,38 @@ exports.handler = async function (event) {
 
     await connectToDB();
 
-    const updateOps = payments.map(({ note, amountPaid }) =>
-      Student.updateOne(
-        { id: studentId },
-        { $inc: { "dues.$[elem].dueAmount": -amountPaid } },
-        { arrayFilters: [{ "elem.note": note }] }
-      )
-    );
+    const student = await Student.findOne({ id: studentId });
+    if (!student) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ success: false, message: 'Student not found' }),
+      };
+    }
 
-    updateOps.push(
-      Student.updateOne(
-        { id: studentId },
-        { $pull: { dues: { dueAmount: { $lte: 0 } } } }
-      )
-    );
+    let remaining = parseFloat(amount);
+    const updatedDues = student.dues.map((due, index) => {
+      if (remaining > 0 && selectedDues.includes(index)) {
+        if (remaining >= due.dueAmount) {
+          remaining -= due.dueAmount;
+          return null; // fully paid
+        } else {
+          due.dueAmount -= remaining;
+          remaining = 0;
+        }
+      }
+      return due;
+    }).filter(due => due !== null); // Remove fully paid dues
 
-    const paymentCreate = Payment.create({
+    await Student.updateOne({ id: studentId }, { $set: { dues: updatedDues } });
+
+    await Payment.create({
       studentId,
       amount: parseFloat(amount),
       date: new Date(date),
       mode,
       reference: reference || null,
-      appliedToDues: payments.map(p => p.note),
+      appliedToDues: selectedDues,
     });
-
-    await Promise.all([...updateOps, paymentCreate]);
 
     return {
       statusCode: 200,
