@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const connectToDB = require('./utils/db'); // adjust if needed
+const connectToDB = require('./utils/db'); // Adjust path as needed
 
 // Student Schema
 const studentSchema = new mongoose.Schema({
@@ -38,10 +38,15 @@ exports.handler = async function (event) {
   }
 
   try {
-    const data = JSON.parse(event.body);
-    const { studentId, amount, date, mode, reference, selectedDues } = data;
+    const { studentId, amount, date, mode, reference, selectedDues } = JSON.parse(event.body);
 
-    if (!studentId || !amount || !date || !mode || !Array.isArray(selectedDues)) {
+    if (
+      !studentId ||
+      typeof amount !== 'number' && typeof amount !== 'string' ||
+      !date ||
+      !mode ||
+      !Array.isArray(selectedDues)
+    ) {
       return {
         statusCode: 400,
         body: JSON.stringify({ success: false, message: 'Missing or invalid required fields' }),
@@ -50,7 +55,8 @@ exports.handler = async function (event) {
 
     await connectToDB();
 
-    const student = await Student.findOne({ id: studentId });
+    // Fetch only dues array (minimal data) to calculate payments
+    const student = await Student.findOne({ id: studentId }, { dues: 1 }).lean();
     if (!student) {
       return {
         statusCode: 404,
@@ -59,21 +65,38 @@ exports.handler = async function (event) {
     }
 
     let remaining = parseFloat(amount);
-    const updatedDues = student.dues.map((due, index) => {
-      if (remaining > 0 && selectedDues.includes(index)) {
-        if (remaining >= due.dueAmount) {
-          remaining -= due.dueAmount;
-          return null; // fully paid
-        } else {
-          due.dueAmount -= remaining;
-          remaining = 0;
+    const ops = [];
+
+    // Build one updateOne per selected due, subtracting pay amount
+    for (const idx of selectedDues) {
+      if (remaining <= 0) break;
+      const due = student.dues[idx];
+      if (!due) continue;
+      const payAmt = Math.min(due.dueAmount, remaining);
+      remaining -= payAmt;
+
+      ops.push({
+        updateOne: {
+          filter: { id: studentId },
+          update:  { $inc: { [`dues.${idx}.dueAmount`]: -payAmt } }
         }
+      });
+    }
+
+    // Finally, remove any dues that have become zero or negative
+    ops.push({
+      updateOne: {
+        filter: { id: studentId },
+        update:  { $pull: { dues: { dueAmount: { $lte: 0 } } } }
       }
-      return due;
-    }).filter(due => due !== null); // Remove fully paid dues
+    });
 
-    await Student.updateOne({ id: studentId }, { $set: { dues: updatedDues } });
+    // Execute all due updates in one bulkWrite
+    if (ops.length > 0) {
+      await Student.bulkWrite(ops);
+    }
 
+    // Create the payment record
     await Payment.create({
       studentId,
       amount: parseFloat(amount),
